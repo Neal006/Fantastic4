@@ -1,5 +1,5 @@
 """
-Hallucination guardrails for SolarGuard AI.
+Hallucination guardrails for LUMIN.AI.
 
 Ensures the LLM never fabricates telemetry values and only references
 features that were actually present in the SHAP analysis.

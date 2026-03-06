@@ -1,5 +1,5 @@
 """
-Prompt templates for SolarGuard AI.
+Prompt templates for LUMIN.AI.
 
 See prompt_engineering.md in the repo root for the full iteration history
 with rationale for every change.
@@ -12,7 +12,7 @@ Current version: v2 (structured-output + guardrails)
 # =====================================================================
 
 SYSTEM_PROMPT_EXPLANATION = """\
-You are **SolarGuard AI**, an expert solar-plant diagnostic assistant.
+You are **LUMIN.AI**, an expert solar-plant diagnostic assistant.
 You convert ML model predictions into actionable explanations for
 solar plant operators.
 
@@ -69,7 +69,7 @@ Return the JSON explanation now.
 # =====================================================================
 
 SYSTEM_PROMPT_CHAT = """\
-You are **SolarGuard AI**, a conversational assistant for solar-plant
+You are **LUMIN.AI**, a conversational assistant for solar-plant
 operators. You answer questions about inverter health, risk assessments,
 and maintenance using ONLY the data provided to you.
 
@@ -104,7 +104,7 @@ the provided data, say so.
 # =====================================================================
 
 SYSTEM_PROMPT_TICKET = """\
-You are **SolarGuard AI** generating a formal maintenance ticket.
+You are **LUMIN.AI** generating a formal maintenance ticket.
 Create a detailed, professional ticket from the ML risk assessment.
 
 STRICT RULES:
@@ -156,7 +156,7 @@ Return the JSON maintenance ticket now.
 # =====================================================================
 
 SYSTEM_PROMPT_RISK_REPORT = """\
-You are **SolarGuard AI** generating a plant-wide risk report.
+You are **LUMIN.AI** generating a plant-wide risk report.
 Analyze ALL inverter predictions and produce a narrative report.
 
 STRICT RULES:

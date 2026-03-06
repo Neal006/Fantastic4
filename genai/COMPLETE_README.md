@@ -1,4 +1,4 @@
-# SolarGuard AI - Complete System Guide
+# LUMIN.AI - Complete System Guide
 
 > **GenAI Explanation Layer for Solar Plant Risk Assessment**  
 > Real-time ML processing with automated ticket generation and AI-powered explanations.
@@ -16,9 +16,9 @@
 
 ---
 
-## What is SolarGuard AI?
+## What is LUMIN.AI?
 
-SolarGuard AI is a **GenAI-powered explanation layer** that sits between your ML risk-prediction model and solar plant operators. It solves a critical problem: **ML models output numbers, but operators need actionable guidance**.
+LUMIN.AI is a **GenAI-powered explanation layer** that sits between your ML risk-prediction model and solar plant operators. It solves a critical problem: **ML models output numbers, but operators need actionable guidance**.
 
 ### The Problem
 Your ML model outputs:
@@ -37,7 +37,7 @@ Your ML model outputs:
 **Operators ask**: "What does this mean? What should I do?"
 
 ### The Solution
-SolarGuard AI transforms that into:
+LUMIN.AI transforms that into:
 ```
 🔴 CRITICAL SHUTDOWN RISK (89%)
 
@@ -82,7 +82,7 @@ Plus a **professional PDF maintenance ticket** and **conversational Q&A** interf
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  2. SOLARGUARD AI (GenAI Layer)                             │
+│  2. LUMIN.AI (GenAI Layer)                                  │
 │     ┌─────────────────────────────────────────────┐         │
 │     │  a) Guardrails: Validate SHAP features      │         │
 │     └─────────────────────────────────────────────┘         │
@@ -137,7 +137,7 @@ RAG searches inverter manual:
               "Error Code 4003: Over-temperature...", ...]
     ↓
 Explainer formats prompt:
-    System: "You are SolarGuard AI. STRICT RULES: 
+    System: "You are LUMIN.AI. STRICT RULES: 
              Only reference provided data..."
     User: "Risk: 0.89, SHAP: temp +0.35, 
            Raw: temp 78.6°C, Manual: [context]"
@@ -308,7 +308,7 @@ python test_endpoints.py
 
 This tests all endpoints automatically. Expected output:
 ```
-🔆  SolarGuard AI – Endpoint Test Suite
+🔆  LUMIN.AI – Endpoint Test Suite
 
 ============================================================
   1. Health Check
@@ -509,7 +509,7 @@ chunks = rag.retrieve(query, top_k=3)
 **Example** (simplified):
 ```
 System:
-  You are SolarGuard AI, an expert solar-plant diagnostic assistant.
+  You are LUMIN.AI, an expert solar-plant diagnostic assistant.
   
   STRICT RULES:
   1. ONLY reference data values explicitly provided
@@ -760,11 +760,7 @@ async def get_prediction(inverter_id: str) -> InverterPrediction | None:
             headers["Authorization"] = f"Bearer {ML_API_KEY}"
         
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{ML_API_URL}/predictions/{inverter_id}",
-                headers=headers,
-                timeout=10.0
-            )
+            response = await client.get(f"{ML_API_URL}/predictions/{inverter_id}")
             response.raise_for_status()
             data = response.json()
             return InverterPrediction(**data)
@@ -924,7 +920,7 @@ def explain_from_prediction(self, prediction: InverterPrediction) -> Explanation
    curl http://your-ml-server:5000/api/predictions/INV-P1-L2-0
    ```
 3. **Update `.env` with ML API URL**
-4. **Restart SolarGuard AI backend**
+4. **Restart LUMIN.AI backend**
 5. **Test explanation endpoint**:
    ```bash
    curl http://localhost:8000/explanation/INV-P1-L2-0
@@ -1382,7 +1378,7 @@ Get raw ML prediction for a single inverter.
 
 ## Summary
 
-**SolarGuard AI** is a complete GenAI explanation layer that:
+**LUMIN.AI** is a complete GenAI explanation layer that:
 
 1. **Takes ML predictions** (risk scores + SHAP values)
 2. **Searches inverter manual** for relevant context (RAG)
