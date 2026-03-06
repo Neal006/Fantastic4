@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 234 89% 63%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 234 89% 63%;
+
+    --radius: 0.75rem;
+
+    /* SolarWatch semantic tokens */
+    --sw-sidebar-bg: 217 33% 17%;
+    --sw-sidebar-text: 0 0% 100%;
+    --sw-sidebar-muted: 215 20% 65%;
+    --sw-sidebar-hover: 217 33% 22%;
+    --sw-sidebar-active: 234 89% 63%;
+
+    --sw-healthy: 142 71% 45%;
+    --sw-healthy-bg: 138 76% 97%;
+    --sw-healthy-border: 142 69% 58%;
+
+    --sw-good: 84 81% 44%;
+    --sw-good-bg: 80 92% 96%;
+    --sw-good-border: 84 74% 52%;
+
+    --sw-warning: 38 92% 50%;
+    --sw-warning-bg: 48 96% 95%;
+    --sw-warning-border: 38 92% 60%;
+
+    --sw-danger: 25 95% 53%;
+    --sw-danger-bg: 33 100% 96%;
+    --sw-danger-border: 25 95% 63%;
+
+    --sw-critical: 0 84% 60%;
+    --sw-critical-bg: 0 86% 97%;
+    --sw-critical-border: 0 84% 70%;
+
+    --sw-offline: 215 14% 34%;
+    --sw-offline-bg: 210 20% 96%;
+    --sw-offline-border: 215 14% 77%;
+
+    --sw-login-from: 234 89% 63%;
+    --sw-login-to: 270 67% 47%;
+
+    --sidebar-background: 217 33% 17%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 234 89% 63%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 33% 25%;
+    --sidebar-ring: 234 89% 63%;
+  }
+
+  .dark {
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 234 89% 63%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 234 89% 63%;
+
+    --sw-sidebar-bg: 222 47% 4%;
+    --sw-sidebar-text: 210 40% 90%;
+    --sw-sidebar-muted: 215 20% 55%;
+    --sw-sidebar-hover: 217 33% 12%;
+    --sw-sidebar-active: 234 89% 63%;
+
+    --sw-healthy-bg: 142 71% 5%;
+    --sw-healthy-border: 142 69% 40%;
+
+    --sw-good-bg: 84 81% 5%;
+    --sw-good-border: 84 74% 40%;
+
+    --sw-warning-bg: 38 92% 5%;
+    --sw-warning-border: 38 92% 40%;
+
+    --sw-danger-bg: 25 95% 5%;
+    --sw-danger-border: 25 95% 40%;
+
+    --sw-critical-bg: 0 84% 5%;
+    --sw-critical-border: 0 84% 40%;
+
+    --sw-offline-bg: 217 33% 10%;
+    --sw-offline-border: 215 14% 30%;
+
+    --sw-login-from: 222 47% 7%;
+    --sw-login-to: 222 47% 4%;
+
+    --sidebar-background: 222 47% 4%;
+    --sidebar-foreground: 210 40% 90%;
+    --sidebar-primary: 234 89% 63%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 12%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 217 33% 12%;
+    --sidebar-ring: 234 89% 63%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .sw-sidebar {
+    background: hsl(var(--sw-sidebar-bg));
+    color: hsl(var(--sw-sidebar-text));
+  }
+  .sw-login-gradient {
+    background: linear-gradient(135deg, hsl(var(--sw-login-from)), hsl(var(--sw-login-to)));
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: hsl(var(--sw-critical-border)); }
+  50% { border-color: hsl(var(--sw-critical) / 0.3); }
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
