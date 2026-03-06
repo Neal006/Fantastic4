@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -11,9 +12,9 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MessageCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, Loader2, Bot, FileDown, ChevronRight, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { operatorApi } from '@/lib/api';
+import { operatorApi, chatbotApi } from '@/lib/api';
 
 interface Props {
   inverter: any | null;  // real API inverter shape
@@ -42,12 +43,29 @@ const PARAMS = [
 ] as const;
 type ParamKey = typeof PARAMS[number]['key'];
 
+const URGENCY_COLORS: Record<string, string> = {
+  immediate: 'bg-red-500 text-white',
+  within_24h: 'bg-orange-500 text-white',
+  scheduled: 'bg-yellow-500 text-black',
+  routine: 'bg-green-500 text-white',
+};
+
+const URGENCY_LABEL: Record<string, string> = {
+  immediate: 'IMMEDIATE',
+  within_24h: 'WITHIN 24H',
+  scheduled: 'SCHEDULED',
+  routine: 'ROUTINE',
+};
+
 export default function InverterDetailSheet({ inverter, onClose, plantName, blockName }: Props) {
   const navigate = useNavigate();
   const [trendParam, setTrendParam] = useState<ParamKey>('dc_voltage');
   const [trendRange, setTrendRange] = useState<'24h' | '48h'>('24h');
+  const [aiTabActive, setAiTabActive] = useState(false);
 
   const inverterId = inverter?.id;
+  // The GenAI system uses the inverter NAME (e.g. INV-P1-L2-0), not the DB UUID
+  const inverterName = inverter?.name || inverter?.id;
 
   // ── Live readings (Trend tab) ──────────────────────────────────────────────
   const { data: readings = [], isFetching: readingsFetching } = useQuery({
@@ -64,6 +82,15 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
     queryFn: () => operatorApi.getFaults(inverterId),
     enabled: !!inverterId,
     staleTime: 60_000,
+  });
+
+  // ── AI Explanation (AI tab) ────────────────────────────────────────────────
+  const { data: explanation, isFetching: explanationFetching, refetch: refetchExplanation, isError: explanationError } = useQuery({
+    queryKey: ['ai-explanation', inverterName],
+    queryFn: () => chatbotApi.getExplanation(inverterName!),
+    enabled: !!inverterName && aiTabActive,
+    staleTime: 5 * 60_000,
+    retry: 1,
   });
 
   if (!inverter) return null;
@@ -105,12 +132,15 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
           <p className="text-sm text-muted-foreground">{plantName} › {blockName}</p>
         </SheetHeader>
 
-        <Tabs defaultValue="overview" className="mt-2">
-          <TabsList className="w-full grid grid-cols-4">
+        <Tabs defaultValue="overview" className="mt-2" onValueChange={v => { if (v === 'ai') setAiTabActive(true); }}>
+          <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="shap" disabled={!showShap}>SHAP</TabsTrigger>
             <TabsTrigger value="trend">Trend</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="ai" className="flex items-center gap-1">
+              <Bot className="h-3 w-3" />AI
+            </TabsTrigger>
           </TabsList>
 
           {/* ── Overview ── */}
@@ -268,6 +298,132 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
                 </TableBody>
               </Table>
             )}
+          </TabsContent>
+
+          {/* ── AI Explanation ── */}
+          <TabsContent value="ai" className="mt-4 space-y-4">
+            {/* Action bar */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Powered by SolarGuard AI (GenAI)</p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => refetchExplanation()}
+                disabled={explanationFetching}
+              >
+                {explanationFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
+                {explanation ? 'Refresh' : 'Explain'}
+              </Button>
+            </div>
+
+            {/* Loading skeletons */}
+            {explanationFetching && (
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+            )}
+
+            {/* Error state */}
+            {explanationError && !explanationFetching && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
+                Could not load AI explanation. Make sure the GenAI server is running on port 8000.
+              </div>
+            )}
+
+            {/* Explanation content */}
+            {explanation && !explanationFetching && (
+              <div className="space-y-4 text-sm">
+                {/* Risk score + urgency */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-2xl font-extrabold">
+                    {Math.round(explanation.risk_score * 100)}%
+                  </span>
+                  <span className="text-muted-foreground text-xs">risk score</span>
+                  <Badge className={URGENCY_COLORS[explanation.urgency] ?? 'bg-muted'}>
+                    {URGENCY_LABEL[explanation.urgency] ?? explanation.urgency.toUpperCase()}
+                  </Badge>
+                </div>
+
+                {/* Summary */}
+                <p className="text-muted-foreground leading-relaxed">{explanation.summary}</p>
+
+                {/* Key factors */}
+                {explanation.key_factors?.length > 0 && (
+                  <div className="rounded-lg bg-muted p-3 space-y-2">
+                    <p className="font-semibold">Key Risk Factors</p>
+                    <ul className="space-y-1.5">
+                      {explanation.key_factors.map((f: any, i: number) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 mt-0.5 text-muted-foreground" />
+                          <span>
+                            <span className="font-medium">{f.feature}</span>
+                            {f.raw_value ? ` (${f.raw_value})` : ''}
+                            {f.impact ? ` — ${f.impact}` : ''}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Recommended actions */}
+                {explanation.recommended_actions?.length > 0 && (
+                  <div>
+                    <p className="font-semibold mb-2">Recommended Actions</p>
+                    <ol className="space-y-1.5 list-decimal list-inside text-muted-foreground">
+                      {explanation.recommended_actions.map((a: string, i: number) => (
+                        <li key={i}>{a}</li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {/* Disclaimer */}
+                {explanation.disclaimer && (
+                  <p className="text-[10px] text-muted-foreground italic border-t pt-3">{explanation.disclaimer}</p>
+                )}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!explanation && !explanationFetching && !explanationError && (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                Click <strong>Explain</strong> to fetch an AI-generated risk analysis.
+              </p>
+            )}
+
+            {/* PDF Download */}
+            <div className="border-t pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={async () => {
+                  try {
+                    await chatbotApi.generateTicket(inverterName!);
+                    const token = sessionStorage.getItem('sw_token');
+                    const res = await fetch(chatbotApi.getPdfUrl(inverterName!), {
+                      headers: { Authorization: `Bearer ${token}` },
+                      credentials: 'include',
+                    });
+                    if (!res.ok) throw new Error('PDF unavailable');
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `${inverterName}-ticket.pdf`; a.click();
+                    URL.revokeObjectURL(url);
+                  } catch { /* silently fail */ }
+                }}
+              >
+                <FileDown className="h-4 w-4" /> Download Maintenance Ticket PDF
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
       </SheetContent>
