@@ -1,0 +1,291 @@
+
+======================================================================
+  Plant1_LT1 — 187,064 rows  (NO alarm_code columns)
+======================================================================
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state     -1: mean=   157.9W  max=   352.7W  rows=  97,268
+    state      0: mean=     0.0W  max=   299.0W  rows=  89,796
+
+  STATE TRANSITIONS (top 10):
+         0 ->     -1:    814 times
+        -1 ->      0:    813 times
+
+======================================================================
+  Plant1_LT2 — 187,005 rows  (NO alarm_code columns)
+======================================================================
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state     -1: mean=   151.0W  max=   352.6W  rows= 101,119
+    state      0: mean=     0.0W  max=   122.6W  rows=  85,886
+
+  STATE TRANSITIONS (top 10):
+         0 ->     -1:    817 times
+        -1 ->      0:    816 times
+
+======================================================================
+  Plant2_AC12 — 190,424 rows
+======================================================================
+
+  ALARM: inverters[0].alarm_code
+  Non-zero: 4,883 (2.56%)
+  Unique values: 9
+             0:  185,541 (97.44%)
+           548:    2,307 (1.21%)
+           558:    1,975 (1.04%)
+           563:      431 (0.23%)
+            39:      158 (0.08%)
+           100:        5 (0.00%)
+            10:        4 (0.00%)
+             2:        2 (0.00%)
+             4:        1 (0.00%)
+
+  ALARM: inverters[1].alarm_code
+  Non-zero: 5,582 (2.93%)
+  Unique values: 8
+             0:  184,842 (97.07%)
+           581:    2,748 (1.44%)
+           559:    2,435 (1.28%)
+            39:      260 (0.14%)
+            10:      119 (0.06%)
+           100:       17 (0.01%)
+             2:        2 (0.00%)
+             4:        1 (0.00%)
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state      0: mean=    35.2W  max=1106247.6W  rows=  97,278
+    state   4608: mean=     0.0W  max=     0.0W  rows=     260
+    state   4864: mean=     0.0W  max=     0.0W  rows=     442
+    state   5120: mean=     0.0W  max=     0.0W  rows=  86,580
+    state   5632: mean=     0.0W  max=     0.0W  rows=     972
+    state  21760: mean=     0.0W  max=     0.0W  rows=     177
+    state  33280: mean=    23.8W  max=    23.8W  rows=       1
+    state  37120: mean=    61.1W  max=    90.0W  rows=   4,714
+
+  STATE TRANSITIONS (top 15):
+         0 ->  37120:    846 times
+     37120 ->      0:    840 times
+         0 ->   5120:    708 times
+      5120 ->      0:    550 times
+      5120 ->   5632:    250 times
+      5120 ->   4608:    245 times
+      4608 ->   5120:    216 times
+      5632 ->      0:    183 times
+         0 ->   4864:    131 times
+      4864 ->      0:    123 times
+      5632 ->   5120:    107 times
+      5632 ->  21760:     79 times
+     21760 ->   5632:     59 times
+      4608 ->   5632:     38 times
+     21760 ->      0:     18 times
+
+======================================================================
+  Plant2_ACBB — 136,956 rows
+======================================================================
+
+  ALARM: inverters[0].alarm_code
+  Non-zero: 4 (0.00%)
+  Unique values: 3
+             0:  136,952 (100.00%)
+           100:        2 (0.00%)
+            10:        2 (0.00%)
+
+  ALARM: inverters[1].alarm_code
+  Non-zero: 606 (0.44%)
+  Unique values: 4
+             0:  136,350 (99.56%)
+           581:      601 (0.44%)
+            10:        4 (0.00%)
+           100:        1 (0.00%)
+
+  ALARM: inverters[2].alarm_code
+  Non-zero: 1,702 (1.24%)
+  Unique values: 9
+             0:  135,254 (98.76%)
+           557:    1,531 (1.12%)
+            39:      160 (0.12%)
+           547:        4 (0.00%)
+            10:        2 (0.00%)
+           564:        2 (0.00%)
+           100:        1 (0.00%)
+           463:        1 (0.00%)
+           464:        1 (0.00%)
+
+  ALARM: inverters[3].alarm_code
+  Non-zero: 170 (0.12%)
+  Unique values: 4
+             0:  136,786 (99.88%)
+            39:      167 (0.12%)
+            10:        2 (0.00%)
+           100:        1 (0.00%)
+
+  ALARM: inverters[4].alarm_code
+  Non-zero: 18,678 (13.64%)
+  Unique values: 5
+             0:  118,278 (86.36%)
+           563:   18,634 (13.61%)
+            39:       41 (0.03%)
+            10:        2 (0.00%)
+           100:        1 (0.00%)
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state      0: mean=    31.0W  max=   110.4W  rows=  66,957
+    state   4608: mean=     0.0W  max=     0.0W  rows=     213
+    state   4864: mean=     0.0W  max=     0.0W  rows=     514
+    state   5120: mean=     0.0W  max=     0.0W  rows=  67,150
+    state   5632: mean=     0.0W  max=     0.0W  rows=     349
+    state  21760: mean=     0.0W  max=     0.0W  rows=       3
+    state  33280: mean=     9.1W  max=    83.6W  rows=   1,770
+
+  STATE TRANSITIONS (top 15):
+         0 ->  33280:  1,728 times
+     33280 ->      0:  1,727 times
+         0 ->   5120:    490 times
+      5120 ->      0:    403 times
+      5120 ->   4608:    199 times
+      4608 ->   5120:    174 times
+      5120 ->   5632:    169 times
+      5632 ->      0:    123 times
+      5632 ->   5120:    108 times
+      4608 ->   5632:     37 times
+         0 ->   4864:     35 times
+      4864 ->      0:     35 times
+         0 ->   5632:     25 times
+      4864 ->   5632:     24 times
+      5632 ->   4864:     23 times
+
+======================================================================
+  Plant3_1469 — 186,897 rows
+======================================================================
+
+  ALARM: inverters[0].alarm_code
+  Non-zero: 84,624 (45.28%)
+  Unique values: 6
+             0:  102,273 (54.72%)
+           100:   84,556 (45.24%)
+           534:       40 (0.02%)
+             8:       21 (0.01%)
+            12:        4 (0.00%)
+           556:        3 (0.00%)
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state      0: mean=     0.0W  max=     0.0W  rows=  84,908
+    state      3: mean=     0.0W  max=     0.0W  rows=   4,370
+    state      4: mean=    23.3W  max=    66.6W  rows=  94,582
+    state      5: mean=     1.7W  max=    46.8W  rows=     445
+    state      7: mean=     0.0W  max=     0.0W  rows=      26
+    state      8: mean=     0.0W  max=     0.0W  rows=   2,566
+
+  STATE TRANSITIONS (top 15):
+         8 ->      3:    820 times
+         3 ->      8:    752 times
+         0 ->      3:    574 times
+         3 ->      4:    568 times
+         4 ->      8:    482 times
+         3 ->      0:    370 times
+         8 ->      0:    321 times
+         4 ->      3:    297 times
+         8 ->      4:    208 times
+         0 ->      8:    111 times
+         0 ->      4:     78 times
+         4 ->      0:     70 times
+         4 ->      5:     40 times
+         5 ->      4:     36 times
+         5 ->      8:     16 times
+
+======================================================================
+  Plant3_146E — 188,101 rows
+======================================================================
+
+  ALARM: inverters[0].alarm_code
+  Non-zero: 86,335 (45.90%)
+  Unique values: 6
+             0:  101,766 (54.10%)
+           100:   86,304 (45.88%)
+             8:       19 (0.01%)
+            39:        6 (0.00%)
+           556:        5 (0.00%)
+            10:        1 (0.00%)
+
+  POWER by OP_STATE (inverters[0].op_state):
+    state      0: mean=     0.0W  max=     0.0W  rows=  86,699
+    state      3: mean=     0.0W  max=     0.0W  rows=   2,563
+    state      4: mean=    22.9W  max=    67.1W  rows=  97,009
+    state      7: mean=     0.0W  max=     0.0W  rows=      26
+    state      8: mean=     0.0W  max=     0.0W  rows=   1,804
+
+  STATE TRANSITIONS (top 15):
+         3 ->      8:    630 times
+         8 ->      3:    545 times
+         0 ->      3:    540 times
+         3 ->      4:    512 times
+         4 ->      8:    422 times
+         4 ->      3:    420 times
+         3 ->      0:    365 times
+         8 ->      4:    333 times
+         8 ->      0:    325 times
+         0 ->      8:    150 times
+         0 ->      4:     94 times
+         4 ->      0:     92 times
+         4 ->      7:     11 times
+         7 ->      3:      7 times
+         7 ->      4:      7 times
+
+
+======================================================================
+  ALARM CODES DURING FAULT STATES
+======================================================================
+
+  Plant2_AC12 — Alarm codes during fault states:
+  op_state=4608 (260 rows):
+    alarm=         0:    260
+  op_state=4864 (442 rows):
+    alarm=         0:    442
+  op_state=21760 (177 rows):
+    alarm=        39:    158
+    alarm=         0:     12
+    alarm=        10:      4
+    alarm=         2:      2
+    alarm=         4:      1
+  op_state=33280 (1 rows):
+    alarm=         0:      1
+  op_state=37120 (4,714 rows):
+    alarm=       548:  2,304
+    alarm=       558:  1,974
+    alarm=       563:    431
+    alarm=         0:      5
+
+  Plant2_ACBB — Alarm codes during fault states:
+  op_state=4608 (213 rows):
+    alarm=         0:    213
+  op_state=4864 (514 rows):
+    alarm=         0:    514
+  op_state=21760 (3 rows):
+    alarm=        10:      2
+    alarm=         0:      1
+  op_state=33280 (1,770 rows):
+    alarm=         0:  1,770
+
+  Plant3_1469 — Alarm codes during fault states:
+  op_state=3 (4,370 rows):
+    alarm=         0:  4,370
+  op_state=5 (445 rows):
+    alarm=         0:    406
+    alarm=       534:     39
+  op_state=7 (26 rows):
+    alarm=         8:     21
+    alarm=        12:      4
+    alarm=         0:      1
+  op_state=8 (2,566 rows):
+    alarm=         0:  2,565
+    alarm=       534:      1
+
+  Plant3_146E — Alarm codes during fault states:
+  op_state=3 (2,563 rows):
+    alarm=         0:  2,563
+  op_state=7 (26 rows):
+    alarm=         8:     19
+    alarm=        39:      6
+    alarm=        10:      1
+  op_state=8 (1,804 rows):
+    alarm=         0:  1,804
