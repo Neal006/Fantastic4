@@ -1,0 +1,1465 @@
+================================================================================
+  CONSTANT COLUMN REMOVAL REPORT
+  Removes columns where every row has the same value
+================================================================================
+
+================================================================================
+  Plant1_LT1_cleaned.csv
+  Total rows: 189,421 | Original columns: 441
+================================================================================
+
+  ❌ REMOVED (29 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0                             
+  dataLoggerModelId                                            6221cf1b102640607ef755d0      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              1                             
+  inverters[10].id                                             11                            
+  inverters[11].id                                             12                            
+  inverters[1].id                                              2                             
+  inverters[2].id                                              3                             
+  inverters[3].id                                              4                             
+  inverters[4].id                                              5                             
+  inverters[5].id                                              6                             
+  inverters[6].id                                              7                             
+  inverters[7].id                                              8                             
+  inverters[8].id                                              9                             
+  inverters[9].id                                              10                            
+  mac                                                          ICR2-LT1-Celestical-10000.73  
+  sensors[0].ambient_temp                                      0                             
+  smu[0].id                                                    1                             
+  smu[10].id                                                   11                            
+  smu[11].id                                                   12                            
+  smu[1].id                                                    2                             
+  smu[2].id                                                    3                             
+  smu[3].id                                                    4                             
+  smu[4].id                                                    5                             
+  smu[5].id                                                    6                             
+  smu[6].id                                                    7                             
+  smu[7].id                                                    8                             
+  smu[8].id                                                    9                             
+  smu[9].id                                                    10                            
+
+  ✅ KEPT (412 columns):
+  _id
+  timestamp
+  inverters[0].pv1_power
+  inverters[1].pv1_power
+  inverters[2].pv1_power
+  inverters[3].pv1_power
+  inverters[4].pv1_power
+  inverters[5].pv1_power
+  inverters[6].pv1_power
+  inverters[7].pv1_power
+  inverters[8].pv1_power
+  inverters[9].pv1_power
+  inverters[10].pv1_power
+  inverters[11].pv1_power
+  inverters[0].v_ca
+  inverters[1].v_ca
+  inverters[2].v_ca
+  inverters[3].v_ca
+  inverters[4].v_ca
+  inverters[5].v_ca
+  inverters[6].v_ca
+  inverters[7].v_ca
+  inverters[8].v_ca
+  inverters[9].v_ca
+  inverters[10].v_ca
+  inverters[11].v_ca
+  inverters[0].v_bc
+  inverters[1].v_bc
+  inverters[2].v_bc
+  inverters[3].v_bc
+  inverters[4].v_bc
+  inverters[5].v_bc
+  inverters[6].v_bc
+  inverters[7].v_bc
+  inverters[8].v_bc
+  inverters[9].v_bc
+  inverters[10].v_bc
+  inverters[11].v_bc
+  inverters[0].v_ab
+  inverters[1].v_ab
+  inverters[2].v_ab
+  inverters[3].v_ab
+  inverters[4].v_ab
+  inverters[5].v_ab
+  inverters[6].v_ab
+  inverters[7].v_ab
+  inverters[8].v_ab
+  inverters[9].v_ab
+  inverters[10].v_ab
+  inverters[11].v_ab
+  inverters[0].op_state
+  inverters[1].op_state
+  inverters[2].op_state
+  inverters[3].op_state
+  inverters[4].op_state
+  inverters[5].op_state
+  inverters[6].op_state
+  inverters[7].op_state
+  inverters[8].op_state
+  inverters[9].op_state
+  inverters[10].op_state
+  inverters[11].op_state
+  inverters[0].temp
+  inverters[1].temp
+  inverters[2].temp
+  inverters[3].temp
+  inverters[4].temp
+  inverters[5].temp
+  inverters[6].temp
+  inverters[7].temp
+  inverters[8].temp
+  inverters[9].temp
+  inverters[10].temp
+  inverters[11].temp
+  inverters[0].freq
+  inverters[1].freq
+  inverters[2].freq
+  inverters[3].freq
+  inverters[4].freq
+  inverters[5].freq
+  inverters[6].freq
+  inverters[7].freq
+  inverters[8].freq
+  inverters[9].freq
+  inverters[10].freq
+  inverters[11].freq
+  inverters[0].kwh_today
+  inverters[1].kwh_today
+  inverters[2].kwh_today
+  inverters[3].kwh_today
+  inverters[4].kwh_today
+  inverters[5].kwh_today
+  inverters[6].kwh_today
+  inverters[7].kwh_today
+  inverters[8].kwh_today
+  inverters[9].kwh_today
+  inverters[10].kwh_today
+  inverters[11].kwh_today
+  inverters[0].kwh_total
+  inverters[1].kwh_total
+  inverters[2].kwh_total
+  inverters[3].kwh_total
+  inverters[4].kwh_total
+  inverters[5].kwh_total
+  inverters[6].kwh_total
+  inverters[7].kwh_total
+  inverters[8].kwh_total
+  inverters[9].kwh_total
+  inverters[10].kwh_total
+  inverters[11].kwh_total
+  inverters[0].power
+  inverters[1].power
+  inverters[2].power
+  inverters[3].power
+  inverters[4].power
+  inverters[5].power
+  inverters[6].power
+  inverters[7].power
+  inverters[8].power
+  inverters[9].power
+  inverters[10].power
+  inverters[11].power
+  smu[0].string24
+  smu[1].string24
+  smu[2].string24
+  smu[3].string24
+  smu[4].string24
+  smu[5].string24
+  smu[6].string24
+  smu[7].string24
+  smu[8].string24
+  smu[9].string24
+  smu[10].string24
+  smu[11].string24
+  smu[0].string23
+  smu[1].string23
+  smu[2].string23
+  smu[3].string23
+  smu[4].string23
+  smu[5].string23
+  smu[6].string23
+  smu[7].string23
+  smu[8].string23
+  smu[9].string23
+  smu[10].string23
+  smu[11].string23
+  smu[0].string22
+  smu[1].string22
+  smu[2].string22
+  smu[3].string22
+  smu[4].string22
+  smu[5].string22
+  smu[6].string22
+  smu[7].string22
+  smu[8].string22
+  smu[9].string22
+  smu[10].string22
+  smu[11].string22
+  smu[0].string21
+  smu[1].string21
+  smu[2].string21
+  smu[3].string21
+  smu[4].string21
+  smu[5].string21
+  smu[6].string21
+  smu[7].string21
+  smu[8].string21
+  smu[9].string21
+  smu[10].string21
+  smu[11].string21
+  smu[0].string20
+  smu[1].string20
+  smu[2].string20
+  smu[3].string20
+  smu[4].string20
+  smu[5].string20
+  smu[6].string20
+  smu[7].string20
+  smu[8].string20
+  smu[9].string20
+  smu[10].string20
+  smu[11].string20
+  smu[0].string19
+  smu[1].string19
+  smu[2].string19
+  smu[3].string19
+  smu[4].string19
+  smu[5].string19
+  smu[6].string19
+  smu[7].string19
+  smu[8].string19
+  smu[9].string19
+  smu[10].string19
+  smu[11].string19
+  smu[0].string18
+  smu[1].string18
+  smu[2].string18
+  smu[3].string18
+  smu[4].string18
+  smu[5].string18
+  smu[6].string18
+  smu[7].string18
+  smu[8].string18
+  smu[9].string18
+  smu[10].string18
+  smu[11].string18
+  smu[0].string17
+  smu[1].string17
+  smu[2].string17
+  smu[3].string17
+  smu[4].string17
+  smu[5].string17
+  smu[6].string17
+  smu[7].string17
+  smu[8].string17
+  smu[9].string17
+  smu[10].string17
+  smu[11].string17
+  smu[0].string16
+  smu[1].string16
+  smu[2].string16
+  smu[3].string16
+  smu[4].string16
+  smu[5].string16
+  smu[6].string16
+  smu[7].string16
+  smu[8].string16
+  smu[9].string16
+  smu[10].string16
+  smu[11].string16
+  smu[0].string15
+  smu[1].string15
+  smu[2].string15
+  smu[3].string15
+  smu[4].string15
+  smu[5].string15
+  smu[6].string15
+  smu[7].string15
+  smu[8].string15
+  smu[9].string15
+  smu[10].string15
+  smu[11].string15
+  smu[0].string14
+  smu[1].string14
+  smu[2].string14
+  smu[3].string14
+  smu[4].string14
+  smu[5].string14
+  smu[6].string14
+  smu[7].string14
+  smu[8].string14
+  smu[9].string14
+  smu[10].string14
+  smu[11].string14
+  smu[0].string13
+  smu[1].string13
+  smu[2].string13
+  smu[3].string13
+  smu[4].string13
+  smu[5].string13
+  smu[6].string13
+  smu[7].string13
+  smu[8].string13
+  smu[9].string13
+  smu[10].string13
+  smu[11].string13
+  smu[0].string12
+  smu[1].string12
+  smu[2].string12
+  smu[3].string12
+  smu[4].string12
+  smu[5].string12
+  smu[6].string12
+  smu[7].string12
+  smu[8].string12
+  smu[9].string12
+  smu[10].string12
+  smu[11].string12
+  smu[0].string11
+  smu[1].string11
+  smu[2].string11
+  smu[3].string11
+  smu[4].string11
+  smu[5].string11
+  smu[6].string11
+  smu[7].string11
+  smu[8].string11
+  smu[9].string11
+  smu[10].string11
+  smu[11].string11
+  smu[0].string10
+  smu[1].string10
+  smu[2].string10
+  smu[3].string10
+  smu[4].string10
+  smu[5].string10
+  smu[6].string10
+  smu[7].string10
+  smu[8].string10
+  smu[9].string10
+  smu[10].string10
+  smu[11].string10
+  smu[0].string9
+  smu[1].string9
+  smu[2].string9
+  smu[3].string9
+  smu[4].string9
+  smu[5].string9
+  smu[6].string9
+  smu[7].string9
+  smu[8].string9
+  smu[9].string9
+  smu[10].string9
+  smu[11].string9
+  smu[0].string8
+  smu[1].string8
+  smu[2].string8
+  smu[3].string8
+  smu[4].string8
+  smu[5].string8
+  smu[6].string8
+  smu[7].string8
+  smu[8].string8
+  smu[9].string8
+  smu[10].string8
+  smu[11].string8
+  smu[0].string7
+  smu[1].string7
+  smu[2].string7
+  smu[3].string7
+  smu[4].string7
+  smu[5].string7
+  smu[6].string7
+  smu[7].string7
+  smu[8].string7
+  smu[9].string7
+  smu[10].string7
+  smu[11].string7
+  smu[0].string6
+  smu[1].string6
+  smu[2].string6
+  smu[3].string6
+  smu[4].string6
+  smu[5].string6
+  smu[6].string6
+  smu[7].string6
+  smu[8].string6
+  smu[9].string6
+  smu[10].string6
+  smu[11].string6
+  smu[0].string5
+  smu[1].string5
+  smu[2].string5
+  smu[3].string5
+  smu[4].string5
+  smu[5].string5
+  smu[6].string5
+  smu[7].string5
+  smu[8].string5
+  smu[9].string5
+  smu[10].string5
+  smu[11].string5
+  smu[0].string4
+  smu[1].string4
+  smu[2].string4
+  smu[3].string4
+  smu[4].string4
+  smu[5].string4
+  smu[6].string4
+  smu[7].string4
+  smu[8].string4
+  smu[9].string4
+  smu[10].string4
+  smu[11].string4
+  smu[0].string3
+  smu[1].string3
+  smu[2].string3
+  smu[3].string3
+  smu[4].string3
+  smu[5].string3
+  smu[6].string3
+  smu[7].string3
+  smu[8].string3
+  smu[9].string3
+  smu[10].string3
+  smu[11].string3
+  smu[0].string2
+  smu[1].string2
+  smu[2].string2
+  smu[3].string2
+  smu[4].string2
+  smu[5].string2
+  smu[6].string2
+  smu[7].string2
+  smu[8].string2
+  smu[9].string2
+  smu[10].string2
+  smu[11].string2
+  smu[0].string1
+  smu[1].string1
+  smu[2].string1
+  smu[3].string1
+  smu[4].string1
+  smu[5].string1
+  smu[6].string1
+  smu[7].string1
+  smu[8].string1
+  smu[9].string1
+  smu[10].string1
+  smu[11].string1
+  createdAt
+  timestampDate
+
+================================================================================
+  Plant1_LT2_cleaned.csv
+  Total rows: 189,213 | Original columns: 405
+================================================================================
+
+  ❌ REMOVED (27 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0                             
+  dataLoggerModelId                                            6221cf1b102640607ef755d0      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              13                            
+  inverters[10].id                                             23                            
+  inverters[1].id                                              14                            
+  inverters[2].id                                              15                            
+  inverters[3].id                                              16                            
+  inverters[4].id                                              17                            
+  inverters[5].id                                              18                            
+  inverters[6].id                                              19                            
+  inverters[7].id                                              20                            
+  inverters[8].id                                              21                            
+  inverters[9].id                                              22                            
+  mac                                                          ICR2-LT2-Celestical-10000.73  
+  sensors[0].ambient_temp                                      0                             
+  smu[0].id                                                    13                            
+  smu[10].id                                                   23                            
+  smu[1].id                                                    14                            
+  smu[2].id                                                    15                            
+  smu[3].id                                                    16                            
+  smu[4].id                                                    17                            
+  smu[5].id                                                    18                            
+  smu[6].id                                                    19                            
+  smu[7].id                                                    20                            
+  smu[8].id                                                    21                            
+  smu[9].id                                                    22                            
+
+  ✅ KEPT (378 columns):
+  _id
+  timestamp
+  inverters[0].pv1_power
+  inverters[1].pv1_power
+  inverters[2].pv1_power
+  inverters[3].pv1_power
+  inverters[4].pv1_power
+  inverters[5].pv1_power
+  inverters[6].pv1_power
+  inverters[7].pv1_power
+  inverters[8].pv1_power
+  inverters[9].pv1_power
+  inverters[10].pv1_power
+  inverters[0].v_ca
+  inverters[1].v_ca
+  inverters[2].v_ca
+  inverters[3].v_ca
+  inverters[4].v_ca
+  inverters[5].v_ca
+  inverters[6].v_ca
+  inverters[7].v_ca
+  inverters[8].v_ca
+  inverters[9].v_ca
+  inverters[10].v_ca
+  inverters[0].v_bc
+  inverters[1].v_bc
+  inverters[2].v_bc
+  inverters[3].v_bc
+  inverters[4].v_bc
+  inverters[5].v_bc
+  inverters[6].v_bc
+  inverters[7].v_bc
+  inverters[8].v_bc
+  inverters[9].v_bc
+  inverters[10].v_bc
+  inverters[0].v_ab
+  inverters[1].v_ab
+  inverters[2].v_ab
+  inverters[3].v_ab
+  inverters[4].v_ab
+  inverters[5].v_ab
+  inverters[6].v_ab
+  inverters[7].v_ab
+  inverters[8].v_ab
+  inverters[9].v_ab
+  inverters[10].v_ab
+  inverters[0].op_state
+  inverters[1].op_state
+  inverters[2].op_state
+  inverters[3].op_state
+  inverters[4].op_state
+  inverters[5].op_state
+  inverters[6].op_state
+  inverters[7].op_state
+  inverters[8].op_state
+  inverters[9].op_state
+  inverters[10].op_state
+  inverters[0].temp
+  inverters[1].temp
+  inverters[2].temp
+  inverters[3].temp
+  inverters[4].temp
+  inverters[5].temp
+  inverters[6].temp
+  inverters[7].temp
+  inverters[8].temp
+  inverters[9].temp
+  inverters[10].temp
+  inverters[0].freq
+  inverters[1].freq
+  inverters[2].freq
+  inverters[3].freq
+  inverters[4].freq
+  inverters[5].freq
+  inverters[6].freq
+  inverters[7].freq
+  inverters[8].freq
+  inverters[9].freq
+  inverters[10].freq
+  inverters[0].kwh_today
+  inverters[1].kwh_today
+  inverters[2].kwh_today
+  inverters[3].kwh_today
+  inverters[4].kwh_today
+  inverters[5].kwh_today
+  inverters[6].kwh_today
+  inverters[7].kwh_today
+  inverters[8].kwh_today
+  inverters[9].kwh_today
+  inverters[10].kwh_today
+  inverters[0].kwh_total
+  inverters[1].kwh_total
+  inverters[2].kwh_total
+  inverters[3].kwh_total
+  inverters[4].kwh_total
+  inverters[5].kwh_total
+  inverters[6].kwh_total
+  inverters[7].kwh_total
+  inverters[8].kwh_total
+  inverters[9].kwh_total
+  inverters[10].kwh_total
+  inverters[0].power
+  inverters[1].power
+  inverters[2].power
+  inverters[3].power
+  inverters[4].power
+  inverters[5].power
+  inverters[6].power
+  inverters[7].power
+  inverters[8].power
+  inverters[9].power
+  inverters[10].power
+  smu[0].string24
+  smu[1].string24
+  smu[2].string24
+  smu[3].string24
+  smu[4].string24
+  smu[5].string24
+  smu[6].string24
+  smu[7].string24
+  smu[8].string24
+  smu[9].string24
+  smu[10].string24
+  smu[0].string23
+  smu[1].string23
+  smu[2].string23
+  smu[3].string23
+  smu[4].string23
+  smu[5].string23
+  smu[6].string23
+  smu[7].string23
+  smu[8].string23
+  smu[9].string23
+  smu[10].string23
+  smu[0].string22
+  smu[1].string22
+  smu[2].string22
+  smu[3].string22
+  smu[4].string22
+  smu[5].string22
+  smu[6].string22
+  smu[7].string22
+  smu[8].string22
+  smu[9].string22
+  smu[10].string22
+  smu[0].string21
+  smu[1].string21
+  smu[2].string21
+  smu[3].string21
+  smu[4].string21
+  smu[5].string21
+  smu[6].string21
+  smu[7].string21
+  smu[8].string21
+  smu[9].string21
+  smu[10].string21
+  smu[0].string20
+  smu[1].string20
+  smu[2].string20
+  smu[3].string20
+  smu[4].string20
+  smu[5].string20
+  smu[6].string20
+  smu[7].string20
+  smu[8].string20
+  smu[9].string20
+  smu[10].string20
+  smu[0].string19
+  smu[1].string19
+  smu[2].string19
+  smu[3].string19
+  smu[4].string19
+  smu[5].string19
+  smu[6].string19
+  smu[7].string19
+  smu[8].string19
+  smu[9].string19
+  smu[10].string19
+  smu[0].string18
+  smu[1].string18
+  smu[2].string18
+  smu[3].string18
+  smu[4].string18
+  smu[5].string18
+  smu[6].string18
+  smu[7].string18
+  smu[8].string18
+  smu[9].string18
+  smu[10].string18
+  smu[0].string17
+  smu[1].string17
+  smu[2].string17
+  smu[3].string17
+  smu[4].string17
+  smu[5].string17
+  smu[6].string17
+  smu[7].string17
+  smu[8].string17
+  smu[9].string17
+  smu[10].string17
+  smu[0].string16
+  smu[1].string16
+  smu[2].string16
+  smu[3].string16
+  smu[4].string16
+  smu[5].string16
+  smu[6].string16
+  smu[7].string16
+  smu[8].string16
+  smu[9].string16
+  smu[10].string16
+  smu[0].string15
+  smu[1].string15
+  smu[2].string15
+  smu[3].string15
+  smu[4].string15
+  smu[5].string15
+  smu[6].string15
+  smu[7].string15
+  smu[8].string15
+  smu[9].string15
+  smu[10].string15
+  smu[0].string14
+  smu[1].string14
+  smu[2].string14
+  smu[3].string14
+  smu[4].string14
+  smu[5].string14
+  smu[6].string14
+  smu[7].string14
+  smu[8].string14
+  smu[9].string14
+  smu[10].string14
+  smu[0].string13
+  smu[1].string13
+  smu[2].string13
+  smu[3].string13
+  smu[4].string13
+  smu[5].string13
+  smu[6].string13
+  smu[7].string13
+  smu[8].string13
+  smu[9].string13
+  smu[10].string13
+  smu[0].string12
+  smu[1].string12
+  smu[2].string12
+  smu[3].string12
+  smu[4].string12
+  smu[5].string12
+  smu[6].string12
+  smu[7].string12
+  smu[8].string12
+  smu[9].string12
+  smu[10].string12
+  smu[0].string11
+  smu[1].string11
+  smu[2].string11
+  smu[3].string11
+  smu[4].string11
+  smu[5].string11
+  smu[6].string11
+  smu[7].string11
+  smu[8].string11
+  smu[9].string11
+  smu[10].string11
+  smu[0].string10
+  smu[1].string10
+  smu[2].string10
+  smu[3].string10
+  smu[4].string10
+  smu[5].string10
+  smu[6].string10
+  smu[7].string10
+  smu[8].string10
+  smu[9].string10
+  smu[10].string10
+  smu[0].string9
+  smu[1].string9
+  smu[2].string9
+  smu[3].string9
+  smu[4].string9
+  smu[5].string9
+  smu[6].string9
+  smu[7].string9
+  smu[8].string9
+  smu[9].string9
+  smu[10].string9
+  smu[0].string8
+  smu[1].string8
+  smu[2].string8
+  smu[3].string8
+  smu[4].string8
+  smu[5].string8
+  smu[6].string8
+  smu[7].string8
+  smu[8].string8
+  smu[9].string8
+  smu[10].string8
+  smu[0].string7
+  smu[1].string7
+  smu[2].string7
+  smu[3].string7
+  smu[4].string7
+  smu[5].string7
+  smu[6].string7
+  smu[7].string7
+  smu[8].string7
+  smu[9].string7
+  smu[10].string7
+  smu[0].string6
+  smu[1].string6
+  smu[2].string6
+  smu[3].string6
+  smu[4].string6
+  smu[5].string6
+  smu[6].string6
+  smu[7].string6
+  smu[8].string6
+  smu[9].string6
+  smu[10].string6
+  smu[0].string5
+  smu[1].string5
+  smu[2].string5
+  smu[3].string5
+  smu[4].string5
+  smu[5].string5
+  smu[6].string5
+  smu[7].string5
+  smu[8].string5
+  smu[9].string5
+  smu[10].string5
+  smu[0].string4
+  smu[1].string4
+  smu[2].string4
+  smu[3].string4
+  smu[4].string4
+  smu[5].string4
+  smu[6].string4
+  smu[7].string4
+  smu[8].string4
+  smu[9].string4
+  smu[10].string4
+  smu[0].string3
+  smu[1].string3
+  smu[2].string3
+  smu[3].string3
+  smu[4].string3
+  smu[5].string3
+  smu[6].string3
+  smu[7].string3
+  smu[8].string3
+  smu[9].string3
+  smu[10].string3
+  smu[0].string2
+  smu[1].string2
+  smu[2].string2
+  smu[3].string2
+  smu[4].string2
+  smu[5].string2
+  smu[6].string2
+  smu[7].string2
+  smu[8].string2
+  smu[9].string2
+  smu[10].string2
+  smu[0].string1
+  smu[1].string1
+  smu[2].string1
+  smu[3].string1
+  smu[4].string1
+  smu[5].string1
+  smu[6].string1
+  smu[7].string1
+  smu[8].string1
+  smu[9].string1
+  smu[10].string1
+  createdAt
+  timestampDate
+
+================================================================================
+  Plant2_AC12_cleaned.csv
+  Total rows: 190,899 | Original columns: 130
+================================================================================
+
+  ❌ REMOVED (15 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0                             
+  dataLoggerModelId                                            6181191af5edff65a9e81a8e      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              1                             
+  inverters[0].model                                           SG110CX                       
+  inverters[0].serial                                          I1910260166                   
+  inverters[1].id                                              2                             
+  inverters[1].model                                           SG110CX                       
+  inverters[1].serial                                          I1910260162                   
+  mac                                                          80-1F-12-0F-AC-12             
+  meters[0].id                                                 10                            
+  meters[0].serial                                             X1255958                      
+  sensors[0].ambient_temp                                      0                             
+  smu[0].id                                                    1.0                           
+  smu[1].id                                                    2.0                           
+
+  ✅ KEPT (115 columns):
+  _id
+  timestamp
+  inverters[0].alarm_code
+  inverters[1].alarm_code
+  inverters[0].op_state
+  inverters[1].op_state
+  inverters[0].pv9_current
+  inverters[1].pv9_current
+  inverters[0].pv9_voltage
+  inverters[1].pv9_voltage
+  inverters[0].pv8_current
+  inverters[1].pv8_current
+  inverters[0].pv8_voltage
+  inverters[1].pv8_voltage
+  inverters[0].pv7_current
+  inverters[1].pv7_current
+  inverters[0].pv7_voltage
+  inverters[1].pv7_voltage
+  inverters[0].pv6_current
+  inverters[1].pv6_current
+  inverters[0].pv6_voltage
+  inverters[1].pv6_voltage
+  inverters[0].pv5_current
+  inverters[1].pv5_current
+  inverters[0].pv5_voltage
+  inverters[1].pv5_voltage
+  inverters[0].pv4_current
+  inverters[1].pv4_current
+  inverters[0].pv4_voltage
+  inverters[1].pv4_voltage
+  inverters[0].pv3_current
+  inverters[1].pv3_current
+  inverters[0].pv3_voltage
+  inverters[1].pv3_voltage
+  inverters[0].pv2_current
+  inverters[1].pv2_current
+  inverters[0].pv2_power
+  inverters[1].pv2_power
+  inverters[0].pv2_voltage
+  inverters[1].pv2_voltage
+  inverters[0].pv1_current
+  inverters[1].pv1_current
+  inverters[0].pv1_power
+  inverters[1].pv1_power
+  inverters[0].pv1_voltage
+  inverters[1].pv1_voltage
+  inverters[0].kwh_total
+  inverters[1].kwh_total
+  inverters[0].limit_percent
+  inverters[1].limit_percent
+  inverters[0].kwh_today
+  inverters[1].kwh_today
+  inverters[0].power
+  inverters[1].power
+  meters[0].base_meter_kwh_import
+  meters[0].base_meter_kwh_total
+  meters[0].original_meter_kwh_import
+  meters[0].original_meter_kwh_total
+  meters[0].pf
+  meters[0].freq
+  meters[0].p_b
+  meters[0].p_y
+  meters[0].p_r
+  meters[0].v_b
+  meters[0].v_y
+  meters[0].v_r
+  meters[0].meter_active_power
+  meters[0].meter_kwh_import
+  meters[0].meter_kwh_total
+  meters[0].model
+  smu[0].string18
+  smu[1].string18
+  smu[0].string17
+  smu[1].string17
+  smu[0].string16
+  smu[1].string16
+  smu[0].string15
+  smu[1].string15
+  smu[0].string14
+  smu[1].string14
+  smu[0].string13
+  smu[1].string13
+  smu[0].string12
+  smu[1].string12
+  smu[0].string11
+  smu[1].string11
+  smu[0].string10
+  smu[1].string10
+  smu[0].string9
+  smu[1].string9
+  smu[0].string8
+  smu[1].string8
+  smu[0].string7
+  smu[1].string7
+  smu[0].string6
+  smu[1].string6
+  smu[0].string5
+  smu[1].string5
+  smu[0].string4
+  smu[1].string4
+  smu[0].string3
+  smu[1].string3
+  smu[0].string2
+  smu[1].string2
+  smu[0].string1
+  smu[1].string1
+  createdAt
+  timestampDate
+  inverters[0].temp
+  inverters[1].temp
+  grid_master
+  inverters[0].kwh_midnight
+  inverters[1].kwh_midnight
+  meters[0].meter_reactive_power
+  meters[0].meter_apparent_power
+
+================================================================================
+  Plant2_ACBB_cleaned.csv
+  Total rows: 187,485 | Original columns: 284
+================================================================================
+
+  ❌ REMOVED (25 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0.0                           
+  dataLoggerModelId                                            6181191af5edff65a9e81a8e      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              1.0                           
+  inverters[0].model                                           SG110CX                       
+  inverters[0].serial                                          I1910260149                   
+  inverters[1].id                                              2.0                           
+  inverters[1].model                                           SG110CX                       
+  inverters[1].serial                                          I1910260161                   
+  inverters[2].id                                              3.0                           
+  inverters[2].model                                           SG110CX                       
+  inverters[2].serial                                          I1910260163                   
+  inverters[3].id                                              4.0                           
+  inverters[3].model                                           SG110CX                       
+  inverters[4].id                                              5.0                           
+  inverters[4].model                                           SG110CX                       
+  inverters[4].pv6_current                                     0.0                           
+  inverters[4].serial                                          I2004010200                   
+  mac                                                          80-1F-12-0F-AC-BB             
+  meters[0].id                                                 10.0                          
+  meters[0].serial                                             X1255959                      
+  smu[3].string8                                               0.0                           
+  smu[4].id                                                    5.0                           
+  smu[4].string11                                              0.0                           
+  smu[4].string12                                              0.0                           
+
+  ✅ KEPT (259 columns):
+  _id
+  timestamp
+  inverters[0].alarm_code
+  inverters[1].alarm_code
+  inverters[2].alarm_code
+  inverters[3].alarm_code
+  inverters[4].alarm_code
+  inverters[0].op_state
+  inverters[1].op_state
+  inverters[2].op_state
+  inverters[3].op_state
+  inverters[4].op_state
+  inverters[0].pv9_current
+  inverters[1].pv9_current
+  inverters[2].pv9_current
+  inverters[3].pv9_current
+  inverters[4].pv9_current
+  inverters[0].pv9_voltage
+  inverters[1].pv9_voltage
+  inverters[2].pv9_voltage
+  inverters[3].pv9_voltage
+  inverters[4].pv9_voltage
+  inverters[0].pv8_current
+  inverters[1].pv8_current
+  inverters[2].pv8_current
+  inverters[3].pv8_current
+  inverters[4].pv8_current
+  inverters[0].pv8_voltage
+  inverters[1].pv8_voltage
+  inverters[2].pv8_voltage
+  inverters[3].pv8_voltage
+  inverters[4].pv8_voltage
+  inverters[0].pv7_current
+  inverters[1].pv7_current
+  inverters[2].pv7_current
+  inverters[3].pv7_current
+  inverters[4].pv7_current
+  inverters[0].pv7_voltage
+  inverters[1].pv7_voltage
+  inverters[2].pv7_voltage
+  inverters[3].pv7_voltage
+  inverters[4].pv7_voltage
+  inverters[0].pv6_current
+  inverters[1].pv6_current
+  inverters[2].pv6_current
+  inverters[3].pv6_current
+  inverters[0].pv6_voltage
+  inverters[1].pv6_voltage
+  inverters[2].pv6_voltage
+  inverters[3].pv6_voltage
+  inverters[4].pv6_voltage
+  inverters[0].pv5_current
+  inverters[1].pv5_current
+  inverters[2].pv5_current
+  inverters[3].pv5_current
+  inverters[4].pv5_current
+  inverters[0].pv5_voltage
+  inverters[1].pv5_voltage
+  inverters[2].pv5_voltage
+  inverters[3].pv5_voltage
+  inverters[4].pv5_voltage
+  inverters[0].pv4_current
+  inverters[1].pv4_current
+  inverters[2].pv4_current
+  inverters[3].pv4_current
+  inverters[4].pv4_current
+  inverters[0].pv4_voltage
+  inverters[1].pv4_voltage
+  inverters[2].pv4_voltage
+  inverters[3].pv4_voltage
+  inverters[4].pv4_voltage
+  inverters[0].pv3_current
+  inverters[1].pv3_current
+  inverters[2].pv3_current
+  inverters[3].pv3_current
+  inverters[4].pv3_current
+  inverters[0].pv3_voltage
+  inverters[1].pv3_voltage
+  inverters[2].pv3_voltage
+  inverters[3].pv3_voltage
+  inverters[4].pv3_voltage
+  inverters[0].pv2_current
+  inverters[1].pv2_current
+  inverters[2].pv2_current
+  inverters[3].pv2_current
+  inverters[4].pv2_current
+  inverters[0].pv2_power
+  inverters[1].pv2_power
+  inverters[2].pv2_power
+  inverters[3].pv2_power
+  inverters[4].pv2_power
+  inverters[0].pv2_voltage
+  inverters[1].pv2_voltage
+  inverters[2].pv2_voltage
+  inverters[3].pv2_voltage
+  inverters[4].pv2_voltage
+  inverters[0].pv1_current
+  inverters[1].pv1_current
+  inverters[2].pv1_current
+  inverters[3].pv1_current
+  inverters[4].pv1_current
+  inverters[0].pv1_power
+  inverters[1].pv1_power
+  inverters[2].pv1_power
+  inverters[3].pv1_power
+  inverters[4].pv1_power
+  inverters[0].pv1_voltage
+  inverters[1].pv1_voltage
+  inverters[2].pv1_voltage
+  inverters[3].pv1_voltage
+  inverters[4].pv1_voltage
+  inverters[0].kwh_total
+  inverters[1].kwh_total
+  inverters[2].kwh_total
+  inverters[3].kwh_total
+  inverters[4].kwh_total
+  inverters[0].limit_percent
+  inverters[1].limit_percent
+  inverters[2].limit_percent
+  inverters[3].limit_percent
+  inverters[4].limit_percent
+  inverters[0].kwh_today
+  inverters[1].kwh_today
+  inverters[2].kwh_today
+  inverters[3].kwh_today
+  inverters[4].kwh_today
+  inverters[3].serial
+  inverters[0].power
+  inverters[1].power
+  inverters[2].power
+  inverters[3].power
+  inverters[4].power
+  meters[0].base_meter_kwh_import
+  meters[0].base_meter_kwh_total
+  meters[0].original_meter_kwh_import
+  meters[0].original_meter_kwh_total
+  meters[0].pf
+  meters[0].freq
+  meters[0].p_b
+  meters[0].p_y
+  meters[0].p_r
+  meters[0].v_b
+  meters[0].v_y
+  meters[0].v_r
+  meters[0].meter_active_power
+  meters[0].meter_kwh_import
+  meters[0].meter_kwh_total
+  meters[0].model
+  sensors[0].wind_speed
+  sensors[0].irradiation_temp
+  sensors[0].irradiation_kwh
+  sensors[0].irradiation
+  sensors[0].id
+  smu[0].string18
+  smu[1].string18
+  smu[2].string18
+  smu[3].string18
+  smu[4].string18
+  smu[0].string17
+  smu[1].string17
+  smu[2].string17
+  smu[3].string17
+  smu[4].string17
+  smu[0].string16
+  smu[1].string16
+  smu[2].string16
+  smu[3].string16
+  smu[4].string16
+  smu[0].string15
+  smu[1].string15
+  smu[2].string15
+  smu[3].string15
+  smu[4].string15
+  smu[0].string14
+  smu[1].string14
+  smu[2].string14
+  smu[3].string14
+  smu[4].string14
+  smu[0].string13
+  smu[1].string13
+  smu[2].string13
+  smu[3].string13
+  smu[4].string13
+  smu[0].string12
+  smu[1].string12
+  smu[2].string12
+  smu[3].string12
+  smu[0].string11
+  smu[1].string11
+  smu[2].string11
+  smu[3].string11
+  smu[0].string10
+  smu[1].string10
+  smu[2].string10
+  smu[3].string10
+  smu[4].string10
+  smu[0].string9
+  smu[1].string9
+  smu[2].string9
+  smu[3].string9
+  smu[4].string9
+  smu[0].string8
+  smu[1].string8
+  smu[2].string8
+  smu[4].string8
+  smu[0].string7
+  smu[1].string7
+  smu[2].string7
+  smu[3].string7
+  smu[4].string7
+  smu[0].string6
+  smu[1].string6
+  smu[2].string6
+  smu[3].string6
+  smu[4].string6
+  smu[0].string5
+  smu[1].string5
+  smu[2].string5
+  smu[3].string5
+  smu[4].string5
+  smu[0].string4
+  smu[1].string4
+  smu[2].string4
+  smu[3].string4
+  smu[4].string4
+  smu[0].string3
+  smu[1].string3
+  smu[2].string3
+  smu[3].string3
+  smu[4].string3
+  smu[0].string2
+  smu[1].string2
+  smu[2].string2
+  smu[3].string2
+  smu[4].string2
+  smu[0].string1
+  smu[1].string1
+  smu[2].string1
+  smu[3].string1
+  smu[4].string1
+  smu[0].id
+  smu[1].id
+  smu[2].id
+  smu[3].id
+  createdAt
+  timestampDate
+  inverters[0].temp
+  inverters[1].temp
+  inverters[2].temp
+  inverters[3].temp
+  inverters[4].temp
+  inverters[0].kwh_midnight
+  inverters[1].kwh_midnight
+  inverters[2].kwh_midnight
+  inverters[3].kwh_midnight
+  inverters[4].kwh_midnight
+  grid_master
+  meters[0].meter_reactive_power
+  meters[0].meter_apparent_power
+
+================================================================================
+  Plant3_1469_cleaned.csv
+  Total rows: 191,060 | Original columns: 62
+================================================================================
+
+  ❌ REMOVED (15 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0                             
+  dataLoggerModelId                                            6181191af5edff65a9e81a8e      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              1                             
+  inverters[0].pv2_current                                     0.0                           
+  inverters[0].pv2_power                                       0.0                           
+  inverters[0].pv2_voltage                                     0.0                           
+  inverters[0].serial                                          A1712302096                   
+  mac                                                          54-10-EC-8C-14-69             
+  meters[0].id                                                 10.0                          
+  meters[0].serial                                             MSP53486                      
+  sensors[0].ambient_temp                                      0                             
+  smu[0].id                                                    1.0                           
+  smu[0].string13                                              0.0                           
+  smu[0].string14                                              0.0                           
+
+  ✅ KEPT (47 columns):
+  _id
+  timestamp
+  inverters[0].alarm_code
+  inverters[0].op_state
+  inverters[0].pv1_current
+  inverters[0].pv1_power
+  inverters[0].pv1_voltage
+  inverters[0].kwh_midnight
+  inverters[0].kwh_total
+  inverters[0].kwh_today
+  inverters[0].power
+  meters[0].base_meter_kwh_import
+  meters[0].base_meter_kwh_total
+  meters[0].original_meter_kwh_import
+  meters[0].original_meter_kwh_total
+  meters[0].pf
+  meters[0].freq
+  meters[0].p_b
+  meters[0].p_y
+  meters[0].p_r
+  meters[0].v_b
+  meters[0].v_y
+  meters[0].v_r
+  meters[0].meter_active_power
+  meters[0].meter_kwh_import
+  meters[0].meter_kwh_total
+  meters[0].model
+  createdAt
+  timestampDate
+  inverters[0].temp
+  inverters[0].limit_percent
+  inverters[0].model
+  smu[0].string12
+  smu[0].string11
+  smu[0].string10
+  smu[0].string9
+  smu[0].string8
+  smu[0].string7
+  smu[0].string6
+  smu[0].string5
+  smu[0].string4
+  smu[0].string3
+  smu[0].string2
+  smu[0].string1
+  grid_master
+  meters[0].meter_reactive_power
+  meters[0].meter_apparent_power
+
+================================================================================
+  Plant3_146E_cleaned.csv
+  Total rows: 190,845 | Original columns: 59
+================================================================================
+
+  ❌ REMOVED (16 constant columns):
+  Column Name                                                  Constant Value                
+  ------------------------------------------------------------ ------------------------------
+  __v                                                          0                             
+  dataLoggerModelId                                            6181191af5edff65a9e81a8e      
+  fromServer                                                   raw_server_prod               
+  inverters[0].id                                              1                             
+  inverters[0].pv2_current                                     0.0                           
+  inverters[0].pv2_power                                       0.0                           
+  inverters[0].pv2_voltage                                     0.0                           
+  inverters[0].serial                                          A1712301990                   
+  mac                                                          54-10-EC-8C-14-6E             
+  meters[0].id                                                 10                            
+  meters[0].model                                              ELITE440-444                  
+  sensors[0].ambient_temp                                      0                             
+  smu[0].id                                                    1.0                           
+  smu[0].string12                                              0.0                           
+  smu[0].string13                                              0.0                           
+  smu[0].string14                                              0.0                           
+
+  ✅ KEPT (43 columns):
+  _id
+  timestamp
+  inverters[0].alarm_code
+  inverters[0].op_state
+  inverters[0].pv1_current
+  inverters[0].pv1_power
+  inverters[0].pv1_voltage
+  inverters[0].kwh_midnight
+  inverters[0].kwh_total
+  inverters[0].kwh_today
+  inverters[0].power
+  meters[0].base_meter_kwh_import
+  meters[0].base_meter_kwh_total
+  meters[0].original_meter_kwh_import
+  meters[0].original_meter_kwh_total
+  meters[0].pf
+  meters[0].freq
+  meters[0].p_b
+  meters[0].p_y
+  meters[0].p_r
+  meters[0].v_b
+  meters[0].v_y
+  meters[0].v_r
+  meters[0].meter_active_power
+  meters[0].meter_kwh_import
+  meters[0].meter_kwh_total
+  meters[0].serial
+  createdAt
+  timestampDate
+  inverters[0].temp
+  inverters[0].limit_percent
+  inverters[0].model
+  smu[0].string11
+  smu[0].string10
+  smu[0].string9
+  smu[0].string8
+  smu[0].string7
+  smu[0].string6
+  smu[0].string5
+  smu[0].string4
+  smu[0].string3
+  smu[0].string2
+  smu[0].string1
+
+
+================================================================================
+  SUMMARY
+================================================================================
+
+  File                                  Original    Removed       Kept
+  ----------------------------------- ---------- ---------- ----------
+  Plant1_LT1_cleaned.csv                     441         29        412
+  Plant1_LT2_cleaned.csv                     405         27        378
+  Plant2_AC12_cleaned.csv                    130         15        115
+  Plant2_ACBB_cleaned.csv                    284         25        259
+  Plant3_1469_cleaned.csv                     62         15         47
+  Plant3_146E_cleaned.csv                     59         16         43
