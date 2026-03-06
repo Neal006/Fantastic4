@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document records the prompt design process for **SolarGuard AI**, showing
+This document records the prompt design process for **LUMIN.AI**, showing
 how each iteration was evaluated and improved. All prompts live in
 `app/prompts.py`.
 
@@ -54,7 +54,7 @@ User:   The inverter {id} has a risk score of {score}. Explain why.
 
 ```
 System:
-  You are SolarGuard AI …
+  You are LUMIN.AI …
   STRICT RULES:
     1. ONLY reference data values explicitly provided …
     2. ONLY discuss features in the SHAP analysis …

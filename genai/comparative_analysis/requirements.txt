@@ -1,0 +1,8 @@
+# Additional dependencies for the comparative analysis / ablation study
+# Install: pip install -r comparative_analysis/requirements.txt
+
+google-generativeai>=0.8.0
+matplotlib>=3.8.0
+numpy>=1.26.0
+requests>=2.31.0
+openai>=1.51.0

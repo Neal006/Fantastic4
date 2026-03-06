@@ -1,4 +1,4 @@
-# SolarGuard AI - GenAI Explanation Layer
+# LUMIN.AI - GenAI Explanation Layer
 
 > Converts ML risk predictions into human-readable explanations and operational guidance for solar plant operators.
 
@@ -42,7 +42,7 @@ start simulation_dashboard.html
 
 **Problem**: ML models output numbers, operators need actionable guidance.
 
-**Solution**: SolarGuard AI transforms ML predictions into:
+**Solution**: LUMIN.AI transforms ML predictions into:
 - Plain-English risk summaries
 - SHAP-based factor analysis
 - Prioritized action recommendations
@@ -76,7 +76,7 @@ start simulation_dashboard.html
 ## 📊 System Architecture
 
 ```
-Inverter Data → ML Model → SolarGuard AI → Operator
+Inverter Data → ML Model → LUMIN.AI → Operator
                               ↓
                     [Guardrails + RAG + LLM]
                               ↓
