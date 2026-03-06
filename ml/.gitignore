@@ -1,2 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual Environment
+venv/
+.env
+
+# Data and Models
 /data
 /data_cleaned
+/data/features/
+/models/
+/reports/
+/mlruns/
+
+# Large binaries
+*.pkl
+*.pt
+*.mdl
+*.parquet
