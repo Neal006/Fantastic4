@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolarGuard AI - Live Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .risk-no { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .risk-degradation { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .risk-shutdown { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: all 0.2s; }
+        .loading { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .blink { animation: blink 1s ease-in-out infinite; }
+        @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.3; } }
+        .pulse-ring { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 80%, 100% { transform: scale(1.2); opacity: 0; } }
+        .log-entry { border-left: 4px solid #e5e7eb; transition: all 0.2s; }
+        .log-entry:hover { background: #f9fafb; border-left-color: #6366f1; cursor: pointer; }
+        .log-entry.critical { border-left-color: #ef4444; background: #fef2f2; }
+        .log-entry.warning { border-left-color: #f59e0b; background: #fffbeb; }
+        .log-entry.normal { border-left-color: #10b981; background: #f0fdf4; }
+        .notification-badge { animation: bounce 2s ease-in-out infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div id="app">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+                <i class="fas fa-spinner loading text-6xl text-indigo-600 mb-4"></i>
+                <p class="text-xl text-gray-700">Initializing SolarGuard AI Live Monitor...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        const state = {
+            simulation: {
+                running: false,
+                interval: null,
+                speed: 3000, // ms between data points
+            },
+            logs: [],
+            alerts: [],
+            unreadAlerts: 0,
+            selectedLog: null,
+            explanation: null,
+            autoTickets: [],
+            stats: {
+                totalProcessed: 0,
+                criticalCount: 0,
+                ticketsGenerated: 0,
+            },
+            loading: {},
+        };
+
+        // Simulated inverter IDs
+        const INVERTER_IDS = [
+            'INV-P1-L1-0', 'INV-P1-L1-1', 'INV-P1-L2-0', 'INV-P1-L2-1',
+            'INV-P2-L1-0', 'INV-P2-L1-1', 'INV-P2-L2-0', 'INV-P2-L2-1',
+            'INV-P3-L1-0', 'INV-P3-L1-1', 'INV-P3-L2-0', 'INV-P3-L2-1',
+        ];
+
+        function setState(key, value) {
+            if (key.includes('.')) {
+                const parts = key.split('.');
+                let obj = state;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    obj = obj[parts[i]];
+                }
+                obj[parts[parts.length - 1]] = value;
+            } else {
+                state[key] = value;
+            }
+            render();
+        }
+
+        // Simulation engine
+        function startSimulation() {
+            if (state.simulation.running) return;
+            
+            setState('simulation.running', true);
+            addSystemLog('Simulation started - monitoring 12 inverters');
+            
+            state.simulation.interval = setInterval(() => {
+                generateDataPoint();
+            }, state.simulation.speed);
+            
+            render();
+        }
+
+        function stopSimulation() {
+            if (!state.simulation.running) return;
+            
+            setState('simulation.running', false);
+            if (state.simulation.interval) {
+                clearInterval(state.simulation.interval);
+                state.simulation.interval = null;
+            }
+            addSystemLog('Simulation stopped');
+            render();
+        }
+
+        function generateDataPoint() {
+            // Randomly select an inverter
+            const inverterId = INVERTER_IDS[Math.floor(Math.random() * INVERTER_IDS.length)];
+            
+            // Generate random risk score (weighted towards normal operation)
+            const rand = Math.random();
+            let riskScore, riskClass;
+            
+            if (rand < 0.6) {
+                // 60% normal
+                riskScore = Math.random() * 0.3;
+                riskClass = 'no_risk';
+            } else if (rand < 0.9) {
+                // 30% degradation
+                riskScore = 0.4 + Math.random() * 0.4;
+                riskClass = 'degradation_risk';
+            } else {
+                // 10% critical
+                riskScore = 0.8 + Math.random() * 0.2;
+                riskClass = 'shutdown_risk';
+            }
+
+            const dataPoint = {
+                id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                timestamp: new Date(),
+                inverterId: inverterId,
+                riskScore: riskScore,
+                riskClass: riskClass,
+                processed: false,
+            };
+
+            // Add to logs
+            state.logs.unshift(dataPoint);
+            if (state.logs.length > 50) state.logs.pop();
+
+            // Update stats
+            state.stats.totalProcessed++;
+            if (riskScore >= 0.8) {
+                state.stats.criticalCount++;
+            }
+
+            // Simulate ML processing
+            addProcessingLog(dataPoint);
+
+            // Auto-generate ticket if critical
+            if (riskScore >= 0.8) {
+                setTimeout(() => {
+                    autoGenerateTicket(dataPoint);
+                }, 1500);
+            }
+
+            render();
+        }
+
+        function addProcessingLog(dataPoint) {
+            const logType = dataPoint.riskScore >= 0.8 ? 'critical' : 
+                           dataPoint.riskScore >= 0.4 ? 'warning' : 'normal';
+            
+            console.log(`[ML PROCESSING] ${dataPoint.inverterId} | Risk: ${(dataPoint.riskScore * 100).toFixed(1)}% | Class: ${dataPoint.riskClass}`);
+        }
+
+        function addSystemLog(message) {
+            const logEntry = {
+                id: `sys-${Date.now()}`,
+                timestamp: new Date(),
+                type: 'system',
+                message: message,
+            };
+            state.logs.unshift(logEntry);
+            if (state.logs.length > 50) state.logs.pop();
+        }
+
+        async function autoGenerateTicket(dataPoint) {
+            try {
+                const response = await fetch(`${API_BASE}/agent/maintenance-ticket/${dataPoint.inverterId}`, {
+                    method: 'POST',
+                });
+                
+                if (response.ok) {
+                    const ticketData = await response.json();
+                    
+                    const alert = {
+                        id: `alert-${Date.now()}`,
+                        timestamp: new Date(),
+                        inverterId: dataPoint.inverterId,
+                        riskScore: dataPoint.riskScore,
+                        ticketId: ticketData.ticket_id,
+                        read: false,
+                    };
+                    
+                    state.alerts.unshift(alert);
+                    state.unreadAlerts++;
+                    state.stats.ticketsGenerated++;
+                    state.autoTickets.push(ticketData);
+                    
+                    addSystemLog(`🎫 Auto-generated ticket ${ticketData.ticket_id} for ${dataPoint.inverterId}`);
+                    
+                    // Play notification sound (optional)
+                    playNotificationSound();
+                    
+                    render();
+                }
+            } catch (err) {
+                console.error('Auto-ticket generation failed:', err);
+            }
+        }
+
+        function playNotificationSound() {
+            // Simple beep using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                // Ignore if audio not supported
+            }
+        }
+
+        async function selectLog(logEntry) {
+            if (logEntry.type === 'system') return;
+            
+            setState('selectedLog', logEntry);
+            setState('loading.explanation', true);
+            setState('explanation', null);
+            
+            try {
+                const response = await fetch(`${API_BASE}/explanation/${logEntry.inverterId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setState('explanation', data);
+                } else {
+                    const error = await response.json();
+                    setState('explanation', { error: error.detail || 'Failed to fetch explanation' });
+                }
+            } catch (err) {
+                setState('explanation', { error: err.message });
+            } finally {
+                setState('loading.explanation', false);
+            }
+        }
+
+        function markAlertsRead() {
+            state.alerts.forEach(a => a.read = true);
+            setState('unreadAlerts', 0);
+        }
+
+        function downloadTicket(ticketId, inverterId) {
+            window.open(`${API_BASE}/agent/maintenance-ticket/${inverterId}/pdf`, '_blank');
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            
+            app.innerHTML = `
+                ${renderHeader()}
+                <div class="container mx-auto px-6 py-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left: Simulation Controls + Stats -->
+                        <div class="space-y-6">
+                            ${renderSimulationControls()}
+                            ${renderStats()}
+                            ${renderAlerts()}
+                        </div>
+                        
+                        <!-- Middle: Live Logs -->
+                        <div class="lg:col-span-1">
+                            ${renderLiveLogs()}
+                        </div>
+                        
+                        <!-- Right: Explanation Panel -->
+                        <div>
+                            ${renderExplanationPanel()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHeader() {
+            const hasUnread = state.unreadAlerts > 0;
+            
+            return `
+                <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl sticky top-0 z-50">
+                    <div class="container mx-auto px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <i class="fas fa-solar-panel text-3xl"></i>
+                                <div>
+                                    <h1 class="text-2xl font-bold">SolarGuard AI - Live Monitor</h1>
+                                    <p class="text-indigo-200 text-sm">Real-time ML Processing & Auto-Ticketing</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-6">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 rounded-full ${state.simulation.running ? 'bg-green-400 blink' : 'bg-gray-400'}"></div>
+                                    <span class="text-sm">${state.simulation.running ? 'LIVE' : 'PAUSED'}</span>
+                                </div>
+                                
+                                ${hasUnread ? `
+                                    <button 
+                                        onclick="markAlertsRead()"
+                                        class="relative"
+                                    >
+                                        <i class="fas fa-bell text-2xl blink text-yellow-300"></i>
+                                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold notification-badge">
+                                            ${state.unreadAlerts}
+                                        </span>
+                                        <div class="absolute -top-1 -right-1 w-8 h-8 bg-red-500 rounded-full opacity-75 pulse-ring"></div>
+                                    </button>
+                                ` : `
+                                    <i class="fas fa-bell text-2xl text-gray-300"></i>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            `;
+        }
+
+        function renderSimulationControls() {
+            return `
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-play-circle mr-2 text-indigo-600"></i>
+                        Simulation Controls
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        ${state.simulation.running ? `
+                            <button 
+                                onclick="stopSimulation()"
+                                class="w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2"
+                            >
+                                <i class="fas fa-stop"></i>
+                                <span>Stop Simulation</span>
+                            </button>
+                        ` : `
+                            <button 
+                                onclick="startSimulation()"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center space-x-2"
+                            >
+                                <i class="fas fa-play"></i>
+                                <span>Start Simulation</span>
+                            </button>
+                        `}
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Data Point Interval: ${(state.simulation.speed / 1000).toFixed(1)}s
+                            </label>
+                            <input 
+                                type="range" 
+                                min="1000" 
+                                max="10000" 
+                                step="500" 
+                                value="${state.simulation.speed}"
+                                onchange="setState('simulation.speed', parseInt(this.value)); if(state.simulation.running) { stopSimulation(); startSimulation(); }"
+                                class="w-full"
+                            />
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Fast (1s)</span>
+                                <span>Slow (10s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStats() {
+            return `
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-indigo-600"></i>
+                        Statistics
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+                            <div class="text-sm text-blue-700 font-medium">Total Processed</div>
+                            <div class="text-3xl font-bold text-blue-900">${state.stats.totalProcessed}</div>
+                        </div>
+                        
+                        <div class="bg-red-50 rounded-lg p-4 border-l-4 border-red-500">
+                            <div class="text-sm text-red-700 font-medium">Critical Alerts</div>
+                            <div class="text-3xl font-bold text-red-900">${state.stats.criticalCount}</div>
+                        </div>
+                        
+                        <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+                            <div class="text-sm text-purple-700 font-medium">Auto-Tickets</div>
+                            <div class="text-3xl font-bold text-purple-900">${state.stats.ticketsGenerated}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAlerts() {
+            if (state.alerts.length === 0) return '';
+            
+            return `
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>
+                        Critical Alerts
+                    </h2>
+                    
+                    <div class="space-y-3 max-h-64 overflow-y-auto">
+                        ${state.alerts.slice(0, 5).map(alert => `
+                            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded ${!alert.read ? 'ring-2 ring-red-300' : ''}">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-red-900 text-sm">${alert.inverterId}</div>
+                                        <div class="text-xs text-red-700">Risk: ${(alert.riskScore * 100).toFixed(1)}%</div>
+                                        <div class="text-xs text-red-600 mt-1">
+                                            <i class="fas fa-ticket-alt mr-1"></i>
+                                            ${alert.ticketId}
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onclick="downloadTicket('${alert.ticketId}', '${alert.inverterId}')"
+                                        class="text-red-600 hover:text-red-800 text-sm"
+                                        title="Download PDF"
+                                    >
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2">
+                                    ${formatTime(alert.timestamp)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLiveLogs() {
+            return `
+                <div class="bg-white rounded-xl shadow-lg p-6 h-[calc(100vh-200px)] flex flex-col">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-stream mr-2 text-indigo-600"></i>
+                        Live Processing Logs
+                    </h2>
+                    
+                    <div class="flex-1 overflow-y-auto space-y-2">
+                        ${state.logs.length === 0 ? `
+                            <div class="text-center text-gray-400 py-12">
+                                <i class="fas fa-inbox text-5xl mb-3"></i>
+                                <p>No data points yet</p>
+                                <p class="text-sm">Start simulation to begin monitoring</p>
+                            </div>
+                        ` : state.logs.map(log => {
+                            if (log.type === 'system') {
+                                return `
+                                    <div class="log-entry p-3 rounded bg-gray-50 border-l-4 border-gray-400">
+                                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>${log.message}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-400 mt-1">${formatTime(log.timestamp)}</div>
+                                    </div>
+                                `;
+                            }
+                            
+                            const logClass = log.riskScore >= 0.8 ? 'critical' : 
+                                           log.riskScore >= 0.4 ? 'warning' : 'normal';
+                            const icon = log.riskScore >= 0.8 ? 'fa-exclamation-circle' : 
+                                        log.riskScore >= 0.4 ? 'fa-exclamation-triangle' : 'fa-check-circle';
+                            
+                            return `
+                                <div 
+                                    class="log-entry ${logClass} p-3 rounded ${state.selectedLog?.id === log.id ? 'ring-2 ring-indigo-500' : ''}"
+                                    onclick="selectLog(${JSON.stringify(log).replace(/"/g, '&quot;')})"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas ${icon}"></i>
+                                            <span class="font-mono font-semibold text-sm">${log.inverterId}</span>
+                                        </div>
+                                        <span class="text-sm font-bold">${(log.riskScore * 100).toFixed(1)}%</span>
+                                    </div>
+                                    <div class="text-xs mt-1 opacity-75">
+                                        ${log.riskClass.replace(/_/g, ' ').toUpperCase()}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">${formatTime(log.timestamp)}</div>
+                                    ${log.riskScore >= 0.8 ? `
+                                        <div class="text-xs mt-2 font-semibold">
+                                            <i class="fas fa-ticket-alt mr-1"></i>
+                                            Auto-ticket pending...
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderExplanationPanel() {
+            if (!state.selectedLog) {
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-12 text-center h-[calc(100vh-200px)] flex flex-col items-center justify-center">
+                        <i class="fas fa-mouse-pointer text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Click a log entry to view AI explanation</p>
+                    </div>
+                `;
+            }
+
+            if (state.loading.explanation) {
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-12 text-center h-[calc(100vh-200px)] flex flex-col items-center justify-center">
+                        <i class="fas fa-spinner loading text-6xl text-indigo-600 mb-4"></i>
+                        <p class="text-gray-600 text-lg">Generating AI explanation...</p>
+                        <p class="text-gray-400 text-sm mt-2">Running RAG retrieval + LLM inference</p>
+                    </div>
+                `;
+            }
+
+            if (state.explanation?.error) {
+                return `
+                    <div class="bg-white rounded-xl shadow-lg p-8 h-[calc(100vh-200px)] overflow-y-auto">
+                        <div class="bg-red-50 border-2 border-red-300 rounded-lg p-6 text-center">
+                            <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                            <h3 class="text-xl font-bold text-red-800 mb-2">Explanation Failed</h3>
+                            <p class="text-red-700">${state.explanation.error}</p>
+                            ${state.explanation.error.includes('rate limit') ? `
+                                <div class="mt-4 text-sm text-red-600">
+                                    <p>You've hit the API rate limit.</p>
+                                    <p class="mt-2">Solutions:</p>
+                                    <ul class="text-left mt-2 space-y-1">
+                                        <li>• Wait 10 minutes for reset</li>
+                                        <li>• Upgrade Groq account</li>
+                                        <li>• Switch to OpenAI in .env</li>
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (!state.explanation) return '';
+
+            const exp = state.explanation;
+            const urgencyColors = {
+                immediate: 'bg-red-100 text-red-800 border-red-300',
+                within_24h: 'bg-orange-100 text-orange-800 border-orange-300',
+                scheduled: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                routine: 'bg-green-100 text-green-800 border-green-300'
+            };
+
+            return `
+                <div class="bg-white rounded-xl shadow-lg p-6 h-[calc(100vh-200px)] overflow-y-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-brain mr-2 text-indigo-600"></i>
+                            AI Explanation
+                        </h2>
+                        <button 
+                            onclick="setState('selectedLog', null); setState('explanation', null)"
+                            class="text-gray-400 hover:text-gray-600"
+                        >
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-4 p-4 border-l-4 border-indigo-600 bg-indigo-50 rounded">
+                        <p class="text-gray-800 leading-relaxed text-sm">${exp.summary}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <div class="text-xs text-gray-600 mb-1">Risk Score</div>
+                            <div class="text-2xl font-bold text-gray-800">${(exp.risk_score * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <div class="text-xs text-gray-600 mb-1">Urgency</div>
+                            <span class="inline-block px-2 py-1 rounded border-2 font-semibold text-xs ${urgencyColors[exp.urgency] || urgencyColors.routine}">
+                                ${exp.urgency.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Key Risk Factors</h3>
+                        <div class="space-y-2">
+                            ${exp.key_factors.map(f => `
+                                <div class="bg-gray-50 rounded-lg p-2 border-l-4 ${
+                                    f.impact === 'high' ? 'border-red-500' :
+                                    f.impact === 'medium' ? 'border-orange-500' : 'border-yellow-500'
+                                }">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="font-mono text-xs font-semibold text-gray-700">${f.feature}</span>
+                                        <span class="text-xs px-2 py-0.5 rounded-full ${
+                                            f.impact === 'high' ? 'bg-red-100 text-red-700' :
+                                            f.impact === 'medium' ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700'
+                                        }">
+                                            ${f.impact.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-600">${f.explanation}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Recommended Actions</h3>
+                        <ol class="space-y-2">
+                            ${exp.recommended_actions.map((action, i) => `
+                                <li class="flex items-start space-x-2 bg-gray-50 rounded-lg p-2">
+                                    <span class="flex-shrink-0 w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                        ${i + 1}
+                                    </span>
+                                    <span class="text-gray-700 text-xs">${action}</span>
+                                </li>
+                            `).join('')}
+                        </ol>
+                    </div>
+
+                    <div class="border-t pt-3">
+                        <div class="text-xs text-gray-400 italic">${exp.disclaimer}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatTime(date) {
+            const d = new Date(date);
+            return d.toLocaleTimeString('en-US', { hour12: false });
+        }
+
+        function init() {
+            render();
+        }
+
+        init();
+    </script>
+</body>
+</html>
