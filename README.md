@@ -126,33 +126,7 @@ Plus **auto-generated PDF maintenance tickets**, **multi-turn conversational Q&A
 
 ## System Architecture
 
-### High-Level Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        LUMIN.AI Platform                             │
-├──────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌─────────────┐   ┌──────────────┐   ┌───────────────────────────┐ │
-│  │ Sensor Data  │   │  ML Inference │   │  GenAI Explanation Layer  │ │
-│  │ Simulator    │──►│  Server       │◄──│  (Orchestrator)           │ │
-│  │ (Express.js) │   │  (FastAPI)    │──►│  (FastAPI)                │ │
-│  │ Port 3001    │   │  Port 8001    │   │  Port 8000                │ │
-│  └──────┬───────┘   └──────────────┘   └─────────────┬─────────────┘ │
-│         │                                             │               │
-│         │        ┌──────────────────────┐             │               │
-│         │        │   AWS RDS MySQL      │             │               │
-│         └───────►│   (ap-south-1)       │◄────────────┘               │
-│                  │   hackamined DB      │                             │
-│                  └──────────┬───────────┘                             │
-│                             │                                         │
-│                  ┌──────────┴───────────┐                             │
-│                  │   Next.js 15 Frontend│                             │
-│                  │   (Operator + Admin) │                             │
-│                  │   Port 3000          │                             │
-│                  └──────────────────────┘                             │
-└──────────────────────────────────────────────────────────────────────┘
-```
 
 ### Data Flow
 
