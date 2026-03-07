@@ -1,9 +1,6 @@
 """
 Prompt templates for LUMIN.AI.
 
-See prompt_engineering.md in the repo root for the full iteration history
-with rationale for every change.
-
 Current version: v2 (structured-output + guardrails)
 """
 

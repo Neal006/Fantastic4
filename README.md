@@ -29,18 +29,21 @@
    - [ML Inference Server (`mlinference/`)](#2-ml-inference-server-mlinference)
    - [GenAI Explanation Layer (`genai/`)](#3-genai-explanation-layer-genai)
    - [Web Application (`nextjs/`)](#4-web-application-nextjs)
-7. [Data Pipeline & Real-Time Flow](#data-pipeline--real-time-flow)
-8. [API Reference](#api-reference)
-9. [Explainable AI (XAI)](#explainable-ai-xai)
-10. [LLM Ablation Study & Model Selection](#llm-ablation-study--model-selection)
-11. [Hallucination Prevention](#hallucination-prevention)
-12. [Prompt Engineering](#prompt-engineering)
-13. [LangSmith Observability](#langsmith-observability)
-14. [Infrastructure & Deployment](#infrastructure--deployment)
-15. [Quick Start Guide](#quick-start-guide)
-16. [Hackathon Criteria Coverage](#hackathon-criteria-coverage)
-17. [Performance Benchmarks](#performance-benchmarks)
-18. [Future Roadmap](#future-roadmap)
+7. [ML Model Selection Rationale](#ml-model-selection-rationale)
+8. [Predictive Digital Twin Architecture](#-predictive-digital-twin-architecture)
+9. [Data Pipeline & Real-Time Flow](#data-pipeline--real-time-flow)
+10. [API Reference](#api-reference)
+11. [Explainable AI (XAI)](#explainable-ai-xai)
+12. [LLM Ablation Study & Model Selection](#llm-ablation-study--model-selection)
+13. [Hallucination Prevention](#hallucination-prevention)
+14. [Prompt Engineering](#prompt-engineering)
+15. [LangSmith Observability](#langsmith-observability)
+16. [Infrastructure & Deployment](#infrastructure--deployment)
+17. [Quick Start Guide](#quick-start-guide)
+18. [Hackathon Criteria Coverage](#hackathon-criteria-coverage)
+19. [Performance Benchmarks](#performance-benchmarks)
+20. [Future Roadmap](#future-roadmap)
+21. [Connect With Us](#-connect-with-us)
 
 ---
 
@@ -423,7 +426,7 @@ mlinference/
 | **Ticket Generator** | `app/ticket.py` | Professional A4 PDF tickets via ReportLab |
 | **Guardrails** | `app/guardrails.py` | 4-layer hallucination prevention |
 | **ML Client** | `app/ml_client.py` | HTTP client calling ML Inference server |
-| **Prompts** | `app/prompts.py` | All prompt templates (explanation, chat, ticket, report) |
+| **Prompts** | `app/prompts.py` | All prompt templates (explanation, chat, ticket, report) — see [`genai/app/prompts.py`](genai/app/prompts.py) for full system prompts |
 
 #### RAG Architecture
 
@@ -575,6 +578,146 @@ The simulator generates realistic sensor data derived from actual Plant 2 CSV st
 | Input Validation | Zod schemas on all inputs |
 | SQL Injection | Parameterized queries (mysql2) |
 | XSS | React auto-escaping + sanitization |
+
+---
+
+## ML Model Selection Rationale
+
+> **Why we chose XGBoost — and what we considered, rejected, and plan for the future.**
+
+### Why XGBoost Over LightGBM?
+
+Both XGBoost and LightGBM are gradient-boosted tree frameworks, but **XGBoost was the superior choice for this specific dataset**:
+
+| Factor | XGBoost | LightGBM | Impact on Our Dataset |
+|--------|---------|----------|----------------------|
+| **Tree Growth Strategy** | Level-wise (balanced) | Leaf-wise (greedy) | Our dataset has 183 engineered features with many correlated rolling-window columns. XGBoost's level-wise approach prevents overfitting to individual noisy leaves. |
+| **Handling Sparse Features** | Native sparse-aware splits | Requires histogram binning | Many of our features contain zeros (e.g., nighttime readings, alarm codes). XGBoost handles this natively without discretization loss. |
+| **Small Dataset Performance** | Stronger with <100K rows | Optimized for large-scale (>1M rows) | Our training data (~50K rows after cleaning) is well within XGBoost's sweet spot. LightGBM's speed advantage only materializes at much larger scale. |
+| **Regularization** | L1 + L2 + max_depth + min_child_weight | L1 + L2 + num_leaves | XGBoost's `min_child_weight` parameter was critical for preventing the model from creating spurious splits on rare alarm codes. |
+| **SHAP Compatibility** | `shap.TreeExplainer` fully optimized | Supported but edge cases with categorical features | SHAP's `TreeExplainer` has first-class XGBoost support, producing exact (not approximate) Shapley values — essential for our explainability layer. |
+| **Optuna Integration** | Mature search space | Comparable | XGBoost + Optuna has a deeper ecosystem of published hyperparameter ranges for industrial time-series classification. |
+
+**Bottom line**: On our 183-feature, ~50K-row solar SCADA dataset, XGBoost delivered **better generalization** (lower variance across walk-forward CV folds) and **exact SHAP values** — both critical requirements for a production explainability system.
+
+### Why Not LSTM (Recurrent Neural Networks)?
+
+LSTM networks are excellent for pure time-series forecasting, but they were **not implemented due to time constraints**. Here's the full analysis:
+
+| Factor | LSTM | XGBoost (Our Choice) |
+|--------|------|---------------------|
+| **Data Requirement** | Needs long, unbroken sequences per inverter | Works on independent feature vectors |
+| **Training Time** | Hours–days (GPU required) | Minutes (CPU only) |
+| **Explainability** | Black-box — no native feature attribution | SHAP provides exact per-feature explanations |
+| **Sequence Handling** | Naturally captures temporal dependencies | We engineered this via rolling windows (1h/6h/24h) |
+| **Deployment Complexity** | Requires GPU inference or ONNX conversion | Single `.pkl` file, CPU inference <50ms |
+
+**Our workaround**: Instead of LSTM's implicit temporal learning, we engineered **183 rolling-window features** (means, standard deviations, deltas over 1h/6h/24h windows) that capture the same temporal patterns XGBoost can learn from — achieving similar temporal awareness without the training/inference overhead.
+
+> **Future Plan**: LSTM or Transformer-based architectures (e.g., Temporal Fusion Transformer) are on our roadmap for v2, where sequence-to-sequence forecasting could predict failure windows (not just current risk state).
+
+### Why Not an Ensemble of Multiple Models?
+
+Ensemble stacking (e.g., XGBoost + Random Forest + LightGBM + neural net) was considered but **not implemented due to GPU and compute constraints**:
+
+- **Memory**: Stacking 3–4 models with 183 features each would require ~4x memory at inference time
+- **Latency**: Our real-time pipeline requires <50ms single predictions — ensemble stacking would push this to 200ms+
+- **SHAP Complexity**: SHAP explanations for ensemble models require approximation methods (KernelSHAP), losing the exactness of TreeExplainer
+- **Marginal Gain**: For tabular data of our scale, XGBoost with Optuna tuning typically captures 95%+ of the accuracy benefit that ensembles provide
+
+> **Future Plan**: If deployed at scale with GPU infrastructure, a stacked ensemble with meta-learner could be explored for marginal accuracy gains.
+
+### How Advanced Statistical Modelling Could Be Better Long-Term
+
+While ML models excel at pattern recognition, **advanced statistical approaches** offer compelling advantages for long-term solar asset management:
+
+| Approach | Advantage Over ML | Use Case |
+|----------|------------------|----------|
+| **Bayesian Structural Time Series (BSTS)** | Quantifies uncertainty as probability distributions, not point predictions | Operators get confidence intervals: "85% chance this inverter degrades within 14 days" |
+| **Survival Analysis (Cox/Weibull)** | Models time-to-failure directly, handles censored data | Predicts *when* failure occurs, not just *if* — enabling just-in-time maintenance scheduling |
+| **State-Space Models (Kalman Filters)** | Separates signal from noise in real-time, handles missing data gracefully | Continuous condition monitoring with adaptive thresholds that evolve with inverter aging |
+| **Changepoint Detection (PELT/BOCPD)** | Detects regime shifts without labeled training data | Identifies the exact moment an inverter transitions from healthy to degrading — no training labels needed |
+| **Gaussian Process Regression** | Non-parametric, provides calibrated uncertainty estimates | Ideal for small-data scenarios (new plant, few historical failures) |
+
+**Why we didn't use them now**: These methods require longer historical baselines (6–12 months minimum), domain-specific priors, and more sophisticated deployment pipelines. Our hackathon timeline favored the rapid-iteration, high-accuracy approach of XGBoost + SHAP.
+
+> **Future Plan**: A hybrid architecture combining XGBoost for real-time classification with Bayesian survival models for long-term remaining-useful-life (RUL) estimation would be the optimal production system.
+
+---
+
+## 🌐 Predictive Digital Twin Architecture
+
+> **A real-time, interactive 3D representation of the solar inverter that mirrors its physical state, health, and financial performance. *Not implemented due to time constraints — architecture fully designed for future deployment.***
+
+![Digital Twin Architecture](Digital_twin.jpeg)
+
+### Why This Is the Best Solution
+
+Traditional solar monitoring relies on reactive "run-to-fail" alarms, often leading to prolonged downtime and unnecessary maintenance dispatches. By rendering a Predictive Digital Twin, we bridge the gap between raw data and physical context. Operators can visually pinpoint hardware stress (like thermal throttling) before failure occurs. When combined with predictive machine learning and a GenAI Copilot for root-cause analysis, this architecture transforms an overwhelming stream of CSV telemetry into actionable, enterprise-grade financial insights.
+
+---
+
+### How It Works: The Core Workflows
+
+The Digital Twin pipeline consists of three interconnected layers: the 3D asset, the data stream, and the dynamic user interface.
+
+#### 1. The 3D Asset & Mesh Targeting
+
+The physical inverter is modeled and exported as a highly compressed `.glb` file — the industry standard for lightweight, zero-lag web rendering. Specific internal components are uniquely named during the 3D design phase:
+
+- **Targetable Meshes (For Click Events):** `Chassis`, `Cooling_System`, `Status_Screen`
+- **Targetable Materials (For Color/Warning Changes):** `Chassis_Mat`, `Screen_Mat`
+
+#### 2. Real-Time Telemetry & Dynamic Interaction
+
+The backend rapid-streams high-frequency telemetry (e.g., via WebSockets) to the frontend. The frontend catches this JSON payload and triggers real-time visual changes:
+
+| Interaction | Trigger | Visual Effect |
+|-------------|---------|---------------|
+| **Material Swapping (Health Alerts)** | `inverters[0].temp > 60°C` (Alarm 8) | `Chassis_Mat` emissive color shifts to glowing red |
+| **Interactive Click Events** | Clicking `Cooling_System` mesh | UI displays *Thermal Curtailment Opportunity Cost (TCOC)* |
+| **GenAI Copilot Integration** | `inverters[0].op_state == 7` (Fault) | AI narrates root cause: *"Insulation fault detected. High DC voltage, zero current. Check for roof water ingress."* |
+
+#### 3. Recommended Tech Stack
+
+| Layer | Recommended Tools | Why |
+|-------|-------------------|-----|
+| **3D Rendering** | Three.js / Google `<model-viewer>` | Native WebGL, 60FPS, no heavy iframes |
+| **Frontend UI** | React / Vue / Svelte + TailwindCSS | Component-based, modern, lightweight |
+| **Data Visualization** | Recharts / Chart.js / D3.js | Rolling time-series (DC power vs AC power) |
+| **Real-time Transport** | WebSockets / Server-Sent Events | Sub-second telemetry delivery |
+
+---
+
+### Data Schema & Telemetry Mapping
+
+The UI features a context-switching mechanism (dropdown) to filter data by Inverter MAC address across our fleet. The dynamic payload maps to these critical parameters:
+
+#### Identity & Operational Status
+- **`mac`** — Unique Inverter ID (dataset filtering)
+- **`timestampDate`** — Temporal context for predictive windows
+- **`inverters[0].op_state`** — Current mode (`0` = Night, `4` = Generating, `7` = Fault)
+- **`inverters[0].alarm_code`** — Triggers GenAI Copilot workflows
+
+#### DC Input (Roof Metrics)
+- `pv1_voltage`, `pv2_voltage`
+- `pv1_current`, `pv1_power`
+
+#### AC Output (Grid Metrics)
+- **`power`** — Active Power in kW
+- **`meters[0].freq`** — Grid Frequency in Hz (spikes indicate external grid disturbances)
+- **`meters[0].v_r`**, **`meters[0].v_y`**, **`meters[0].v_b`** — Phase Voltages
+- **`meters[0].pf`** — Power Factor tracking
+
+#### Thermal & Health Diagnostics
+- **`inverters[0].temp`** — Internal Temperature (drives 3D model's thermal glowing effects)
+- **`inverters[0].limit_percent`** — Thermal throttling percentage
+- **`sensors[0].ambient_temp`** — External weather context
+
+#### Granular Panel Health
+- **`smu[0].string1`** through **`smu[0].string14`** — Panel row currents (used to calculate variance for Eco-Optimized Soiling/Dirt Detection)
+
+> **Status**: Architecture fully designed and documented. Implementation deferred to post-hackathon due to time constraints. The current platform is production-ready without the Digital Twin — it serves as a planned premium feature for enterprise deployment.
 
 ---
 
@@ -1027,6 +1170,38 @@ Hackamine/
 │
 └── README.md                   # This file
 ```
+
+---
+
+## 🤝 Connect With Us
+
+> **Interested in our work? We'd love to connect. Whether it's for internships, collaborations, or hiring — reach out to any of us.**
+
+<div align="center">
+
+### Team Fantastic4
+
+| | **Tirth Patel** | **Neal Daftary** | **Parshva Shah** | **Priyanshu Doshi** |
+|:---:|:---:|:---:|:---:|:---:|
+| **Role** | Full Stack Developer | ML Engineer | Data Researcher | GenAI Developer |
+| **LinkedIn** | [![LinkedIn](https://img.shields.io/badge/-Tirth-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/tirth-patel-62471b366/) | [![LinkedIn](https://img.shields.io/badge/-Neal-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/neal-daftary-45743731a/) | [![LinkedIn](https://img.shields.io/badge/-Parshva-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/parshva-shah-0473b3319/) | [![LinkedIn](https://img.shields.io/badge/-Priyanshu-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/priyanshu-doshi-21a54230a/) |
+| **Portfolio** | — | — | — | [![Portfolio](https://img.shields.io/badge/-View_Portfolio-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://portfolio-eta-gilt-84.vercel.app/) |
+
+</div>
+
+### Why Hire Us?
+
+We're a team of **second-year engineering students** who built a **production-grade, 4-microservice platform** in a hackathon timeframe — spanning ML training pipelines, real-time inference servers, GenAI explanation engines, and full-stack web applications with cloud infrastructure.
+
+| What We Bring | Evidence |
+|---------------|----------|
+| **End-to-End ML** | 7-stage pipeline: ingestion → cleaning → 183 features → SMOTE → Optuna-tuned XGBoost → SHAP explainability |
+| **Production GenAI** | RAG pipeline, multi-turn chat, agentic ticket generation, 4-layer hallucination guardrails, LangSmith observability |
+| **Full-Stack Engineering** | React + TailwindCSS + Express.js + MySQL (AWS RDS) + JWT auth + real-time WebSocket-style simulation |
+| **Research Rigor** | 3-model LLM ablation study (27 test cases, 5 metrics, 7 auto-generated charts), prompt engineering iterations |
+| **System Design** | 4 independently deployable microservices, cloud database, graceful fallbacks, comprehensive API design |
+
+> **We ship production code, not just prototypes.**
 
 ---
 
