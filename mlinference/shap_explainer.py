@@ -42,7 +42,7 @@ class ShapExplainer:
         class_names: list[str],
         predicted_class_idx: int,
         generate_plot: bool = True,
-        top_n: int = 10,
+        top_n: int = 5,
     ) -> dict:
         """
         Compute SHAP values for a single sample and return structured output.
@@ -68,8 +68,13 @@ class ShapExplainer:
         X = feature_vector.reshape(1, -1)
         shap_values = self._explainer.shap_values(X)
 
-        # shap_values: list of (1, n_features) arrays (one per class) -or- single (1, n_features)
+        # Handle different SHAP output formats:
+        # - List of (1, n_features) arrays (older SHAP versions)
+        # - Single (1, n_features, n_classes) array (newer SHAP versions for multi-class)
+        # - Single (1, n_features) array (binary classification)
+        
         if isinstance(shap_values, list):
+            # List format: one array per class
             sv_predicted = shap_values[predicted_class_idx][0]  # (n_features,)
             all_class_sv = {
                 class_names[i]: {
@@ -78,7 +83,18 @@ class ShapExplainer:
                 }
                 for i in range(len(shap_values))
             }
+        elif len(shap_values.shape) == 3:
+            # 3D array format: (1, n_features, n_classes)
+            sv_predicted = shap_values[0, :, predicted_class_idx]  # (n_features,)
+            all_class_sv = {
+                class_names[i]: {
+                    feature_cols[j]: round(float(shap_values[0, j, i]), 6)
+                    for j in range(len(feature_cols))
+                }
+                for i in range(len(class_names))
+            }
         else:
+            # 2D array format: (1, n_features) - binary classification
             sv_predicted = shap_values[0]
             all_class_sv = {
                 class_names[0]: {

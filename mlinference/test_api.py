@@ -6,7 +6,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 import json
 import urllib.request
 
-BASE = "http://localhost:8000"
+BASE = "http://localhost:8001"
 
 def post(path, data):
     body = json.dumps(data).encode()

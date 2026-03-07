@@ -230,7 +230,7 @@ def predict_single(req: ManualPredictRequest):
                 class_names=CLASS_NAMES,
                 predicted_class_idx=predicted_idx,
                 generate_plot=bool(req.include_plot),
-                top_n=10,
+                top_n=5,
             )
         except Exception as e:
             logger.warning("SHAP explanation failed: %s", e)
@@ -294,7 +294,7 @@ def predict_batch(req: BatchPredictRequest):
                     class_names=CLASS_NAMES,
                     predicted_class_idx=predicted_idx,
                     generate_plot=bool(req.include_plot),
-                    top_n=10,
+                    top_n=5,
                 )
                 results[i]["shap"] = shap_data
             except Exception as e:
