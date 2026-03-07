@@ -1,14 +1,15 @@
 """
-Stage 7a -- Train XGBoost
-=========================
+Stage 7 -- Train and Evaluate XGBoost
+=======================================
 Multi-class XGBoost with Optuna hyper-parameter tuning on walk-forward CV.
-Reports per-fold precision, recall, F1, and AUC.
-After training, computes Accuracy, Precision, Recall, F1, AUC on
-Train / Validation / Test splits and saves metrics CSV + AUC-curve plot.
+Reports Train, Val, and Test metrics: Accuracy, Precision, Recall, F1, AUC.
+Generates SHAP explainability plots and CSV.
+
+Ensures all 3 classes are present by injecting minimal synthetic samples
+for any missing class.
 
 Input  -> processed/splits.pkl
-Output -> models/xgb_best.pkl, models/xgb_optuna_study.pkl,
-          outputs/xgb_metrics.csv, outputs/xgb_auc_curve.png
+Output -> models/xgb_best.pkl, models/xgb_optuna_study.pkl
 """
 
 import sys
@@ -17,21 +18,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import optuna
+import shap
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.metrics import (
-    accuracy_score, f1_score, precision_score, recall_score,
-    roc_auc_score, roc_curve, auc,
-)
-from sklearn.preprocessing import label_binarize
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 from xgboost import XGBClassifier
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import (
-    PROCESSED_DIR, MODELS_DIR, OUTPUTS_DIR, SEED,
-    XGB_SEARCH_SPACE, XGB_OPTUNA_TRIALS, CLASS_NAMES,
+    PROCESSED_DIR, MODELS_DIR, OUTPUTS_DIR, SEED, XGB_SEARCH_SPACE, XGB_OPTUNA_TRIALS,
+    CLASS_NAMES,
 )
 from utils import log_section, log_step, save_pickle, load_pickle, Timer
 
@@ -50,47 +48,6 @@ def _ensure_all_classes(X, y, n_classes=N_CLASSES):
     X_extra = np.zeros((len(missing), n_feat), dtype=X.dtype)
     y_extra = np.array(sorted(missing), dtype=y.dtype)
     return np.vstack([X, X_extra]), np.concatenate([y, y_extra])
-
-
-def _compute_metrics(clf, X, y, label: str):
-    """Compute accuracy, precision, recall, F1, AUC for a given split."""
-    y_pred = clf.predict(X)
-    y_prob = clf.predict_proba(X)
-    acc = accuracy_score(y, y_pred)
-    p = precision_score(y, y_pred, average="macro", zero_division=0)
-    r = recall_score(y, y_pred, average="macro", zero_division=0)
-    f1 = f1_score(y, y_pred, average="macro", zero_division=0)
-    try:
-        auc_val = roc_auc_score(y, y_prob, multi_class="ovr", average="macro")
-    except ValueError:
-        auc_val = float("nan")
-    log_step(f"  {label}: Acc={acc:.4f}  P={p:.4f}  R={r:.4f}  F1={f1:.4f}  AUC={auc_val:.4f}")
-    return {"split": label, "accuracy": acc, "precision": p, "recall": r, "f1": f1, "auc": auc_val}
-
-
-def _plot_auc_curve(clf, X_test, y_test, save_path: Path):
-    """Plot per-class OvR AUC curves and save."""
-    y_prob = clf.predict_proba(X_test)
-    y_bin = label_binarize(y_test, classes=list(range(N_CLASSES)))
-
-    fig, ax = plt.subplots(figsize=(8, 6))
-    for i, name in enumerate(CLASS_NAMES):
-        if y_bin.shape[1] <= i:
-            continue
-        fpr, tpr, _ = roc_curve(y_bin[:, i], y_prob[:, i])
-        roc_auc = auc(fpr, tpr)
-        ax.plot(fpr, tpr, lw=2, label=f"{name} (AUC={roc_auc:.3f})")
-
-    ax.plot([0, 1], [0, 1], "k--", lw=1, alpha=0.5)
-    ax.set_xlabel("False Positive Rate", fontsize=12)
-    ax.set_ylabel("True Positive Rate", fontsize=12)
-    ax.set_title("XGBoost – ROC / AUC Curves (Test Set)", fontsize=14)
-    ax.legend(loc="lower right", fontsize=10)
-    ax.grid(alpha=0.3)
-    plt.tight_layout()
-    fig.savefig(save_path, dpi=150)
-    plt.close(fig)
-    log_step(f"Saved AUC curve -> {save_path}")
 
 
 def _objective(trial, folds):
@@ -130,8 +87,19 @@ def _objective(trial, folds):
     return np.mean(scores)
 
 
+def _get_metrics(y_true, y_pred, y_prob):
+    acc = accuracy_score(y_true, y_pred)
+    p = precision_score(y_true, y_pred, average="macro", zero_division=0)
+    r = recall_score(y_true, y_pred, average="macro", zero_division=0)
+    f1 = f1_score(y_true, y_pred, average="macro", zero_division=0)
+    try:
+        auc = roc_auc_score(y_true, y_prob, multi_class="ovr", average="macro")
+    except ValueError:
+        auc = float("nan")
+    return acc, p, r, f1, auc
+
 def run():
-    log_section("Stage 7a - Train XGBoost (Optuna)")
+    log_section("Stage 7 - Train and Evaluate XGBoost (Optuna)")
 
     splits = load_pickle(PROCESSED_DIR / "splits.pkl")
     folds = splits["folds"]
@@ -146,8 +114,8 @@ def run():
     log_step(f"Best macro-F1: {study.best_value:.4f}")
     log_step(f"Best params: {best}")
 
-    # Retrain on full train+val with best params
-    log_step("Retraining on full training set ...")
+    # Cross-validation detailed evaluation on best params
+    log_step("Per-fold evaluation with best params:")
     best.update({
         "objective": "multi:softprob",
         "num_class": N_CLASSES,
@@ -157,49 +125,129 @@ def run():
         "tree_method": "hist",
         "verbosity": 0,
     })
+    
+    cv_clf = XGBClassifier(**best)
+    for i, fold in enumerate(folds):
+        X_tr, y_tr = _ensure_all_classes(fold["X_train"], fold["y_train"])
+        cv_clf.fit(X_tr, y_tr, verbose=False)
+        
+        y_pred_tr = cv_clf.predict(fold["X_train"]) # Original, no dummies
+        y_prob_tr = cv_clf.predict_proba(fold["X_train"]) 
+        acc_tr, p_tr, r_tr, f1_tr, auc_tr = _get_metrics(fold["y_train"], y_pred_tr, y_prob_tr)
+        
+        y_pred_va = cv_clf.predict(fold["X_val"])
+        y_prob_va = cv_clf.predict_proba(fold["X_val"])
+        acc_va, p_va, r_va, f1_va, auc_va = _get_metrics(fold["y_val"], y_pred_va, y_prob_va)
+
+        log_step(f"--- Fold {i + 1} ---")
+        log_step(f"  Train: Acc={acc_tr:.3f} | P={p_tr:.3f} | R={r_tr:.3f} | F1={f1_tr:.3f} | AUC={auc_tr:.3f}")
+        log_step(f"  Val  : Acc={acc_va:.3f} | P={p_va:.3f} | R={r_va:.3f} | F1={f1_va:.3f} | AUC={auc_va:.3f}")
+
+    # Retrain on full train+val with best params
+    log_step("Retraining on full training set ...")
     final_clf = XGBClassifier(**best)
     X_full, y_full = _ensure_all_classes(splits["X_trainval"], splits["y_trainval"])
     final_clf.fit(X_full, y_full, verbose=False)
 
-    # ── Per-split evaluation ──────────────────────────────────────
-    log_step("Per-split evaluation:")
-    metrics_rows = []
+    y_pred_full = final_clf.predict(splits["X_trainval"])
+    y_prob_full = final_clf.predict_proba(splits["X_trainval"])
+    acc_trf, p_trf, r_trf, f1_trf, auc_trf = _get_metrics(splits["y_trainval"], y_pred_full, y_prob_full)
+    
+    log_step("--- Full Train+Val Metrics ---")
+    log_step(f"  Acc={acc_trf:.3f} | P={p_trf:.3f} | R={r_trf:.3f} | F1={f1_trf:.3f} | AUC={auc_trf:.3f}")
 
-    # Train
-    metrics_rows.append(_compute_metrics(final_clf, splits["X_trainval"], splits["y_trainval"], "Train"))
+    # Hold-out Test split evaluation
+    log_step("Evaluating on Test Set...")
+    X_test = splits["X_test"]
+    y_test = splits["y_test"]
+    
+    y_pred_te = final_clf.predict(X_test)
+    y_prob_te = final_clf.predict_proba(X_test)
+    acc_te, p_te, r_te, f1_te, auc_te = _get_metrics(y_test, y_pred_te, y_prob_te)
 
-    # Validation (average across CV folds)
-    val_metrics = {"accuracy": [], "precision": [], "recall": [], "f1": [], "auc": []}
-    for i, fold in enumerate(folds):
-        m = _compute_metrics(final_clf, fold["X_val"], fold["y_val"], f"Valid-Fold-{i+1}")
-        for k in val_metrics:
-            val_metrics[k].append(m[k])
-    avg_val = {k: np.nanmean(v) for k, v in val_metrics.items()}
-    avg_val["split"] = "Valid (CV avg)"
-    metrics_rows.append(avg_val)
-    log_step(f"  Valid (CV avg): Acc={avg_val['accuracy']:.4f}  "
-             f"P={avg_val['precision']:.4f}  R={avg_val['recall']:.4f}  "
-             f"F1={avg_val['f1']:.4f}  AUC={avg_val['auc']:.4f}")
-
-    # Cross-validation F1 (per-fold + mean +/- std)
-    cv_f1s = val_metrics["f1"]
-    log_step(f"  CV F1 per fold: {[f'{v:.4f}' for v in cv_f1s]}")
-    log_step(f"  CV F1 mean +/- std: {np.mean(cv_f1s):.4f} +/- {np.std(cv_f1s):.4f}")
-
-    # Test
-    metrics_rows.append(_compute_metrics(final_clf, splits["X_test"], splits["y_test"], "Test"))
-
-    # Save metrics CSV
-    metrics_df = pd.DataFrame(metrics_rows)
-    metrics_path = OUTPUTS_DIR / "xgb_metrics.csv"
-    metrics_df.to_csv(metrics_path, index=False)
-    log_step(f"Saved metrics -> {metrics_path}")
-
-    # AUC curve on test set
-    _plot_auc_curve(final_clf, splits["X_test"], splits["y_test"], OUTPUTS_DIR / "xgb_auc_curve.png")
+    log_step(f"--- Hold-out Test Metrics ---")
+    log_step(f"  Acc={acc_te:.3f} | P={p_te:.3f} | R={r_te:.3f} | F1={f1_te:.3f} | AUC={auc_te:.3f}")
 
     save_pickle(final_clf, MODELS_DIR / "xgb_best.pkl", "XGBoost best model")
     save_pickle(study, MODELS_DIR / "xgb_optuna_study.pkl", "Optuna study")
+    
+    # ── SHAP Explainability ──
+    log_step("Computing SHAP values for Explainability...")
+    feature_cols = splits["feature_cols"]
+
+    # Use a sample of test data for SHAP to save time
+    max_samples = min(2000, len(X_test))
+    rng = np.random.RandomState(42)
+    idx = rng.choice(len(X_test), max_samples, replace=False)
+    X_sample = X_test[idx]
+
+    with Timer():
+        explainer = shap.TreeExplainer(final_clf)
+        shap_values = explainer.shap_values(X_sample)
+
+    if isinstance(shap_values, list):
+        stacked = np.stack(shap_values, axis=0)  # (n_classes, n_samples, n_features)
+        mean_abs = np.mean(np.abs(stacked), axis=(0, 1))  # (n_features,)
+    elif len(shap_values.shape) == 3:
+        # (n_samples, n_features, n_classes)
+        mean_abs = np.mean(np.abs(shap_values), axis=(0, 2))
+    else:
+        mean_abs = np.mean(np.abs(shap_values), axis=0)
+
+    # ── Top features ──
+    top_idx = np.argsort(mean_abs)[::-1][:5]
+    log_step("Top 5 features by mean |SHAP|:")
+    for rank, i in enumerate(top_idx, 1):
+        log_step(f"  {rank}. {feature_cols[i]:40s}  {mean_abs[i]:.4f}")
+
+    # ── Summary bar plot ──
+    top10_idx = np.argsort(mean_abs)[::-1][:10]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(
+        [feature_cols[i] for i in top10_idx][::-1],
+        [mean_abs[i] for i in top10_idx][::-1],
+        color="#4C72B0",
+    )
+    ax.set_xlabel("Mean |SHAP value|", fontsize=12)
+    ax.set_title("Top 10 Feature Importance (SHAP)", fontsize=14)
+    plt.tight_layout()
+    bar_path = OUTPUTS_DIR / "shap_summary.png"
+    fig.savefig(bar_path, dpi=150)
+    plt.close(fig)
+    log_step(f"Saved SHAP summary bar → {bar_path}")
+
+    # ── Beeswarm plot ──
+    try:
+        if isinstance(shap_values, list):
+            sv = shap_values[0] # use first class for beeswarm
+        elif len(shap_values.shape) == 3:
+            sv = shap_values[:, :, 0]
+        else:
+            sv = shap_values
+
+        fig2 = plt.figure(figsize=(12, 8))
+        shap.summary_plot(
+            sv, X_sample,
+            feature_names=feature_cols,
+            max_display=15,
+            show=False,
+        )
+        plt.title(f"SHAP Beeswarm – Class: {CLASS_NAMES[0]}", fontsize=14)
+        plt.tight_layout()
+        bee_path = OUTPUTS_DIR / "shap_beeswarm.png"
+        fig2.savefig(bee_path, dpi=150)
+        plt.close(fig2)
+        log_step(f"Saved SHAP beeswarm → {bee_path}")
+    except Exception as e:
+        log_step(f"Beeswarm plot skipped: {e}")
+
+    top_df = pd.DataFrame({
+        "feature": [feature_cols[i] for i in top_idx],
+        "mean_abs_shap": [mean_abs[i] for i in top_idx],
+    })
+    top_df.to_csv(OUTPUTS_DIR / "shap_top5.csv", index=False)
+    log_step(f"Saved top-5 CSV → {OUTPUTS_DIR / 'shap_top5.csv'}")
+
     return final_clf
 
 

@@ -1,0 +1,106 @@
+
+======================================================================
+  Inverter Failure-Risk Prediction Pipeline
+======================================================================
+
+======================================================================
+  Stage 1 · Data Ingestion
+======================================================================
+  > Plant 1: found 2 CSV file(s)
+  >   Reading Copy of 80-1F-12-0F-AC-12.raws.csv ...
+    [TIME] 2.1s
+  >     Raw shape: (19090, 132)
+  >     Detected 2 inverter(s)
+  >     Melted shape: (38180, 80)
+  >   Reading Copy of 80-1F-12-0F-AC-BB.raws.csv ...
+    [TIME] 4.6s
+  >     Raw shape: (18748, 295)
+  >     Detected 5 inverter(s)
+  >     Melted shape: (93740, 91)
+  > Plant 2: found 2 CSV file(s)
+  >   Reading Copy of 54-10-EC-8C-14-69.raws.csv ...
+    [TIME] 1.4s
+  >     Raw shape: (19106, 71)
+  >     Detected 1 inverter(s)
+  >     Melted shape: (19106, 63)
+  >   Reading Copy of 54-10-EC-8C-14-6E.raws.csv ...
+    [TIME] 1.2s
+  >     Raw shape: (19084, 62)
+  >     Detected 1 inverter(s)
+  >     Melted shape: (19084, 60)
+  > Combined shape: (170110, 92)
+  [SAVE] (ingested data) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\ingested.parquet  [16.0 MB]  [170,110 rows x 92 cols]
+
+======================================================================
+  Stage 2 · Data Cleaning
+======================================================================
+  [LOAD] ingested.parquet  [170,110 rows x 92 cols]
+    [TIME] 0.1s
+  > Starting shape: (170110, 92)
+  > Timestamp filter: kept 155,232 / 170,110 rows
+  > Duplicates removed: 0
+  > Forward-filled 12 slow-moving columns
+  > Outlier capping: 155,123 values clipped across 79 columns
+    [TIME] 0.9s
+  > Dropped metadata columns: ['_id', 'createdAt', 'fromServer', 'dataLoggerModelId', '__v', 'timestampDate', 'batteries', 'grid_master']
+  > Final shape: (155232, 84)
+  [SAVE] (cleaned data) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\cleaned.parquet  [9.0 MB]  [155,232 rows x 84 cols]
+
+======================================================================
+  Stage 3 · Feature Engineering
+======================================================================
+  [LOAD] cleaned.parquet  [155,232 rows x 84 cols]
+  > Rolling features added
+  > KPIs added
+  > Alarm & op-state features added
+  > Time encodings added
+  > Lag features added
+    [TIME] 0.7s
+  > Final shape: (155232, 146)
+  [SAVE] (featured data) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\featured.parquet  [35.5 MB]  [155,232 rows x 146 cols]
+
+======================================================================
+  Stage 4 · Label Creation
+======================================================================
+  [LOAD] featured.parquet  [155,232 rows x 146 cols]
+  > Shutdown events: 4,324 / 155,232 (2.79%)
+  > Degradation events: 19,550 / 155,232 (12.59%)
+  > Computing forward-rolling labels (this may take a moment) …
+    [TIME] 0.1s
+  > Class distribution:
+  >   0:        961  (  0.6%)
+  >   1:     79,875  ( 51.5%)
+  >   2:     74,396  ( 47.9%)
+  > Final shape: (155232, 147)
+  [SAVE] (labeled data) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\labeled.parquet  [35.5 MB]  [155,232 rows x 147 cols]
+
+======================================================================
+  Stage 5 · Anomaly Detection
+======================================================================
+  [LOAD] labeled.parquet  [155,232 rows x 147 cols]
+  > Fitting Isolation Forest on 7 features …
+  > Isolation Forest: 7,762 anomalies flagged (5.00%)
+  >   z-score (power): 1,202 flags
+  >   z-score (temp): 0 flags
+    [TIME] 3.1s
+  > Final shape: (155232, 154)
+  [SAVE] (anomaly-enriched data) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\anomaly_enriched.parquet  [39.1 MB]  [155,232 rows x 154 cols]
+
+======================================================================
+  Stage 6 · Split & Scale
+======================================================================
+  [LOAD] anomaly_enriched.parquet  [155,232 rows x 154 cols]
+  > Feature columns: 145
+  > Label mapping: {np.int8(0): 0, np.int8(1): 1, np.int8(2): 2}
+  > Train+Val: 124,185 | Test: 31,047
+  >   Fold 1: train 87,750 (SMOTE'd) | val 24,837 | classes {np.int8(0): np.int64(29250), np.int8(1): np.int64(29250), np.int8(2): np.int64(29250)}
+  >   Fold 2: train 113,277 (SMOTE'd) | val 24,837 | classes {np.int8(0): np.int64(37759), np.int8(1): np.int64(37759), np.int8(2): np.int64(37759)}
+  >   Fold 3: train 153,999 (SMOTE'd) | val 24,837 | classes {np.int8(0): np.int64(51333), np.int8(1): np.int64(51333), np.int8(2): np.int64(51333)}
+  > Full train (SMOTE'd): 195,387 | Test: 31,047
+  [SAVE] (splits) -> C:\Users\Parshva Shah\OneDrive\Desktop\Pytorch12.8Cuda_Python3.12\Scripts\HackaMinded\ml\processed\splits.pkl  [363.5 MB]
+
+======================================================================
+  Stage 7a - Train XGBoost (Optuna)
+======================================================================
+  > Starting Optuna study with 40 trials on 3 CV folds ...
+  0%| | 0/40 [00:00<?, Best trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 0. Best valBest trial: 24. Best vaBest trial: 24. Best vaBest trial: 24. Best vaBest trial: 24. Best vaBest trial: 24. Best vaBest trial: 24. Best va
