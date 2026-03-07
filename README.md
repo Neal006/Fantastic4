@@ -126,7 +126,10 @@ Plus **auto-generated PDF maintenance tickets**, **multi-turn conversational Q&A
 
 ## System Architecture
 
+### Architecture
 
+
+![Overall Scores](architecture.jpeg)
 
 ### Data Flow
 
