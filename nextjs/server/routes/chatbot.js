@@ -243,4 +243,62 @@ router.get('/logs', async (req, res) => {
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/chatbot/predict-test
+//  Manual single-datapoint ML prediction for testing / demo.
+//  Body: { inverter_id, dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, ... }
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/predict-test', async (req, res) => {
+    try {
+        const { inverter_id, dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation,
+                alarm_code, op_state, power_factor, frequency } = req.body;
+
+        if (dc_voltage == null || dc_current == null || ac_power == null ||
+            module_temp == null || ambient_temp == null || irradiation == null) {
+            return res.status(400).json({ error: 'All 6 core fields are required: dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation' });
+        }
+
+        const reading = {
+            inverter_id: inverter_id || 'TEST-INV',
+            dc_voltage: Number(dc_voltage),
+            dc_current: Number(dc_current),
+            ac_power: Number(ac_power),
+            module_temp: Number(module_temp),
+            ambient_temp: Number(ambient_temp),
+            irradiation: Number(irradiation),
+            alarm_code: Number(alarm_code) || 0,
+            op_state: Number(op_state) || 5120,
+            power_factor: power_factor != null ? Number(power_factor) : null,
+            frequency: frequency != null ? Number(frequency) : null,
+        };
+
+        const data = await callGenAI('POST', '/simulate', {
+            readings: [reading],
+            include_shap: true,
+            include_plot: false,
+        });
+
+        res.json(data);
+    } catch (err) {
+        console.error('[Chatbot] Predict-test error:', err.message);
+        res.status(err.status || 500).json({ error: err.message || 'ML prediction failed' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/chatbot/reference-pdf
+//  Download the reference analysis report PDF
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/reference-pdf', (req, res) => {
+    const path = require('path');
+    const pdfPath = path.join(__dirname, '..', 'reference-report.pdf');
+    const fs = require('fs');
+    if (!fs.existsSync(pdfPath)) {
+        return res.status(404).json({ error: 'Reference PDF not found' });
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="SolarWatch-Analysis-Report.pdf"');
+    fs.createReadStream(pdfPath).pipe(res);
+});
+
 module.exports = router;

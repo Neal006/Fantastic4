@@ -13,6 +13,7 @@ import OperatorDashboard from "@/pages/operator/OperatorDashboard";
 import InverterGridPage from "@/pages/operator/InverterGridPage";
 import OperatorAlerts from "@/pages/operator/OperatorAlerts";
 import ChatbotPage from "@/pages/operator/ChatbotPage";
+import MLPredictPage from "@/pages/operator/MLPredictPage";
 import ProfilePage from "@/pages/operator/ProfilePage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import PlantManagement from "@/pages/admin/PlantManagement";
@@ -52,6 +53,7 @@ const AnimatedRoutes = () => {
           <Route path="plant/:plantId/block/:blockId" element={<InverterGridPage />} />
           <Route path="alerts" element={<OperatorAlerts />} />
           <Route path="chatbot" element={<ChatbotPage />} />
+          <Route path="ml-predict" element={<MLPredictPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
@@ -66,6 +68,7 @@ const AnimatedRoutes = () => {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="impact" element={<ImpactPage />} />
+          <Route path="ml-predict" element={<MLPredictPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -109,11 +109,18 @@ class BatchReading(BaseModel):
             raise ValueError("features dict must not be empty")
         # Ensure all values are numeric
         for key, val in v.items():
+            # Handle nested dicts (extract 'value' key if present)
+            if isinstance(val, dict):
+                if 'value' in val:
+                    val = val['value']
+                else:
+                    raise ValueError(f"Feature '{key}' is a dict but has no 'value' key: {val}")
+            
             if not isinstance(val, (int, float)):
                 try:
                     v[key] = float(val)
-                except (TypeError, ValueError):
-                    raise ValueError(f"Feature '{key}' must be numeric, got {type(val).__name__}")
+                except (TypeError, ValueError) as e:
+                    raise ValueError(f"Feature '{key}' must be numeric, got {type(val).__name__}: {val}")
         return v
 
 

@@ -107,7 +107,7 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
   const shapRaw: any[] = Array.isArray(r.shap_values) ? r.shap_values : [];
   const shapData = shapRaw.map((s: any) => ({
     name: s.feature || s.label || String(s),
-    value: typeof s.value === 'number' ? s.value : typeof s === 'number' ? s : 0,
+    value: typeof s.shap_value === 'number' ? s.shap_value : typeof s.value === 'number' ? s.value : typeof s === 'number' ? s : 0,
   }));
   const topShap = shapData[0] || null;
   const category = inverter.current_category || inverter.category || 'offline';

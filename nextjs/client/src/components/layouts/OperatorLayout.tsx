@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { operatorApi } from '@/lib/api';
 import {
   LayoutDashboard, AlertTriangle, MessageCircle, User, LogOut,
-  Sun, Moon, Bell, Menu, X, ChevronDown, ChevronRight, Zap
+  Sun, Moon, Bell, Menu, X, ChevronDown, ChevronRight, Zap, Beaker
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -112,6 +112,7 @@ export default function OperatorLayout() {
           <div className="pt-3" />
           {navItem('/operator/alerts', <AlertTriangle className="h-4 w-4" />, 'Alerts', pendingAlerts.length)}
           {navItem('/operator/chatbot', <MessageCircle className="h-4 w-4" />, 'AI Chatbot')}
+          {navItem('/operator/ml-predict', <Beaker className="h-4 w-4" />, 'ML Predict')}
           {navItem('/operator/profile', <User className="h-4 w-4" />, 'Profile')}
         </nav>
 

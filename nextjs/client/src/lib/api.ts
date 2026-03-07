@@ -156,5 +156,15 @@ export const chatbotApi = {
 
     /** PDF download URL helper — open directly in a new browser tab */
     getPdfUrl: (inverterName: string) => `/api/chatbot/ticket/${encodeURIComponent(inverterName)}/pdf`,
+
+    /** Manual single-datapoint ML prediction test */
+    predictTest: (data: {
+        inverter_id?: string; dc_voltage: number; dc_current: number; ac_power: number;
+        module_temp: number; ambient_temp: number; irradiation: number;
+        alarm_code?: number; op_state?: number; power_factor?: number | null; frequency?: number | null;
+    }) => api.post<{ count: number; predictions: any[]; timestamp: string }>('/chatbot/predict-test', data),
+
+    /** Reference analysis report PDF URL */
+    getReferencePdfUrl: () => '/api/chatbot/reference-pdf',
 };
 

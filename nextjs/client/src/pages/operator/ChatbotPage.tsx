@@ -376,6 +376,54 @@ export default function ChatbotPage() {
                 {pdfLoading ? 'Generating…' : 'Download PDF Ticket'}
               </Button>
             </Card>
+
+            <Card className="p-4">
+              <h2 className="font-semibold text-sm mb-2">Reference Report</h2>
+              <p className="text-xs text-muted-foreground mb-3">
+                Download the SolarWatch analysis report with methodology, model details, and comparative results.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = chatbotApi.getReferencePdfUrl();
+                  a.download = 'SolarWatch-Analysis-Report.pdf';
+                  a.click();
+                }}
+              >
+                <FileDown className="h-4 w-4" />
+                Download Analysis Report
+              </Button>
+            </Card>
+          </div>
+        )}
+
+        {/* Reference PDF — always visible (not just with inverter context) */}
+        {!inverterName && (
+          <div className="w-80 flex flex-col gap-3">
+            <Card className="p-4">
+              <h2 className="font-semibold text-sm mb-2">Reference Report</h2>
+              <p className="text-xs text-muted-foreground mb-3">
+                Download the SolarWatch analysis report with methodology, model details, and comparative results.
+              </p>
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full gap-2"
+                onClick={() => {
+                  const token = sessionStorage.getItem('sw_token');
+                  const a = document.createElement('a');
+                  a.href = chatbotApi.getReferencePdfUrl();
+                  a.download = 'SolarWatch-Analysis-Report.pdf';
+                  a.click();
+                }}
+              >
+                <FileDown className="h-4 w-4" />
+                Download Analysis Report
+              </Button>
+            </Card>
           </div>
         )}
       </div>

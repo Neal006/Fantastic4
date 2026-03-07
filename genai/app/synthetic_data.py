@@ -516,7 +516,7 @@ def update_prediction(inverter_id: str, ml_result: dict) -> Optional[InverterPre
     shap_values = {}
     if isinstance(shap_data, dict) and "top_features" in shap_data:
         for feat in shap_data["top_features"]:
-            shap_values[feat["feature"]] = feat["value"]
+            shap_values[feat["feature"]] = feat.get("shap_value", feat.get("value", 0.0))
     elif isinstance(shap_data, dict) and "all_values" in shap_data:
         shap_values = shap_data["all_values"]
 

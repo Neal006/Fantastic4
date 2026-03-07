@@ -14,8 +14,8 @@ const USERS = [
         table: 'admins',
         data: {
             id: randomUUID(),
-            name: 'Priya Sharma',
-            email: 'admin@solarwatch.in',
+            name: 'Admin User',
+            email: 'admin@lumin.ai',
             password: 'Admin@123!',
         },
     },
@@ -25,28 +25,8 @@ const USERS = [
         data: {
             id: randomUUID(),
             name: 'Arjun Mehta',
-            email: 'arjun.mehta@solarwatch.in',
+            email: 'arjun.mehta@lumin.ai',
             operator_id: 'OP001',
-            password: '0p@12345',   // zero, not letter O
-        },
-    },
-    {
-        table: 'operators',
-        data: {
-            id: randomUUID(),
-            name: 'Kavya Reddy',
-            email: 'kavya.reddy@solarwatch.in',
-            operator_id: 'OP002',
-            password: 'Op@12345',
-        },
-    },
-    {
-        table: 'operators',
-        data: {
-            id: randomUUID(),
-            name: 'Rohan Das',
-            email: 'rohan.das@solarwatch.in',
-            operator_id: 'OP003',
             password: 'Op@12345',
         },
     },
@@ -108,11 +88,14 @@ async function run() {
     console.log('\n── Summary ──────────────────────────────');
     const [admins] = await connection.query('SELECT name, email FROM admins');
     const [ops] = await connection.query('SELECT name, email FROM operators');
-    console.log(`Admins (${admins.length}):`);
-    admins.forEach(a => console.log(`  • ${a.name} <${a.email}> → password: Admin@123!`));
-    console.log(`Operators (${ops.length}):`);
-    ops.forEach((o, i) => console.log(`  • ${o.name} <${o.email}> → login: OP00${i + 1} or email, password: Op@12345`));
-
+    console.log(`\nAdmins (${admins.length}):`);
+    admins.forEach(a => console.log(`  • ${a.name} <${a.email}>`));
+    console.log(`\nOperators (${ops.length}):`);
+    ops.forEach(o => console.log(`  • ${o.name} <${o.email}>`));
+    
+    console.log('\n── Demo Credentials ─────────────────────');
+    console.log('Admin:    admin@lumin.ai / Admin@123!');
+    console.log('Operator: arjun.mehta@lumin.ai / Op@12345');
     console.log('\n🎉 Done! You can now log in with these credentials.');
     await connection.end();
 }
