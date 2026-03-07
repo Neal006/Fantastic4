@@ -8,12 +8,12 @@
 
 ## 👥 Team Members
 
-| Name | Email | Role |
-|------|-------|------|
-| **Tirth Patel** | 24btm028@nirmauni.ac.in | Team Lead |
-| **Priyanshu Doshi** | 24bam050@nirmauni.ac.in | Developer |
-| **Neal Daftary** | 24bam019@nirmauni.ac.in | Developer |
-| **Parshva Shah** | 24bam043@nirmauni.ac.in | Developer |
+| Name | Phone | Email | University | Graduation Year |
+|------|-------|-------|------------|-----------------|
+| **Tirth Patel** | 9662003952 | 24btm028@nirmauni.ac.in | Nirma University | 2028 |
+| **Neal Daftary** | 9106497430 | 24bam019@nirmauni.ac.in | Nirma University | 2028 |
+| **Parshva Shah** | 8141700606 | 24bam043@nirmauni.ac.in | Nirma University | 2028 |
+| **Priyanshu Doshi** | 9549926195 | 24bam050@nirmauni.ac.in | Nirma University | 2028 |
 
 ---
 
