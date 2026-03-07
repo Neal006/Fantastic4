@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Building2, Layers, Cpu, Users, AlertTriangle, WifiOff, Clock, Loader2 } from 'lucide-react';
+import { Building2, Layers, Cpu, Users, AlertTriangle, WifiOff, Clock, Loader2, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () => adminApi.getDashboard(),
-    refetchInterval: 30000,
+    refetchInterval: 5000, // Update every 5 seconds for real-time data
   });
 
   const { data: auditLogs = [] } = useQuery({
@@ -31,6 +32,56 @@ export default function AdminDashboard() {
     { label: 'Offline', value: data?.offlineCount ?? 0, icon: WifiOff, color: 'text-sw-offline' },
   ];
 
+  const categoryBreakdown = data?.categoryBreakdown || { A: 0, B: 0, C: 0, D: 0, E: 0, offline: 0 };
+  
+  const categoryCards = [
+    { 
+      category: 'A', 
+      label: 'No Risk', 
+      value: categoryBreakdown.A, 
+      icon: ShieldCheck, 
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10',
+      borderColor: 'border-emerald-500/20'
+    },
+    { 
+      category: 'B', 
+      label: 'Degradation Risk (Low)', 
+      value: categoryBreakdown.B, 
+      icon: ShieldAlert, 
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-500/10',
+      borderColor: 'border-orange-500/20'
+    },
+    { 
+      category: 'C', 
+      label: 'Degradation Risk', 
+      value: categoryBreakdown.C, 
+      icon: ShieldAlert, 
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10',
+      borderColor: 'border-orange-500/20'
+    },
+    { 
+      category: 'D', 
+      label: 'Shutdown Risk (High)', 
+      value: categoryBreakdown.D, 
+      icon: ShieldX, 
+      color: 'text-red-500',
+      bgColor: 'bg-red-500/10',
+      borderColor: 'border-red-500/20'
+    },
+    { 
+      category: 'E', 
+      label: 'Shutdown Risk (Critical)', 
+      value: categoryBreakdown.E, 
+      icon: ShieldX, 
+      color: 'text-red-600',
+      bgColor: 'bg-red-500/10',
+      borderColor: 'border-red-500/20'
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
@@ -45,6 +96,26 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Inverter Status Breakdown (Real-time)</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {categoryCards.map(cat => (
+            <Card key={cat.category} className={`rounded-xl shadow-sm border-2 ${cat.borderColor} ${cat.bgColor}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <cat.icon className={`h-5 w-5 ${cat.color}`} />
+                  <Badge variant="outline" className={`${cat.color} border-current`}>
+                    Category {cat.category}
+                  </Badge>
+                </div>
+                <p className="text-3xl font-bold mb-1">{cat.value}</p>
+                <p className="text-xs text-muted-foreground">{cat.label}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <div>

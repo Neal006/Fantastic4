@@ -68,9 +68,7 @@ export default function AdminLayout() {
           {navItem('/admin/operators', <Users className="h-4 w-4" />, 'Operator Management')}
           {navItem('/admin/monitoring', <Monitor className="h-4 w-4" />, 'Live Monitoring')}
           {navItem('/admin/alerts', <AlertTriangle className="h-4 w-4" />, 'Alerts', pendingCount)}
-          {navItem('/admin/audit-logs', <FileText className="h-4 w-4" />, 'Audit Logs')}
           {navItem('/admin/settings', <Settings className="h-4 w-4" />, 'Settings')}
-          {navItem('/admin/ml-predict', <Beaker className="h-4 w-4" />, 'ML Predict')}
           {navItem('/admin/profile', <User className="h-4 w-4" />, 'Profile')}
         </nav>
 

@@ -249,6 +249,7 @@ router.get('/logs', async (req, res) => {
 //  Body: { inverter_id, dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, ... }
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/predict-test', async (req, res) => {
+    const ML_URL = process.env.ML_INFERENCE_URL || 'http://localhost:8001';
     try {
         const { inverter_id, dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation,
                 alarm_code, op_state, power_factor, frequency } = req.body;
@@ -258,27 +259,34 @@ router.post('/predict-test', async (req, res) => {
             return res.status(400).json({ error: 'All 6 core fields are required: dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation' });
         }
 
-        const reading = {
-            inverter_id: inverter_id || 'TEST-INV',
-            dc_voltage: Number(dc_voltage),
-            dc_current: Number(dc_current),
-            ac_power: Number(ac_power),
-            module_temp: Number(module_temp),
-            ambient_temp: Number(ambient_temp),
-            irradiation: Number(irradiation),
-            alarm_code: Number(alarm_code) || 0,
-            op_state: Number(op_state) || 5120,
-            power_factor: power_factor != null ? Number(power_factor) : null,
-            frequency: frequency != null ? Number(frequency) : null,
-        };
-
-        const data = await callGenAI('POST', '/simulate', {
-            readings: [reading],
-            include_shap: true,
-            include_plot: false,
+        // Call ML inference directly (skip GenAI for speed)
+        const mlRes = await fetch(`${ML_URL}/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                inverter_id: inverter_id || 'TEST-INV',
+                dc_voltage: Number(dc_voltage),
+                dc_current: Number(dc_current),
+                ac_power: Number(ac_power),
+                module_temp: Number(module_temp),
+                ambient_temp: Number(ambient_temp),
+                irradiation: Number(irradiation),
+                alarm_code: Number(alarm_code) || 0,
+                op_state: Number(op_state) || 5120,
+                power_factor: power_factor != null ? Number(power_factor) : undefined,
+                frequency: frequency != null ? Number(frequency) : undefined,
+                include_shap: true,
+                include_plot: false,
+            }),
         });
-
-        res.json(data);
+        const mlText = await mlRes.text();
+        if (!mlRes.ok) {
+            let detail = mlText;
+            try { detail = JSON.parse(mlText)?.detail || mlText; } catch (_) {}
+            throw Object.assign(new Error(detail), { status: mlRes.status });
+        }
+        const prediction = JSON.parse(mlText);
+        res.json({ count: 1, predictions: [prediction], timestamp: new Date().toISOString() });
     } catch (err) {
         console.error('[Chatbot] Predict-test error:', err.message);
         res.status(err.status || 500).json({ error: err.message || 'ML prediction failed' });

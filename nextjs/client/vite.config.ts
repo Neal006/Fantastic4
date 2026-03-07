@@ -16,6 +16,11 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost:3001',
         changeOrigin: true,
       },
+      '/ml': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ml/, ''),
+      },
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

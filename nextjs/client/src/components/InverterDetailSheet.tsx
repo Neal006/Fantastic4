@@ -113,11 +113,16 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
   const category = inverter.current_category || inverter.category || 'offline';
   const showShap = ['C', 'D', 'E'].includes(category) && shapData.length > 0;
 
-  // ── Trend chart data ───────────────────────────────────────────────────────
-  const trendData = (readings as any[]).map((rd: any) => ({
+  // ── Trend chart data (downsample to max 300 points for performance) ────────
+  const rawTrend = (readings as any[]).map((rd: any) => ({
     time: new Date(rd.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     value: rd[trendParam] != null ? Number(Number(rd[trendParam]).toFixed(2)) : null,
   })).filter(d => d.value != null);
+  const MAX_POINTS = 300;
+  const trendData = rawTrend.length <= MAX_POINTS
+    ? rawTrend
+    : rawTrend.filter((_: any, i: number) => i % Math.ceil(rawTrend.length / MAX_POINTS) === 0);
+  const tickInterval = trendData.length > 0 ? Math.max(Math.floor(trendData.length / 6) - 1, 0) : 0;
 
   const trendLabel = PARAMS.find(p => p.key === trendParam);
 
@@ -378,16 +383,16 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+                  <LineChart data={trendData} margin={{ top: 4, right: 16, bottom: 4, left: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis dataKey="time" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-                    <YAxis tick={{ fontSize: 11 }} width={50} />
+                    <XAxis dataKey="time" tick={{ fontSize: 9 }} interval={tickInterval} angle={-30} textAnchor="end" height={40} />
+                    <YAxis tick={{ fontSize: 11 }} width={55} domain={['auto', 'auto']} />
                     <Tooltip formatter={(v: any) => [`${Number(v).toFixed(2)} ${trendLabel?.unit}`, trendLabel?.label]} />
                     <Line
                       type="monotone"
                       dataKey="value"
                       stroke="hsl(234, 89%, 63%)"
-                      strokeWidth={2}
+                      strokeWidth={1.5}
                       dot={false}
                       activeDot={{ r: 4 }}
                     />
@@ -396,7 +401,7 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
               )}
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              {trendLabel?.label} ({trendLabel?.unit}) — {trendRange === '24h' ? 'Last 24 hours' : 'Last 48 hours'} · {trendData.length} readings
+              {trendLabel?.label} ({trendLabel?.unit}) — {trendRange === '24h' ? 'Last 24 hours' : 'Last 48 hours'} · {rawTrend.length} readings{rawTrend.length > MAX_POINTS ? ` (showing ${trendData.length})` : ''}
             </p>
           </TabsContent>
 

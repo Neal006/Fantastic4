@@ -97,70 +97,23 @@ class InferenceEngine:
     # ── Build feature vector from raw operator input ─────────────
     def _build_feature_vector_from_raw(self, raw: dict) -> np.ndarray:
         """
-        Accept the 6 core readings (+ optional extras) and produce a
-        183-dim feature vector.  Missing engineered features are zero-filled.
-        """
-        vec = np.zeros(self.n_features, dtype=np.float32)
+        Accept the 6 core readings (+ optional extras) and produce the
+        feature vector expected by the model.
 
-        # Map core fields first
+        Strategy: initialise every feature to its training-data mean so that
+        after StandardScaler transform the unknown features become z = 0
+        (neutral).  Only the 6 core sensor readings are overridden with the
+        actual operator values.  This avoids catastrophic z-scores from
+        zero-filled or raw-coded fields (e.g. op_state = 5120 → z = 1028).
+        """
+        # Start from training means → z-score = 0 after scaling (neutral)
+        vec = np.array(self.scaler.mean_, dtype=np.float32).copy()
+
+        # Override the 6 core sensor features with actual raw values
         for api_key, feature_key in CORE_FIELD_MAP.items():
             if api_key in raw and feature_key in self.feature_cols:
                 idx = self.feature_cols.index(feature_key)
                 vec[idx] = float(raw[api_key])
-
-        # Map any extra fields the operator provided (alarm_code, op_state, etc.)
-        for key, value in raw.items():
-            if key in self.feature_cols:
-                idx = self.feature_cols.index(key)
-                vec[idx] = float(value)
-            # Also try direct match for engineered features operator might send
-            elif key not in CORE_FIELD_MAP and key not in ("inverter_id",):
-                # Check if a feature column matches
-                if key in self.feature_cols:
-                    idx = self.feature_cols.index(key)
-                    vec[idx] = float(value)
-
-        # Derive some useful defaults from core readings
-        if "ac_power" in raw:
-            ac = float(raw["ac_power"])
-            # Fill power-related rolling features with the current value as baseline
-            for col in self.feature_cols:
-                if col.startswith("power_rmean_") and vec[self.feature_cols.index(col)] == 0:
-                    vec[self.feature_cols.index(col)] = ac
-                elif col.startswith("power_rmin_") and vec[self.feature_cols.index(col)] == 0:
-                    vec[self.feature_cols.index(col)] = ac
-                elif col.startswith("power_rmax_") and vec[self.feature_cols.index(col)] == 0:
-                    vec[self.feature_cols.index(col)] = ac
-
-        if "module_temp" in raw:
-            temp = float(raw["module_temp"])
-            for col in self.feature_cols:
-                if col.startswith("temp_rmean_") and vec[self.feature_cols.index(col)] == 0:
-                    vec[self.feature_cols.index(col)] = temp
-
-        if "dc_current" in raw:
-            dc_i = float(raw["dc_current"])
-            for col in self.feature_cols:
-                if col.startswith("pv1_current_rmean_") and vec[self.feature_cols.index(col)] == 0:
-                    vec[self.feature_cols.index(col)] = dc_i
-
-        # Set op_state derived features
-        if "op_state" in raw:
-            op = int(raw["op_state"])
-            if "is_running" in self.feature_cols:
-                vec[self.feature_cols.index("is_running")] = 1 if op == 5120 else 0
-            if "is_off" in self.feature_cols:
-                vec[self.feature_cols.index("is_off")] = 1 if op == 0 else 0
-        else:
-            # Default: assume running
-            if "is_running" in self.feature_cols:
-                vec[self.feature_cols.index("is_running")] = 1
-
-        # Alarm derived features
-        if "alarm_code" in raw:
-            alarm = int(raw["alarm_code"])
-            if "alarm_active" in self.feature_cols:
-                vec[self.feature_cols.index("alarm_active")] = 1 if alarm != 0 else 0
 
         return vec
 

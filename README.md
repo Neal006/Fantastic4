@@ -932,7 +932,7 @@ node index.js
 ### 4. Next.js Frontend
 
 ```bash
-cd nextjs
+cd nextjs/client
 npm install
 npm run dev
 ```

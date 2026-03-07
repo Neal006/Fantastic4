@@ -168,3 +168,59 @@ export const chatbotApi = {
     getReferencePdfUrl: () => '/api/chatbot/reference-pdf',
 };
 
+// ─── Direct ML Inference (bypasses NextJS backend for speed) ─────
+const ML_BASE = '/ml'; // Proxied via Vite to http://localhost:8001 (avoids CORS)
+
+export const mlApi = {
+    /** Single-inverter prediction — calls ML inference directly */
+    predict: async (data: {
+        inverter_id: string;
+        dc_voltage: number;
+        dc_current: number;
+        ac_power: number;
+        module_temp: number;
+        ambient_temp: number;
+        irradiation: number;
+        alarm_code?: number;
+        op_state?: number;
+        power_factor?: number | null;
+        frequency?: number | null;
+        include_shap?: boolean;
+        include_plot?: boolean;
+    }) => {
+        const res = await fetch(`${ML_BASE}/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const text = await res.text();
+        if (!res.ok) {
+            let detail = text;
+            try { detail = JSON.parse(text)?.detail || text; } catch (_) {}
+            throw new Error(detail);
+        }
+        return JSON.parse(text) as {
+            inverter_id: string;
+            category: string;
+            confidence: number;
+            predicted_class: string;
+            probabilities: Record<string, number>;
+            fault: string | null;
+            readings: Record<string, number>;
+            shap: {
+                top_features: { feature: string; shap_value: number; abs_shap: number; rank: number }[];
+                all_values?: Record<string, number>;
+                class_shap?: Record<string, Record<string, number>>;
+                predicted_class?: string;
+                base_value?: number;
+            } | null;
+            timestamp: string;
+        };
+    },
+
+    /** ML service health check */
+    health: async () => {
+        const res = await fetch(`${ML_BASE}/health`);
+        return res.json();
+    },
+};

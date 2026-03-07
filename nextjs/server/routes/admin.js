@@ -22,6 +22,24 @@ router.get('/dashboard', async (req, res) => {
               SUM(current_category = 'offline' OR is_online = 0) AS offline_count
        FROM inverters`
         );
+        
+        // Category breakdown for inverter status
+        const [categoryStats] = await pool.query(
+            `SELECT 
+                current_category,
+                COUNT(*) as count
+             FROM inverters
+             WHERE current_category IS NOT NULL
+             GROUP BY current_category`
+        );
+        
+        const categoryBreakdown = {
+            A: 0, B: 0, C: 0, D: 0, E: 0, offline: 0
+        };
+        categoryStats.forEach(row => {
+            categoryBreakdown[row.current_category] = Number(row.count);
+        });
+        
         const [[opStats]] = await pool.query(`SELECT COUNT(*) AS total_operators FROM operators WHERE is_active = 1`);
         const [[lastReading]] = await pool.query(`SELECT MAX(timestamp) AS last_data FROM inverter_readings`);
 
@@ -34,6 +52,7 @@ router.get('/dashboard', async (req, res) => {
             offlineCount: Number(invStats.offline_count) || 0,
             totalOperators: Number(opStats.total_operators),
             lastDataAt: lastReading.last_data,
+            categoryBreakdown,
         });
     } catch (err) {
         console.error('Admin dashboard error:', err);
