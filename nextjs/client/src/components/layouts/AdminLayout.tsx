@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import {
   LayoutDashboard, Building2, Users, Monitor, AlertTriangle,
-  FileText, Settings, User, LogOut, Sun, Moon, Bell, Menu, X, Zap
+  FileText, Settings, User, LogOut, Sun, Moon, Bell, Menu, X, Zap, Leaf
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,8 +33,8 @@ export default function AdminLayout() {
     <button
       onClick={() => { navigate(path); if (window.innerWidth < 1024) setSidebarOpen(false); }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive(path)
-          ? 'bg-primary/20 text-primary-foreground'
-          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+        ? 'bg-primary/20 text-primary-foreground'
+        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
         }`}
     >
       {icon}
@@ -58,7 +58,7 @@ export default function AdminLayout() {
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <Zap className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-lg text-sidebar-foreground">SolarWatch</span>
+          <span className="font-bold text-lg text-sidebar-foreground">Lumin AI</span>
           <Badge className="ml-auto text-[10px] bg-primary/20 text-primary-foreground border-0">Admin</Badge>
         </div>
 

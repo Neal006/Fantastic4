@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -11,9 +12,9 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MessageCircle, Loader2 } from 'lucide-react';
+import { Loader2, Bot, FileDown, ChevronRight, Zap, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { operatorApi } from '@/lib/api';
+import { operatorApi, chatbotApi } from '@/lib/api';
 
 interface Props {
   inverter: any | null;  // real API inverter shape
@@ -42,12 +43,29 @@ const PARAMS = [
 ] as const;
 type ParamKey = typeof PARAMS[number]['key'];
 
+const URGENCY_COLORS: Record<string, string> = {
+  immediate: 'bg-red-500 text-white',
+  within_24h: 'bg-orange-500 text-white',
+  scheduled: 'bg-yellow-500 text-black',
+  routine: 'bg-green-500 text-white',
+};
+
+const URGENCY_LABEL: Record<string, string> = {
+  immediate: 'IMMEDIATE',
+  within_24h: 'WITHIN 24H',
+  scheduled: 'SCHEDULED',
+  routine: 'ROUTINE',
+};
+
 export default function InverterDetailSheet({ inverter, onClose, plantName, blockName }: Props) {
-  const navigate = useNavigate();
   const [trendParam, setTrendParam] = useState<ParamKey>('dc_voltage');
   const [trendRange, setTrendRange] = useState<'24h' | '48h'>('24h');
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const inverterId = inverter?.id;
+  // The GenAI system uses the inverter NAME (e.g. INV-P1-L2-0), not the DB UUID
+  const inverterName = inverter?.name || inverter?.id;
 
   // ── Live readings (Trend tab) ──────────────────────────────────────────────
   const { data: readings = [], isFetching: readingsFetching } = useQuery({
@@ -66,6 +84,15 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
     staleTime: 60_000,
   });
 
+  // ── AI Explanation — auto-fetches when sheet opens ───────────────────────
+  const { data: explanation, isFetching: explanationFetching, refetch: refetchExplanation, isError: explanationError } = useQuery({
+    queryKey: ['ai-explanation', inverterName],
+    queryFn: () => chatbotApi.getExplanation(inverterName!),
+    enabled: !!inverterName,
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+
   if (!inverter) return null;
 
   // ── Overview: current readings from the latest reading on the inverter ─────
@@ -79,7 +106,7 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
   // ── SHAP tab ──────────────────────────────────────────────────────────────
   const shapRaw: any[] = Array.isArray(r.shap_values) ? r.shap_values : [];
   const shapData = shapRaw.map((s: any) => ({
-    name: s.label || s.feature || String(s),
+    name: s.feature || s.label || String(s),
     value: typeof s.value === 'number' ? s.value : typeof s === 'number' ? s : 0,
   }));
   const topShap = shapData[0] || null;
@@ -141,14 +168,147 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
               </div>
             )}
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => { onClose(); navigate('/operator/chatbot', { state: { context: { inverter_id: inverter.id, inverter_name: inverter.name, category, fault_type: inverter.fault_type } } }); }}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Ask AI about this inverter
-            </Button>
+            {/* ── Inline AI Summary ── */}
+            <div className="rounded-lg border bg-muted/40 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/60">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Bot className="h-3.5 w-3.5" />
+                  AI Analysis
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs px-2 gap-1"
+                  onClick={() => refetchExplanation()}
+                  disabled={explanationFetching}
+                >
+                  {explanationFetching ? <Loader2 className="h-3 w-3 animate-spin" /> : <Zap className="h-3 w-3" />}
+                  {explanation ? 'Refresh' : 'Retry'}
+                </Button>
+              </div>
+
+              {/* Loading */}
+              {explanationFetching && (
+                <div className="p-3 space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                  <Skeleton className="h-3 w-4/6" />
+                </div>
+              )}
+
+              {/* Error */}
+              {explanationError && !explanationFetching && (
+                <div className="flex items-center gap-2 p-3 text-xs text-destructive">
+                  <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                  Could not load AI analysis. Ensure the GenAI server is running.
+                </div>
+              )}
+
+              {/* Content */}
+              {explanation && !explanationFetching && (
+                <div className="p-3 space-y-3 text-sm">
+                  {/* Risk + urgency */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xl font-extrabold">{Math.round(explanation.risk_score * 100)}%</span>
+                    <span className="text-xs text-muted-foreground">risk score</span>
+                    <Badge className={URGENCY_COLORS[explanation.urgency] ?? 'bg-muted'}>
+                      {URGENCY_LABEL[explanation.urgency] ?? explanation.urgency.toUpperCase()}
+                    </Badge>
+                  </div>
+
+                  {/* Summary */}
+                  <p className="text-xs text-muted-foreground leading-relaxed">{explanation.summary}</p>
+
+                  {/* Key factors */}
+                  {explanation.key_factors?.length > 0 && (
+                    <div className="rounded bg-background/70 p-2 space-y-1">
+                      <p className="text-xs font-semibold">Key Risk Factors</p>
+                      <ul className="space-y-0.5">
+                        {explanation.key_factors.map((f: any, i: number) => (
+                          <li key={i} className="flex items-start gap-1 text-xs text-muted-foreground">
+                            <ChevronRight className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                            <span><span className="font-medium text-foreground">{f.feature}</span>{f.raw_value ? ` (${f.raw_value})` : ''}{f.impact ? ` — ${f.impact}` : ''}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Recommended actions */}
+                  {explanation.recommended_actions?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold mb-1">Recommended Actions</p>
+                      <ol className="space-y-0.5 list-decimal list-inside text-xs text-muted-foreground">
+                        {explanation.recommended_actions.map((a: string, i: number) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+
+                  {/* PDF download */}
+                  {downloadError && (
+                    <div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded p-2">
+                      <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                      {downloadError}
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2 h-8 text-xs"
+                    disabled={downloading}
+                    onClick={async () => {
+                      setDownloading(true);
+                      setDownloadError(null);
+                      try {
+                        // Step 1: Generate ticket on GenAI server
+                        await chatbotApi.generateTicket(inverterName!);
+                        // Step 2: Download the PDF
+                        const token = sessionStorage.getItem('sw_token');
+                        const res = await fetch(chatbotApi.getPdfUrl(inverterName!), {
+                          headers: { Authorization: `Bearer ${token}` },
+                          credentials: 'include',
+                        });
+                        if (!res.ok) throw new Error(`PDF not available (${res.status}). Ensure the GenAI server is running.`);
+                        const blob = await res.blob();
+                        if (blob.type !== 'application/pdf' && blob.size < 100) throw new Error('Invalid PDF received.');
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${inverterName}-maintenance-ticket.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      } catch (err: any) {
+                        setDownloadError(err?.message || 'Download failed. Please try again.');
+                      } finally {
+                        setDownloading(false);
+                      }
+                    }}
+                  >
+                    {downloading ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Generating ticket…
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="h-3.5 w-3.5" />
+                        Download Maintenance Ticket
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Empty — waiting for first load */}
+              {!explanation && !explanationFetching && !explanationError && (
+                <p className="text-xs text-muted-foreground text-center py-4">Generating AI analysis…</p>
+              )}
+            </div>
           </TabsContent>
 
           {/* ── SHAP ── */}
@@ -269,6 +429,8 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
               </Table>
             )}
           </TabsContent>
+
+
         </Tabs>
       </SheetContent>
     </Sheet>

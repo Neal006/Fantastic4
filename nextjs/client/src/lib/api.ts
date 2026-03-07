@@ -117,10 +117,44 @@ export const adminApi = {
     },
     getSettings: () => api.get<any>('/admin/settings'),
     updateSettings: (data: any) => api.put('/admin/settings', data),
+
+    // Green Analytics
+    getGreenAnalytics: () => api.get<any>('/admin/green-analytics'),
 };
 
 // ─── Chatbot ────────────────────────────────────────
 export const chatbotApi = {
-    query: (message: string, context?: any, conversationHistory?: any[]) =>
-        api.post<{ response: string; context_used: boolean }>('/chatbot/query', { message, context, conversationHistory }),
+    /** Multi-turn chat — pass session_id to maintain memory across messages */
+    query: (message: string, sessionId?: string | null) =>
+        api.post<{ response: string; session_id: string; sources_used: string[] }>('/chatbot/query', { message, session_id: sessionId ?? null }),
+
+    /** AI plain-English explanation for a single inverter (by inverter NAME, e.g. INV-P1-L2-0) */
+    getExplanation: (inverterName: string) =>
+        api.get<{
+            inverter_id: string;
+            plant_id: string;
+            risk_score: number;
+            risk_class: string;
+            summary: string;
+            key_factors: { feature: string; direction: string; impact: string; raw_value: string; shap_value: string }[];
+            recommended_actions: string[];
+            urgency: string;
+            generated_at: string;
+            grounded_sources: string[];
+            disclaimer: string;
+        }>(`/chatbot/explanation/${encodeURIComponent(inverterName)}`),
+
+    /** Generate a maintenance ticket JSON for an inverter */
+    generateTicket: (inverterName: string) =>
+        api.post<{ ticket_id: string; inverter_id: string; pdf_path: string; ticket_data: any; generated_at: string }>(
+            `/chatbot/ticket/${encodeURIComponent(inverterName)}`
+        ),
+
+    /** GenAI service health check */
+    getHealth: () =>
+        api.get<{ status: string; llm_connected: boolean; vector_store_loaded: boolean; inverters_monitored: number }>('/chatbot/health'),
+
+    /** PDF download URL helper — open directly in a new browser tab */
+    getPdfUrl: (inverterName: string) => `/api/chatbot/ticket/${encodeURIComponent(inverterName)}/pdf`,
 };
+

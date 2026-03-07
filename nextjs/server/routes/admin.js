@@ -41,6 +41,90 @@ router.get('/dashboard', async (req, res) => {
     }
 });
 
+// ── GET /api/admin/green-analytics ──
+router.get('/green-analytics', async (req, res) => {
+    try {
+        const EMISSION_FACTOR = 0.000716;   // tonnes CO2 per kWh (India CEA 2023)
+        const CARBON_PRICE_USD = 22;        // USD per tonne (voluntary carbon market)
+        const TARIFF_INR = 4;               // INR per kWh (typical Indian solar PPA)
+        const READING_INTERVAL_HRS = 5 / 3600; // simulator fires every 5 seconds
+
+        // ── 1. Total energy generated in last 30 days ──
+        const [[energyRow]] = await pool.query(
+            `SELECT COALESCE(SUM(GREATEST(ac_power, 0) * ?), 0) AS energy_kwh,
+                    COUNT(*) AS reading_count
+             FROM inverter_readings
+             WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)`,
+            [READING_INTERVAL_HRS]
+        );
+        const energyKwh30d = Number(energyRow.energy_kwh) || 0;
+
+        // ── 2. Installed capacity for PR / CUF ──
+        const [[capRow]] = await pool.query(
+            `SELECT COALESCE(SUM(capacity_kw), 0) AS total_kw FROM inverters WHERE is_online = 1`
+        );
+        const installedKw = Number(capRow.total_kw) || 1;
+
+        // Hours in 30-day window
+        const windowHrs = 30 * 24;
+        const prPercent = Math.min(((energyKwh30d / (installedKw * windowHrs)) * 100), 100);
+        const cufPercent = Math.min(((energyKwh30d / (installedKw * 8760)) * 100 * 12), 100); // annualise
+
+        // ── 3. CO2 & carbon credits ──
+        const co2Tonnes = energyKwh30d * EMISSION_FACTOR;
+        const carbonCredits = co2Tonnes;
+        const creditValueUsd = co2Tonnes * CARBON_PRICE_USD;
+
+        // ── 4. Revenue lost from current fault inverters (Cat D / E) ──
+        const [faultInverters] = await pool.query(
+            `SELECT i.id, i.name, i.capacity_kw,
+                    MIN(r.timestamp) AS fault_since
+             FROM inverters i
+             JOIN inverter_readings r ON r.inverter_id = i.id
+             WHERE i.current_category IN ('D', 'E')
+               AND r.category IN ('D', 'E')
+               AND r.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+             GROUP BY i.id, i.name, i.capacity_kw`
+        );
+
+        let totalLossInr = 0;
+        const revenueLostBreakdown = faultInverters.map(inv => {
+            const hoursInFault = inv.fault_since
+                ? Math.min((Date.now() - new Date(inv.fault_since).getTime()) / 3_600_000, 168)
+                : 1;
+            const lossInr = Number(inv.capacity_kw) * hoursInFault * TARIFF_INR;
+            totalLossInr += lossInr;
+            return {
+                inverter: inv.name,
+                hours: Math.round(hoursInFault * 10) / 10,
+                loss_inr: Math.round(lossInr),
+            };
+        });
+
+        // ── 5. Impact equivalents ──
+        const trees = Math.round(co2Tonnes * 45.8);       // 1 tree absorbs ~21.8 kg CO2/yr
+        const carsOffRoad = Math.round(co2Tonnes / 4.6);  // avg car emits 4.6 t CO2/yr
+        const homesPowered = Math.round(energyKwh30d / (877)); // avg Indian home ~877 kWh/month
+
+        res.json({
+            energy_kwh_30d: Math.round(energyKwh30d),
+            co2_avoided_tonnes: Math.round(co2Tonnes * 10) / 10,
+            carbon_credits: Math.round(carbonCredits * 10) / 10,
+            credit_value_usd: Math.round(creditValueUsd),
+            revenue_lost_inr: Math.round(totalLossInr),
+            revenue_lost_breakdown: revenueLostBreakdown,
+            pr_percent: Math.round(prPercent * 10) / 10,
+            cuf_percent: Math.round(cufPercent * 10) / 10,
+            impact_equivalents: { trees, cars_off_road: carsOffRoad, homes_powered: homesPowered },
+        });
+    } catch (err) {
+        console.error('Green analytics error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+
 // ═══════════════════ PLANT CRUD ═══════════════════
 
 // GET /api/admin/plants

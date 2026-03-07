@@ -27,7 +27,7 @@ const USERS = [
             name: 'Arjun Mehta',
             email: 'arjun.mehta@solarwatch.in',
             operator_id: 'OP001',
-            password: 'Op@12345',
+            password: '0p@12345',   // zero, not letter O
         },
     },
     {

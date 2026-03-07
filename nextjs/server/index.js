@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const operatorRoutes = require('./routes/operator');
 const adminRoutes = require('./routes/admin');
 const chatbotRoutes = require('./routes/chatbot');
+const metricsRoutes = require('./routes/metrics');
 const { startSimulator } = require('./simulator');
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/operator', operatorRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/metrics', metricsRoutes);
 
 // ── 404 Handler ──
 app.use((req, res) => {
