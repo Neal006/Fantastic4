@@ -6,6 +6,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { ProblemSection } from '@/components/landing/ProblemSection';
 import { SolutionSection } from '@/components/landing/SolutionSection';
 import { StorySection } from '@/components/landing/StorySection';
+import { MetricsSection } from '@/components/landing/MetricsSection';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MagneticButton } from '@/components/ui/Motion';
@@ -97,6 +98,7 @@ export default function LandingPage() {
                         <ProblemSection />
                         <SolutionSection />
                         <StorySection />
+                        <MetricsSection />
 
                         {/* CTA Footer */}
                         <section className="py-32 px-6 flex flex-col items-center justify-center text-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>

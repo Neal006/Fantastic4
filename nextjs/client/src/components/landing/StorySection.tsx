@@ -7,53 +7,52 @@ gsap.registerPlugin(ScrollTrigger);
 const storyPanels = [
     {
         bg: 'var(--color-brand-primary)', text: 'var(--color-text-inverse)', num: '01',
-        headline: 'Why This is a Massive Industry Problem',
+        headline: 'Jaw-Dropping Financial Losses',
         body: (
             <div className="space-y-4">
-                <p>When a solar inverter—the critical component that converts electricity from solar panels into usable power—fails, it directly causes energy loss, lower uptime, and significant financial hits. To give you an idea of the scale based on recent industry research:</p>
+                <p>Solar asset underperformance, driven heavily by inverters, cost the global industry a record $10 billion in lost revenue in 2024 alone.</p>
                 <ul className="list-disc pl-5 space-y-2 lg:space-y-3">
-                    <li><strong>Multi-Billion Dollar Losses:</strong> The solar industry lost roughly $4.6 billion in a single year (2023) due to equipment underperformance globally.</li>
-                    <li><strong>High Failure Rates:</strong> Inverters are the beating heart of a solar system but also the most vulnerable, accounting for approximately 17% of total fault incidents in solar PV farms.</li>
+                    <li><strong>Massive Power Deficits:</strong> In the U.S., facilities lost $5,720 per MW to equipment issues, with inverters causing 39% of power losses—over 50% in key markets like ERCOT and MISO.</li>
+                    <li><strong>Spiking O&M Costs:</strong> For a 100 MW plant, single inverter failure types can exceed €3.8 million/year in losses, driving operation and maintenance costs up by 23%.</li>
                 </ul>
             </div>
         ),
     },
     {
         bg: 'var(--color-bg-secondary)', text: 'var(--color-text-primary)', num: '02',
-        headline: 'The Cost of Extended Inverter Downtime',
+        headline: 'Alarming Failure Rates',
         body: (
             <div className="space-y-4">
-                <p>The impact of a failed inverter extends far beyond the initial breakdown. Without predictive intelligence, resolution is painfully slow:</p>
+                <p>Inverters cause 43-60% of all PV plant failures, far outpacing modules, which account for just 5% of failures.</p>
                 <ul className="list-disc pl-5 space-y-2 lg:space-y-3">
-                    <li><strong>Prolonged Downtime:</strong> Major inverter failures result in an average downtime of 80 days, often costing upwards of $49,000 per incident due to lengthy repair times and lost business revenue.</li>
-                    <li><strong>Energy Drain:</strong> Research from the National Renewable Energy Laboratory (NREL) indicates that inverter failures can cause up to 36% of total energy losses in a solar plant over a multi-year period.</li>
+                    <li><strong>Rapid Degradation:</strong> 45% of solar inverters fail within 4 years, per LBNL's 2024 reliability study, with central inverters hitting a staggering 52% failure rate.</li>
+                    <li><strong>Warranty Shortfalls:</strong> Lifetimes average 10-12 years while warranties typically only cover 5 years, fueling over 60% of PV system failures according to DOE SETO.</li>
                 </ul>
             </div>
         ),
     },
     {
         bg: 'var(--color-brand-primary)', text: 'var(--color-text-inverse)', num: '03',
-        headline: 'Architecting an Industry-Standard Solution',
+        headline: 'Brutal Downtime Impact',
         body: (
             <div className="space-y-4">
-                <p>To build a solution that establishes an industry standard, your system needs to move beyond simple exploratory analysis to a production-ready deployment. Here is the blueprint for an elite-level solution:</p>
+                <p>Inverter failures trigger 36% of total energy losses in solar plants, per NREL research conducted over a 27-month period.</p>
                 <ul className="list-disc pl-5 space-y-2 lg:space-y-3">
-                    <li><strong>Advanced ML Pipeline:</strong> Develop a robust binary classification or regression model using telemetry, computed KPIs, and alarm data. Implement time-series aware walk-forward validation.</li>
-                    <li><strong>Deep Explainability:</strong> Black-box models don't work in industrial settings. Integrate SHAP or LIME to provide clear feature importance for at least the top 5 contributing factors.</li>
+                    <li><strong>Crippling Delays:</strong> Major breakdowns average 80 days of downtime, wiping out a quarter of annual production even during peak weather conditions.</li>
+                    <li><strong>Maintenance Burden:</strong> 51% of O&M tickets target inverters (fans, controllers, stacks). While repairs dominate the workload, full replacements cost significantly more.</li>
                 </ul>
             </div>
         ),
     },
     {
         bg: 'var(--color-bg-secondary)', text: 'var(--color-text-primary)', num: '04',
-        headline: 'Agentic Workflows & Actionable Dashboards',
+        headline: 'Industry on the Brink',
         body: (
             <div className="space-y-4">
-                <p>The final puzzle piece is translating raw machine learning outputs into operational insights that technicians can immediately trust and act upon:</p>
+                <p>U.S. insurers now flag inverters as top attritional claims, noting that central and string units often fail just 1.5 to 2.2 years post-install.</p>
                 <ul className="list-disc pl-5 space-y-2 lg:space-y-3">
-                    <li><strong>Agentic GenAI Layer:</strong> Build a RAG system with strict hallucination guardrails that grounds its answers in actual inverter data to autonomously draft maintenance tickets.</li>
-                    <li><strong>Production-Grade Backend:</strong> Containerize the application with Docker and expose predictions via a well-architected REST API.</li>
-                    <li><strong>Actionable Dashboard:</strong> Build a responsive frontend that visualizes per-inverter risk scores, trend data, and GenAI narratives with absolute clarity.</li>
+                    <li><strong>Supply & Labor Blockers:</strong> 45% of inverter capacity comes from defunct makers after 4 years, leaving no spares or techs, while labor shortages block 44% of industry growth.</li>
+                    <li><strong>Stifling Scale:</strong> NREL warns that without fixes, short inverter life will stifle solar's scale-up amidst rising energy demand and the shift from 1500V to 2000V systems.</li>
                 </ul>
             </div>
         ),
@@ -70,16 +69,20 @@ export const StorySection = () => {
     useEffect(() => {
         if (isMobile) return;
 
-        // CRITICAL: Kill any existing ScrollTrigger instances for this section first
-        ScrollTrigger.getAll().forEach(t => {
-            if (t.vars.trigger === containerRef.current) t.kill();
-        });
-
-        const panels = gsap.utils.toArray('.story-panel');
+        const panels = gsap.utils.toArray<HTMLElement>('.story-panel');
         const totalWidth = panels.length * window.innerWidth;
 
+        // Pre-hide all panel content first
+        panels.forEach((panel) => {
+            const headline = panel.querySelector('.panel-headline');
+            const body = panel.querySelector('.panel-body');
+            gsap.set(headline, { opacity: 0, y: 40 });
+            gsap.set(body, { opacity: 0, y: 30 });
+        });
+
         const ctx = gsap.context(() => {
-            gsap.to(trackRef.current, {
+            // ── Horizontal scroll tween ──
+            const tween = gsap.to(trackRef.current, {
                 x: () => -(totalWidth - window.innerWidth),
                 ease: 'none',
                 scrollTrigger: {
@@ -89,42 +92,43 @@ export const StorySection = () => {
                     snap: {
                         snapTo: 1 / (panels.length - 1),
                         duration: { min: 0.3, max: 0.6 },
-                        ease: 'power2.inOut'
+                        ease: 'power2.inOut',
                     },
-                    // CRITICAL: end must be dynamic, not fixed pixels
                     end: () => `+=${totalWidth - window.innerWidth}`,
                     invalidateOnRefresh: true,
-                }
-            });
-
-            // Panel Enter Animations (clip path text reveal)
-            panels.forEach((panel: any, i) => {
-                const headline = panel.querySelector('.panel-headline');
-                const body = panel.querySelector('.panel-body');
-
-                // Setup initial state
-                gsap.set(headline, { clipPath: 'inset(0 100% 0 0)', opacity: 0, x: 40 });
-                gsap.set(body, { clipPath: 'inset(0 100% 0 0)', opacity: 0, x: 60 });
-
-                ScrollTrigger.create({
-                    trigger: containerRef.current,
-                    start: () => `top top-=${i * window.innerWidth - window.innerWidth / 2}`,
-                    end: () => `top top-=${i * window.innerWidth + window.innerWidth / 2}`,
-                    onEnter: () => {
-                        gsap.to(headline, { clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0, duration: 0.7, ease: "power3.out" });
-                        gsap.to(body, { clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0, duration: 0.7, delay: 0.1, ease: "power3.out" });
+                    onUpdate: (self) => {
+                        // Progress goes 0→1 over the full scroll.
+                        // Each panel covers 1/n of the progress range.
+                        const n = panels.length;
+                        panels.forEach((panel, i) => {
+                            const headline = panel.querySelector('.panel-headline');
+                            const body = panel.querySelector('.panel-body');
+                            const panelStart = i / n;
+                            const panelRevealAt = panelStart + 0.02; // small offset so first panel shows fast
+                            if (self.progress >= panelRevealAt) {
+                                gsap.to(headline, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
+                                gsap.to(body, { opacity: 1, y: 0, duration: 0.5, delay: 0.08, ease: 'power3.out', overwrite: 'auto' });
+                            } else {
+                                // Partially scrolled back — hide again
+                                if (i > 0) {
+                                    gsap.to(headline, { opacity: 0, y: 40, duration: 0.3, overwrite: 'auto' });
+                                    gsap.to(body, { opacity: 0, y: 30, duration: 0.3, overwrite: 'auto' });
+                                }
+                            }
+                        });
                     },
-                    onEnterBack: () => {
-                        gsap.to(headline, { clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0, duration: 0.7, ease: "power3.out" });
-                        gsap.to(body, { clipPath: 'inset(0 0% 0 0)', opacity: 1, x: 0, duration: 0.7, delay: 0.1, ease: "power3.out" });
-                    }
-                });
+                    onEnter: () => {
+                        // Reveal first panel instantly on scroll enter
+                        const headline = panels[0]?.querySelector('.panel-headline');
+                        const body = panels[0]?.querySelector('.panel-body');
+                        gsap.to(headline, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+                        gsap.to(body, { opacity: 1, y: 0, duration: 0.7, delay: 0.1, ease: 'power3.out' });
+                    },
+                },
             });
         }, containerRef);
 
-        return () => {
-            ctx.revert();
-        };
+        return () => { ctx.revert(); };
     }, [isMobile]);
 
     if (isMobile) {
