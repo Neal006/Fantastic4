@@ -6,6 +6,17 @@
 
 ---
 
+## 👥 Team Members
+
+| Name | Email | Role |
+|------|-------|------|
+| **Tirth Patel** | 24btm028@nirmauni.ac.in | Team Lead |
+| **Priyanshu Doshi** | 24bam050@nirmauni.ac.in | Developer |
+| **Neal Daftary** | 24bam019@nirmauni.ac.in | Developer |
+| **Parshva Shah** | 24bam043@nirmauni.ac.in | Developer |
+
+---
+
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
@@ -179,10 +190,27 @@ Operator sees: color-coded cards, SHAP charts, AI explanations,
 
 ---
 
-## Technology Stack
+## 🛠️ Technology Stack
+
+### Core Technologies
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS_RDS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+
+</div>
+
+### Detailed Stack by Layer
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
 | **ML Training** | Python, XGBoost, Optuna, SHAP, scikit-learn, SMOTE | Model training + hyperparameter optimization |
 | **ML Inference** | FastAPI, XGBoost, SHAP, NumPy, Matplotlib | Real-time prediction API with explainability |
 | **GenAI** | FastAPI, Groq (Llama 3.3 70B), LangSmith | LLM explanations, RAG, ticket generation |
@@ -192,6 +220,22 @@ Operator sees: color-coded cards, SHAP charts, AI explanations,
 | **Database** | AWS RDS MySQL (ap-south-1) | Production cloud database |
 | **Observability** | LangSmith (LangChain) | LLM tracing, latency monitoring, token analytics |
 | **PDF Generation** | ReportLab | Professional maintenance ticket PDFs |
+
+### AI & ML Technologies
+
+<div align="center">
+
+![XGBoost](https://img.shields.io/badge/XGBoost-FF6600?style=for-the-badge&logo=xgboost&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-11557c?style=for-the-badge&logo=python&logoColor=white)
+![SHAP](https://img.shields.io/badge/SHAP-FF6B6B?style=for-the-badge&logo=python&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq_LLM-000000?style=for-the-badge&logo=ai&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=chainlink&logoColor=white)
+![FAISS](https://img.shields.io/badge/FAISS-0467DF?style=for-the-badge&logo=meta&logoColor=white)
+
+</div>
 
 ---
 
@@ -662,6 +706,50 @@ LUMIN.AI implements explainability at **every layer**:
 | **3** | Gemini 2.5 Flash | 79.4% | 8.8s | 100% |
 
 > **Groq and Qwen tie on accuracy (91.7%), but Groq is 21x faster.**
+
+### Visual Results
+
+#### Overall Model Comparison
+
+![Overall Scores](genai/comparative_analysis/graphs/01_overall_scores.png)
+
+*Figure 1: Overall performance scores across all evaluation metrics. Groq and Qwen achieve identical 91.7% scores, while Gemini lags at 79.4%.*
+
+#### Multi-Dimensional Performance Radar
+
+![Radar Comparison](genai/comparative_analysis/graphs/02_radar_comparison.png)
+
+*Figure 2: Radar chart showing normalized scores across 5 evaluation dimensions. Groq and Qwen nearly overlap on every axis except latency, while Gemini shows clear dips in JSON validity and completeness.*
+
+#### Latency Analysis
+
+![Latency Comparison](genai/comparative_analysis/graphs/03_latency_comparison.png)
+
+*Figure 3: Average response latency comparison. Groq delivers sub-second responses (1.0s), 8.8x faster than Gemini and 21.2x faster than Qwen.*
+
+#### Task-Specific Performance
+
+![Per-Task Scores](genai/comparative_analysis/graphs/04_per_task_scores.png)
+
+*Figure 4: Performance breakdown by task type (Explanation, Ticket Generation, Chat). Groq and Qwen achieve perfect 100% scores on structured tasks.*
+
+#### Efficiency Frontier
+
+![Score vs Latency](genai/comparative_analysis/graphs/05_score_vs_latency.png)
+
+*Figure 5: Score vs Latency scatter plot. The ideal model is in the top-left corner (high score, low latency). Groq clearly dominates the efficiency frontier.*
+
+#### Detailed Metric Heatmap
+
+![Metric Heatmap](genai/comparative_analysis/graphs/06_metric_heatmap.png)
+
+*Figure 6: Heatmap showing detailed performance across all metrics. Darker colors indicate better performance.*
+
+#### Token Efficiency
+
+![Token Usage](genai/comparative_analysis/graphs/07_token_usage.png)
+
+*Figure 7: Average token usage per response. Groq is the most token-efficient (~248 tokens/response), while Gemini produces longer outputs (~444 tokens/response).*
 
 ### Why Groq Llama 3.3 70B?
 
