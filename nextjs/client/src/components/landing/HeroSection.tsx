@@ -1,10 +1,36 @@
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useRef, useEffect } from 'react';
 
 const words = ['LUMIN', '⚡', 'AI', 'INTELLIGENCE', 'PLATFORM'];
 
 export const HeroSection = () => {
+    const sectionRef = useRef<HTMLElement>(null);
+    const glowRef = useRef<HTMLDivElement>(null);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    // Smooth spring glow that trails the cursor
+    const glowX = useSpring(mouseX, { stiffness: 60, damping: 20 });
+    const glowY = useSpring(mouseY, { stiffness: 60, damping: 20 });
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+        const onMove = (e: MouseEvent) => {
+            const rect = section.getBoundingClientRect();
+            mouseX.set(e.clientX - rect.left);
+            mouseY.set(e.clientY - rect.top);
+        };
+        section.addEventListener('mousemove', onMove);
+        return () => section.removeEventListener('mousemove', onMove);
+    }, [mouseX, mouseY]);
+
     return (
-        <section className="relative min-h-[100vh] w-full overflow-hidden flex flex-col items-center justify-center pt-24" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+        <section
+            ref={sectionRef}
+            className="relative min-h-[100vh] w-full overflow-hidden flex flex-col items-center justify-center pt-24"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+        >
             {/* Background radial gold glow */}
             <motion.div
                 animate={{ scale: [1, 1.08, 1] }}
@@ -16,6 +42,23 @@ export const HeroSection = () => {
                     bottom: '-30%',
                     background: 'radial-gradient(ellipse 60% 50% at 50% 70%, rgba(212,144,10,0.12) 0%, transparent 70%)',
                     pointerEvents: 'none',
+                }}
+            />
+
+            {/* Cursor-tracking glow — follows mouse smoothly */}
+            <motion.div
+                style={{
+                    position: 'absolute',
+                    width: '500px',
+                    height: '500px',
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                    background: 'radial-gradient(circle, rgba(212,144,10,0.13) 0%, transparent 65%)',
+                    x: glowX,
+                    y: glowY,
+                    translateX: '-50%',
+                    translateY: '-50%',
+                    zIndex: 0,
                 }}
             />
 
@@ -98,44 +141,28 @@ export const HeroSection = () => {
                 >
                     {words[4]}
                 </motion.div>
-            </div>
 
-            {/* Glassmorphism Stat Cards */}
-            <div className="relative w-full max-w-6xl mx-auto h-[200px] mt-8 md:absolute md:inset-0 md:h-full md:mt-0 pointer-events-none flex flex-col md:block px-4 gap-4">
-                {[
-                    { text: "⚡ 17% of all faults", pos: { top: '25%', left: '5%' } },
-                    { text: "🔴 $4.6B lost in 2023", pos: { bottom: '20%', left: '50%', x: '-50%' } },
-                    { text: "📉 80 days avg downtime", pos: { top: '35%', right: '4%' } }
-                ].map((item, i) => (
-                    <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.94 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.6 + i * 0.15, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="md:absolute self-center md:self-auto w-full md:w-auto"
-                        style={{ ...item.pos }}
-                    >
-                        <motion.div
-                            animate={{ y: [0, -15, 0] }}
-                            transition={{ duration: 4 + i * 0.5, repeat: Infinity, ease: 'easeInOut' }}
-                            style={{
-                                backdropFilter: 'blur(16px) saturate(160%)',
-                                background: 'rgba(255, 248, 231, 0.6)',
-                                border: '1px solid rgba(212, 144, 10, 0.25)',
-                                boxShadow: '0 8px 32px rgba(212, 144, 10, 0.12)',
-                                borderRadius: 'var(--radius-lg)',
-                                padding: '16px 24px',
-                                fontFamily: 'var(--font-heading)',
-                                fontWeight: 600,
-                                fontSize: '1rem',
-                                color: 'var(--color-text-primary)'
-                            }}
-                        >
-                            {item.text}
-                        </motion.div>
-                    </motion.div>
-                ))}
+                {/* Subtitle label */}
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.7 }}
+                    style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 'clamp(0.9rem, 1.8vw, 1.1rem)',
+                        color: 'var(--color-text-secondary)',
+                        marginTop: '2rem',
+                        maxWidth: '520px',
+                        lineHeight: 1.6,
+                        letterSpacing: '0.01em',
+                    }}
+                >
+                    AI-powered solar inverter fault prediction.
+                    <br />
+                    Prevent failures before they happen.
+                </motion.p>
             </div>
         </section>
     );
 };
+

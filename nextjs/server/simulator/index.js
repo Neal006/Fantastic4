@@ -36,12 +36,56 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function genShapValues(category) {
     if (category === 'A' || category === 'B' || category === 'offline') return null;
-    const features = ['dc_voltage', 'dc_current', 'ac_power', 'module_temp', 'ambient_temp', 'irradiation'];
+    // Match the ML model output format: { feature, value }
+    // Feature names mirror the model's engineered features
+    const features = [
+        'power_rmean_24h',
+        'temp_rstd_6h',
+        'dc_voltage',
+        'dc_current',
+        'ac_power',
+        'module_temp',
+        'ambient_temp',
+        'irradiation',
+    ];
     const shap = features.map(f => ({
-        label: f,
+        feature: f,
         value: parseFloat((category === 'E' ? rng(-0.3, 0.8) : rng(-0.2, 0.5)).toFixed(3)),
     }));
+    // Sort descending by absolute value so top contributor is first
+    shap.sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
     return shap;
+}
+
+/**
+ * Generate ML-model-style probability distribution matching the model JSON output:
+ * { no_risk, degradation_risk, shutdown_risk }
+ * Values sum to 1.0.
+ */
+function genProbabilities(category, confidence) {
+    const c = parseFloat(confidence);
+    if (category === 'A') {
+        return { no_risk: c, degradation_risk: parseFloat(rng(0.005, 1 - c - 0.005).toFixed(3)), shutdown_risk: parseFloat((1 - c - rng(0.005, 0.02)).toFixed(3)) };
+    }
+    if (category === 'B') {
+        const nr = parseFloat(rng(0.70, 0.89).toFixed(3));
+        const dr = parseFloat(rng(0.08, 0.25).toFixed(3));
+        return { no_risk: nr, degradation_risk: dr, shutdown_risk: parseFloat((1 - nr - dr).toFixed(3)) };
+    }
+    if (category === 'C') {
+        const nr = parseFloat(rng(0.30, 0.55).toFixed(3));
+        const dr = parseFloat(rng(0.35, 0.55).toFixed(3));
+        return { no_risk: nr, degradation_risk: dr, shutdown_risk: parseFloat(Math.max(0, 1 - nr - dr).toFixed(3)) };
+    }
+    if (category === 'D') {
+        const nr = parseFloat(rng(0.05, 0.20).toFixed(3));
+        const dr = parseFloat(rng(0.50, 0.70).toFixed(3));
+        return { no_risk: nr, degradation_risk: dr, shutdown_risk: parseFloat(Math.max(0, 1 - nr - dr).toFixed(3)) };
+    }
+    // E or offline — high shutdown risk
+    const nr = parseFloat(rng(0.01, 0.08).toFixed(3));
+    const dr = parseFloat(rng(0.10, 0.25).toFixed(3));
+    return { no_risk: nr, degradation_risk: dr, shutdown_risk: parseFloat(Math.max(0, 1 - nr - dr).toFixed(3)) };
 }
 
 function genReadingForScenario(scenario, jitter = true) {
@@ -92,18 +136,44 @@ async function runSimulatorCycle() {
             // For known inverters use real SHAP labels; for others generate generic ones
             const shapValues = isFaulty ? genShapValues(newCategory) : null;
 
-            await pool.query(
-                `INSERT INTO inverter_readings
-          (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
-           dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values)
-         VALUES (UUID(), ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    inverter.id, newCategory, confidence, isFaulty, faultType,
-                    reading.dcVoltage, reading.dcCurrent, reading.acPower,
-                    reading.moduleTemp, reading.ambientTemp, reading.irradiation,
-                    shapValues ? JSON.stringify(shapValues) : null,
-                ]
-            );
+            // Generate ML-model-style probability distribution
+            const probabilities = genProbabilities(newCategory, confidence);
+
+            // Use try/catch so older schema (without probabilities column) still works
+            try {
+                await pool.query(
+                    `INSERT INTO inverter_readings
+            (id, inverter_id, timestamp, category, confidence, probabilities, is_faulty, fault_type,
+             dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values)
+           VALUES (UUID(), ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        inverter.id, newCategory, confidence,
+                        JSON.stringify(probabilities),
+                        isFaulty, faultType,
+                        reading.dcVoltage, reading.dcCurrent, reading.acPower,
+                        reading.moduleTemp, reading.ambientTemp, reading.irradiation,
+                        shapValues ? JSON.stringify(shapValues) : null,
+                    ]
+                );
+            } catch (colErr) {
+                // Fallback: old schema without probabilities column
+                if (colErr.code === 'ER_BAD_FIELD_ERROR') {
+                    await pool.query(
+                        `INSERT INTO inverter_readings
+              (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+               dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values)
+             VALUES (UUID(), ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            inverter.id, newCategory, confidence, isFaulty, faultType,
+                            reading.dcVoltage, reading.dcCurrent, reading.acPower,
+                            reading.moduleTemp, reading.ambientTemp, reading.irradiation,
+                            shapValues ? JSON.stringify(shapValues) : null,
+                        ]
+                    );
+                } else {
+                    throw colErr;
+                }
+            }
 
             await pool.query(
                 `UPDATE inverters SET current_category = ?, is_online = ?, last_data_at = NOW() WHERE id = ?`,

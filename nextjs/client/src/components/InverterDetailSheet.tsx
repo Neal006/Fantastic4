@@ -60,6 +60,8 @@ const URGENCY_LABEL: Record<string, string> = {
 export default function InverterDetailSheet({ inverter, onClose, plantName, blockName }: Props) {
   const [trendParam, setTrendParam] = useState<ParamKey>('dc_voltage');
   const [trendRange, setTrendRange] = useState<'24h' | '48h'>('24h');
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const inverterId = inverter?.id;
   // The GenAI system uses the inverter NAME (e.g. INV-P1-L2-0), not the DB UUID
@@ -104,7 +106,7 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
   // ── SHAP tab ──────────────────────────────────────────────────────────────
   const shapRaw: any[] = Array.isArray(r.shap_values) ? r.shap_values : [];
   const shapData = shapRaw.map((s: any) => ({
-    name: s.label || s.feature || String(s),
+    name: s.feature || s.label || String(s),
     value: typeof s.value === 'number' ? s.value : typeof s === 'number' ? s : 0,
   }));
   const topShap = shapData[0] || null;
@@ -246,28 +248,58 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
                   )}
 
                   {/* PDF download */}
+                  {downloadError && (
+                    <div className="flex items-center gap-1.5 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded p-2">
+                      <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                      {downloadError}
+                    </div>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full gap-2 h-7 text-xs"
+                    className="w-full gap-2 h-8 text-xs"
+                    disabled={downloading}
                     onClick={async () => {
+                      setDownloading(true);
+                      setDownloadError(null);
                       try {
+                        // Step 1: Generate ticket on GenAI server
                         await chatbotApi.generateTicket(inverterName!);
+                        // Step 2: Download the PDF
                         const token = sessionStorage.getItem('sw_token');
                         const res = await fetch(chatbotApi.getPdfUrl(inverterName!), {
                           headers: { Authorization: `Bearer ${token}` },
                           credentials: 'include',
                         });
-                        if (!res.ok) throw new Error('PDF unavailable');
+                        if (!res.ok) throw new Error(`PDF not available (${res.status}). Ensure the GenAI server is running.`);
                         const blob = await res.blob();
+                        if (blob.type !== 'application/pdf' && blob.size < 100) throw new Error('Invalid PDF received.');
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = url; a.download = `${inverterName}-ticket.pdf`; a.click();
+                        a.href = url;
+                        a.download = `${inverterName}-maintenance-ticket.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
                         URL.revokeObjectURL(url);
-                      } catch { /* silently fail */ }
+                      } catch (err: any) {
+                        setDownloadError(err?.message || 'Download failed. Please try again.');
+                      } finally {
+                        setDownloading(false);
+                      }
                     }}
                   >
-                    <FileDown className="h-3.5 w-3.5" /> Download Maintenance Ticket
+                    {downloading ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Generating ticket…
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="h-3.5 w-3.5" />
+                        Download Maintenance Ticket
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
