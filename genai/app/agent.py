@@ -1,5 +1,5 @@
 """
-Agentic workflow for SolarGuard AI.
+Agentic workflow for LUMIN.AI.
 
 The agent autonomously:
   1. Retrieves inverter prediction data

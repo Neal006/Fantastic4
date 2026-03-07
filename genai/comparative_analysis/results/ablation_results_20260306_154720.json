@@ -1,0 +1,1355 @@
+{
+  "groq_llama70b": {
+    "display_name": "Llama 3.3 70B (Groq)",
+    "provider": "groq",
+    "model_id": "llama-3.3-70b-versatile",
+    "results": [
+      {
+        "task": "explanation",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "```json\n{\n  \"summary\": \"The inverter INV-P1-L1-0 is operating with a low risk score of 0.1200, classified as no_risk. The key factors contributing to this prediction are the inverter's power output, temperature, and ambient temperature. \",\n  \"key_factors\": [\n    {\"feature\": \"inverters[0].power\", \"impact\": \"high\", \"explanation\": \"The inverter's power output of 8750.0 is a significant factor in the low risk score, indicating stable operation.\"},\n    {\"feature\": \"inverters[0].temp\", \"impact\": \"medium\", \"explanation\": \"The inverter temperature of 42.3 is within acceptable limits, contributing to the low risk score.\"},\n    {\"feature\": \"sensors[0].ambient_temp\", \"impact\": \"low\", \"explanation\": \"The ambient temperature of 34.2 has a minor impact on the risk score, but still indicates a stable operating environment.\"}\n  ],\n  \"recommended_actions\": [\"Continue monitoring inverter performance\", \"Verify inverter cooling system is functioning correctly\"],\n  \"urgency\": \"routine\",\n  \"estimated_impact\": \"No significant impact expected if current operating conditions are maintained.\"\n}\n```",
+        "latency_seconds": 0.955,
+        "input_tokens": 803,
+        "output_tokens": 263,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "routine",
+            "expected": [
+              "routine",
+              "scheduled"
+            ],
+            "details": "Correct: 'routine' matches no_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 133,
+            "details": "Good quality"
+          },
+          "latency_seconds": 0.955
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "{\n  \"title\": \"INV-P1-L1-0 Inverter Maintenance\",\n  \"priority\": \"P4-Low\",\n  \"description\": \"INV-P1-L1-0 inverter at Plant 1 - Celestical, Block A, has been assessed with a risk score of 0.1200, indicating no risk. However, a maintenance check is recommended to ensure optimal performance.\",\n  \"root_cause_analysis\": \"The risk assessment indicates that the inverter's power output, temperature, ambient temperature, PV1 current, power factor, and kWh production are within normal ranges. The SHAP values suggest that these factors are not contributing to any significant risk.\",\n  \"recommended_actions\": [\n    \"Perform a visual inspection of the inverter and its connections to ensure no signs of damage or wear\",\n    \"Verify that the inverter's settings and configurations are correct and aligned with the manufacturer's recommendations\"\n  ],\n  \"estimated_downtime\": \"1 hour\",\n  \"parts_needed\": [],\n  \"safety_notes\": [\n    \"Ensure proper personal protective equipment (PPE) is worn when performing maintenance tasks\",\n    \"Follow lockout/tagout procedures to prevent accidental start-up of the inverter\"\n  ],\n  \"escalation_needed\": false\n}",
+        "latency_seconds": 0.828,
+        "input_tokens": 724,
+        "output_tokens": 262,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 146,
+            "details": "Good quality"
+          },
+          "latency_seconds": 0.828
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "According to the data, INV-P1-L1-0 has a risk level of 0.12, which is classified as \"no_risk\". The SHAP values indicate that the inverter's power, temperature, and ambient temperature are contributing negatively to the risk, but no specific actions are recommended based on the provided data. I don't have the inverter manual available to provide guidance on specific actions.",
+        "latency_seconds": 0.538,
+        "input_tokens": 329,
+        "output_tokens": 84,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 58,
+            "details": "Good quality"
+          },
+          "latency_seconds": 0.538
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "```json\n{\n  \"summary\": \"The inverter INV-P1-L1-1 at Plant 1 - Celestical has a risk score of 0.6500, indicating a degradation risk. The top contributing factors are related to current and power output. The inverter is currently operating, but the risk score suggests potential issues that may impact performance over time.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[1].pv3_current\",\n      \"impact\": \"high\",\n      \"explanation\": \"The low current reading of 3.1 from PV3 may indicate a potential issue with the PV string or inverter input, which could be contributing to the degradation risk.\"\n    },\n    {\n      \"feature\": \"smu[1].string3\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The value of 3.1 from string3 may be related to the low current reading from PV3, suggesting a possible mismatch or issue with the string.\"\n    },\n    {\n      \"feature\": \"inverters[1].power\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The power output of 6200.0 is within normal operating ranges, but its contribution to the risk score may indicate that the inverter is not operating at optimal levels.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Inspect the PV3 string and connections for any signs of damage or issues\",\n    \"Verify the inverter input settings and configuration to ensure proper operation\"\n  ],\n  \"urgency\": \"within_24h\",\n  \"estimated_impact\": \"If not addressed, the degradation risk may lead to reduced inverter performance, decreased energy output, and potentially result in premature wear or failure of inverter components.\"\n}\n```",
+        "latency_seconds": 1.417,
+        "input_tokens": 838,
+        "output_tokens": 369,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "within_24h",
+            "expected": [
+              "within_24h",
+              "scheduled"
+            ],
+            "details": "Correct: 'within_24h' matches degradation_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 213,
+            "details": "Good quality"
+          },
+          "latency_seconds": 1.417
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "{\n  \"title\": \"Degradation Risk Maintenance for INV-P1-L1-1 at Plant 1 - Celestical, Block A\",\n  \"priority\": \"P2-High\",\n  \"description\": \"The inverter INV-P1-L1-1 at Plant 1 - Celestical, Block A is experiencing a degradation risk with a risk score of 0.6500. Key risk factors include high current readings from pv3 and string3, as well as elevated power output and ambient temperature.\",\n  \"root_cause_analysis\": \"The high risk score is primarily attributed to the elevated current readings from pv3 (3.1) and string3 (3.1), which are contributing 0.1800 and 0.1400 to the risk score, respectively. Additionally, the high power output (6200.0) and ambient temperature (35.8) are also contributing factors, with SHAP values of 0.1200 and 0.0400, respectively.\",\n  \"recommended_actions\": [\n    \"Inspect the pv3 and string3 connections for any signs of damage or wear\",\n    \"Verify that the inverter is operating within the recommended temperature range and consider providing additional cooling if necessary\"\n  ],\n  \"estimated_downtime\": \"2 hours\",\n  \"parts_needed\": [\n    \"Multimeter\",\n    \"Thermometer\"\n  ],\n  \"safety_notes\": [\n    \"Ensure proper personal protective equipment (PPE) is worn when inspecting the inverter and connections\",\n    \"Follow proper lockout/tagout procedures to prevent accidental start-up of the inverter\"\n  ],\n  \"escalation_needed\": false\n}",
+        "latency_seconds": 1.885,
+        "input_tokens": 759,
+        "output_tokens": 346,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 183,
+            "details": "Good quality"
+          },
+          "latency_seconds": 1.885
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "The current status of INV-P1-L1-1 is a degradation risk with a risk value of 0.65, according to the provided data. The key factors contributing to this risk are inverters[1].pv3_current, smu[1].string3, and inverters[1].power, with SHAP values of +0.180, +0.140, and +0.120, respectively. \n\nI don't have the inverter manual available to provide specific guidance on actions to take for a degradation risk with this risk value.",
+        "latency_seconds": 0.684,
+        "input_tokens": 336,
+        "output_tokens": 115,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 64,
+            "details": "Good quality"
+          },
+          "latency_seconds": 0.684
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "```json\n{\n  \"summary\": \"The inverter INV-P1-L2-0 at Plant 1 - Celestical has a high risk score of 0.8900, indicating a potential shutdown risk. The main contributing factors are the inverter temperature and ambient temperature. Recommended actions include monitoring the inverter temperature and ambient temperature, and checking the alarm code 4003.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[0].temp\",\n      \"impact\": \"high\",\n      \"explanation\": \"The inverter temperature is 78.6, which is a significant contributor to the shutdown risk.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The ambient temperature is 47.3, which is also contributing to the shutdown risk.\"\n    },\n    {\n      \"feature\": \"inverters[0].alarm_code\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The alarm code 4003 is contributing to the shutdown risk, but its meaning is unclear without inverter-manual context.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Monitor the inverter temperature and ambient temperature\",\n    \"Check the alarm code 4003 and investigate its cause\"\n  ],\n  \"urgency\": \"immediate\",\n  \"estimated_impact\": \"If not addressed, the inverter may shut down, resulting in lost energy production and potential damage to the system.\"\n}\n```",
+        "latency_seconds": 1.23,
+        "input_tokens": 802,
+        "output_tokens": 314,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "immediate",
+            "expected": [
+              "immediate",
+              "within_24h"
+            ],
+            "details": "Correct: 'immediate' matches shutdown_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 162,
+            "details": "Good quality"
+          },
+          "latency_seconds": 1.23
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "{\n  \"title\": \"Inverter INV-P1-L2-0 High Risk Alert at Plant 1 - Celestical, Block B\",\n  \"priority\": \"P1-Critical\",\n  \"description\": \"Inverter INV-P1-L2-0 is experiencing high risk conditions with a risk score of 0.8900, classified as shutdown_risk. Key risk factors include elevated inverter temperature (78.6), ambient temperature (47.3), alarm code 4003, high power output (4100.0), and limit percent (42).\",\n  \"root_cause_analysis\": \"The high risk score is primarily attributed to the inverter's temperature (SHAP value: +0.3500) and ambient temperature (SHAP value: +0.1500), indicating potential overheating issues. The alarm code 4003 and high power output also contribute to the risk assessment.\",\n  \"recommended_actions\": [\n    \"Inspect the inverter's cooling system to ensure proper function and clean any dust or debris that may be obstructing airflow.\",\n    \"Verify that the inverter is properly ventilated and consider relocating it to a cooler area if possible.\"\n  ],\n  \"estimated_downtime\": \"2-4 hours\",\n  \"parts_needed\": [\n    \"Cooling system components (e.g., fans, heat sinks)\"\n  ],\n  \"safety_notes\": [\n    \"Ensure proper personal protective equipment (PPE) is worn when inspecting and maintaining the inverter, including gloves, safety glasses, and a face mask.\",\n    \"Disconnect power to the inverter before performing any maintenance tasks.\"\n  ],\n  \"escalation_needed\": true\n}",
+        "latency_seconds": 1.196,
+        "input_tokens": 723,
+        "output_tokens": 346,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 185,
+            "details": "Good quality"
+          },
+          "latency_seconds": 1.196
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "According to the data, INV-P1-L2-0 has a risk level of 0.89 and is classified as a shutdown risk. The key factors contributing to this risk are: \n- Inverters[0].temp with a SHAP value of +0.350, \n- sensors[0].ambient_temp with a SHAP value of +0.150, and \n- inverters[0].alarm_code with a SHAP value of +0.120.\n\nI don't have the inverter manual available to provide specific guidance on what actions to take for a shutdown risk. I recommend consulting the inverter manual for shutdown risk procedures.",
+        "latency_seconds": 0.659,
+        "input_tokens": 332,
+        "output_tokens": 134,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 81,
+            "details": "Good quality"
+          },
+          "latency_seconds": 0.659
+        }
+      }
+    ]
+  },
+  "gemini_2_5_flash": {
+    "display_name": "Gemini 2.5 Flash (Google)",
+    "provider": "google",
+    "model_id": "models/gemini-2.5-flash",
+    "results": [
+      {
+        "task": "explanation",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "```json\n{\n  \"summary\": \"The inverter INV-P1-L1-0 is currently operating within normal parameters with a low risk score of 0.1200, classifying it as 'no_risk'. Key operational metrics such as power output, internal temperature, and PV string currents are all indicative of healthy and stable performance.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[0].power\",\n      \"impact\": \"low\",\n      \"explanation\": \"The inverter's current power output of 8750.0 W is within expected operational parameters, indicating healthy energy generation and contributing to the low risk assessment.\"\n    },\n    {\n      \"feature\": \"inverters[0].temp\",\n      \"impact\": \"low\",\n      \"explanation\": \"The inverter's internal temperature of 42.3\u00b0C is within the normal operating range, suggesting effective thermal management and no overheating concerns.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"low\",\n      \"explanation\": \"The ambient temperature of 34.2\u00b0C is typical for current conditions, supporting stable inverter performance.\"\n    },\n",
+        "latency_seconds": 9.814,
+        "input_tokens": 853,
+        "output_tokens": 267,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.472,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 0.0,
+            "predicted_urgency": null,
+            "expected": [
+              "routine",
+              "scheduled"
+            ],
+            "details": "Could not parse JSON"
+          },
+          "completeness": {
+            "score": 0.286,
+            "checks": {
+              "has_summary": false,
+              "has_factors": false,
+              "has_actions": false,
+              "has_urgency": false,
+              "has_impact": false,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "2/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 125,
+            "details": "Good quality"
+          },
+          "latency_seconds": 9.814
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "{\n  \"title\": \"Routine System Health Check - INV-P1-L1-0 (Plant 1 - Celestical)\",\n  \"priority\": \"P4-Low\",\n  \"description\": \"A routine maintenance ticket generated for Inverter INV-P1-L1-0 in Block A of Plant 1 (Celestical). The latest ML risk assessment indicates a 'no_risk' classification with a Risk Score of 0.1200. Current sensor readings show the inverter operating within expected parameters. This ticket is for proactive monitoring and verification of system stability.\",\n  \"root_cause_analysis\": \"The ML model's risk assessment indicates a 'no_risk' classification. Key risk factors identified by SHAP values (inverters[0].power: -0.0400, inverters[0].temp: -0.0300, sensors[0].ambient_temp: -0.0200, inverters[0].pv1_current: -0.0100, meters[0].pf: -0.0100, inverters[0].kwh_today: -0.0100) are all negative, signifying that these parameters are contributing to a *reduction* in overall risk. Current sensor readings are consistent with normal operation:\\n- Inverter Power: 8750.0\\n- Inverter Temperature: 42.3\\n- Ambient Temperature: 34.2\\n- PV1 Current: 9.8\\n- Power Factor: 0.98\\n- kWh Today: 42.5\\n- Alarm Code: 0\\n- Operational State: 1\\n- PV1 Voltage: 38.2\\n- PV2 Current: 9.7\\n- PV2 Voltage: 38.0\\n- PV3 Current: 9.6\\n- PV3 Voltage: 37.9\\n- Limit Percent: 100\\n- Grid Frequency: 50.01\\nThese values collectively support the 'no_risk' assessment, indicating stable and healthy inverter operation.\",\n  \"recommended_actions\": [\n    \"Perform a visual inspection of Inverter INV-P1-L1-0 for any external signs of wear, damage, or unusual conditions (e.g., discoloration, abnormal sounds).\",\n    \"Verify all cable connections to the inverter are secure and free from corrosion.\",\n    \"Confirm that the inverter's cooling fans are operating correctly and vents are unobstructed.\",\n    \"Review historical data logs for INV-P1-L1-0 to ensure consistent performance trends and no intermittent anomalies.\",\n    \"Monitor inverter operational parameters remotely for the next 24-48 hours to confirm continued stability. (Note: No specific inverter manual troubleshooting context available, general best practices applied.)\"\n  ],\n  \"estimated_downtime\": \"None (remote monitoring) / 0.5 hours (on-site visual inspection)\",\n  \"parts_needed\": [\n    \"None\"\n  ],\n  \"safety_notes\": [\n    \"Always follow standard electrical safety procedures when working near inverters.\",\n    \"Ensure proper Lockout/Tagout (LOTO) procedures are observed if any physical interaction beyond visual inspection is required.\",\n    \"Wear appropriate Personal Protective Equipment (PPE), including safety glasses and gloves.\"\n  ],\n  \"escalation_needed\": false\n}",
+        "latency_seconds": 8.028,
+        "input_tokens": 766,
+        "output_tokens": 750,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 323,
+            "details": "Good quality"
+          },
+          "latency_seconds": 8.028
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "For INV-P1-L1-0:\n*   The risk is 0.12, according to the data context.\n*   The class is `no_risk`, according to the data context.\n\nI don't have maintenance advice or actions available right now.",
+        "latency_seconds": 11.75,
+        "input_tokens": 329,
+        "output_tokens": 60,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 32,
+            "details": "Good quality"
+          },
+          "latency_seconds": 11.75
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "```json\n{\n  \"summary\": \"Inverter INV-P1-L1-1 is exhibiting a degradation risk (score 0.65) primarily driven by significantly lower current and voltage readings on PV string 3. This suggests a localized issue affecting the performance of that specific string.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[1].pv3_current\",\n      \"impact\": \"high\",\n      \"explanation\": \"The current on PV string 3 is 3.1A, which is notably lower than other active strings (e.g., PV1 at 9.5A, PV2 at 9.4A). This low current is a primary indicator of reduced power production or a fault within PV string 3.\"\n    },\n    {\n      \"feature\": \"smu[1].string3\",\n      \"impact\": \"high\",\n      \"explanation\": \"The current reading for SMU string 3 is 3.1A, corroborating the low current observed on the inverter's PV3 input. This reinforces the diagnosis of an issue specific to string 3.\"\n    },\n    {\n      \"feature\": \"inverters[1].power\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter's total power output is 6200.0W. While this is a general output, its positive contribution to the degradation risk suggests that the overall power production might be suboptimal given the identified issues with PV string 3.\"\n    },\n    {\n      \"feature\": \"inverters[1].pv3_voltage\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The voltage on PV string 3 is 28.4V, which is lower than other active strings (e.g., PV1 at 37.8V, PV2 at 37.6V). This reduced voltage, in conjunction with low current, points to potential module issues, shading, or connection problems on string 3.\"\n    },\n    {\n      \"feature\": \"inverters[1].kwh_today\",\n      \"impact\": \"low\",\n      \"explanation\": \"The cumulative energy produced today is 28.3 kWh. Its contribution suggests that the ongoing degradation risk may be impacting the overall daily energy yield.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"low\",\n      \"explanation\": \"The ambient temperature is 35.8\u00b0C. While temperature affects PV performance, its low impact indicates it is not a primary driver of this specific degradation risk.\"\n    },\n    {\n      \"feature\": \"inverters[1].pv4_current\",\n      \"impact\": \"low\",\n      \"explanation\": \"The current on PV string 4 is 7.2A. While contributing to the model's prediction, its impact is minor compared to the issues observed on PV string 3.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Perform a detailed inspection of PV string 3 (and associated modules) for INV-P1-L1-1. Look for physical damage, shading, soiling, or loose connections.\",\n    \"Verify voltage and current readings for PV string 3 at the string combiner box and inverter terminals using a multimeter to confirm sensor accuracy and identify potential open circuits or high resistance connections.\",\n    \"Compare the performance of PV string 3 against other healthy strings on the same inverter or adjacent inverters under similar irradiance conditions to quantify the performance deviation.\"\n  ],\n  \"urgency\": \"within_24h\",\n  \"estimated_impact\": \"Failure to address the degradation on PV string 3 could lead to sustained underperformance, reduced overall energy yield for INV-P1-L1-1, and potentially accelerate wear on other inverter components due to imbalanced loading.\"\n}\n```",
+        "latency_seconds": 10.06,
+        "input_tokens": 891,
+        "output_tokens": 847,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "within_24h",
+            "expected": [
+              "within_24h",
+              "scheduled"
+            ],
+            "details": "Correct: 'within_24h' matches degradation_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 437,
+            "details": "Good quality"
+          },
+          "latency_seconds": 10.06
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "{\n  \"title\": \"INV-P1-L1-1: Degradation Risk - PV String 3 Performance Anomaly\",\n  \"priority\": \"P2-High\",\n  \"description\": \"A degradation risk (Risk Score: 0.6500) has been identified for Inverter INV-P1-L1-1 in Block A of Plant 1 - Celestical. Analysis indicates a significant performance anomaly on PV String 3. Current sensor readings show inverters[1].pv3_current at 3.1A and inverters[1].pv3_voltage at 28.4V, which are notably lower than other active strings (e.g., pv1_current: 9.5A, pv1_voltage: 37.8V; pv2_current: 9.4A, pv2_voltage: 37.6V). This discrepancy suggests a potential issue impacting the power output and overall health of PV String 3.\",\n  \"root_cause_analysis\": \"SHAP analysis highlights 'inverters[1].pv3_current' (+0.1800) and 'smu[1].string3' (+0.1400) as the primary contributors to the degradation risk, strongly indicating an underperformance issue with PV String 3. The 'inverters[1].pv3_voltage' (+0.0800) also contributes significantly. The raw values of pv3_current (3.1A) and pv3_voltage (28.4V) are substantially lower than other strings (e.g., pv1_current: 9.5A, pv1_voltage: 37.8V; pv2_current: 9.4A, pv2_voltage: 37.6V; pv4_current: 7.2A, pv4_voltage: 36.1V), suggesting a fault within the PV String 3 array, its connections, or associated components.\",\n  \"recommended_actions\": [\n    \"1. Initiate Lockout/Tagout (LOTO) procedures for Inverter INV-P1-L1-1 to ensure safety before commencing work.\",\n    \"2. Conduct a thorough visual inspection of PV String 3 for any signs of physical damage, shading, soiling, or loose/corroded connections from the PV modules to the inverter input.\",\n    \"3. Using appropriate PV test equipment, measure the open-circuit voltage (Voc) and short-circuit current (Isc) of PV String 3. Compare these readings against design specifications and the performance of other healthy strings on INV-P1-L1-1.\",\n    \"4. Verify all electrical connections for PV String 3, including module-to-module connections, combiner box terminals (if applicable), and the inverter's PV input terminals.\",\n    \"5. If no obvious physical fault is found, consider performing an insulation resistance test on PV String 3 to detect potential ground faults or cable degradation.\",\n    \"6. Consult the inverter's operation and maintenance manual for specific troubleshooting steps related to low PV string current or voltage alarms, even though no specific manual context was provided for this ticket.\"\n  ],\n  \"estimated_downtime\": \"2-4 hours for initial diagnosis and inspection; potential for longer downtime if component replacement or extensive repair is required.\",\n  \"parts_needed\": [\n    \"Multimeter (DC voltage/current capable)\",\n    \"PV string test equipment (e.g., I-V curve tracer, insulation tester)\",\n    \"Standard electrical toolkit\",\n    \"Replacement PV connectors (MC4 or equivalent, as per system design)\",\n    \"Assorted electrical wiring (PV-rated)\",\n    \"Potential replacement PV modules (if physical damage is identified)\"\n  ],\n  \"safety_notes\": [\n    \"Always follow Lockout/Tagout (LOTO) procedures before working on electrical equipment.\",\n    \"Wear appropriate Personal Protective Equipment (PPE), including insulated gloves, safety glasses, and arc-flash rated clothing.\",\n    \"Be aware of high DC voltages present in PV strings, even when the inverter is off.\",\n    \"Ensure proper grounding practices are followed.\",\n    \"If working at height, adhere to all fall protection safety protocols.\"\n  ],\n  \"escalation_needed\": true\n}",
+        "latency_seconds": 10.815,
+        "input_tokens": 804,
+        "output_tokens": 936,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 451,
+            "details": "Good quality"
+          },
+          "latency_seconds": 10.815
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "According to the data, INV-P1-L1-1 has a risk of 0.65 and is classified as degradation_risk.\n\nI don't have that data available right now for what actions to take.",
+        "latency_seconds": 3.455,
+        "input_tokens": 334,
+        "output_tokens": 48,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.712,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 0.75,
+            "word_count": 28,
+            "details": "Too short (28 words)"
+          },
+          "latency_seconds": 3.455
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "```json\n{\n  \"summary\": \"Inverter INV-P1-L2-0 is at a high risk of shutdown (0.8900 risk score), primarily driven by significantly elevated internal inverter temperature and a high ambient temperature. An active alarm code 4003 also contributes to this critical classification.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[0].temp\",\n      \"impact\": \"high\",\n      \"explanation\": \"The inverter's internal temperature is significantly elevated at 78.6\u00b0C, indicating potential overheating which is a primary contributor to the predicted shutdown risk.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The ambient temperature of 47.3\u00b0C is contributing to the overall thermal load on the inverter, exacerbating the internal temperature issue.\"\n    },\n    {\n      \"feature\": \"inverters[0].alarm_code\",\n      \"impact\": \"medium\",\n      \"explanation\": \"Alarm code 4003 is active, suggesting a specific fault condition that requires investigation. Without inverter-manual context, the exact nature of this alarm is unknown but it contributes to the risk.\"\n    },\n    {\n      \"feature\": \"inverters[0].power\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter is currently operating at 4100.0 W, which, in conjunction with other factors, may be contributing to the thermal stress.\"\n    },\n    {\n      \"feature\": \"inverters[0].limit_percent\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter's power output is being limited to 42%, potentially as a protective measure due to internal conditions or grid requirements.\"\n    },\n    {\n      \"feature\": \"inverters[0].pv1_current\",\n      \"impact\": \"low\",\n      \"explanation\": \"The PV1 string current is 8.1 A, indicating active power generation from this string.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Immediately inspect inverter INV-P1-L2-0 for proper ventilation, obstructed cooling fins, and fan operation to mitigate high internal temperatures.\",\n    \"Investigate the cause of alarm code 4003 by checking the inverter's local display or data logger for more specific fault messages. Consult the inverter manual if available (currently not provided) for detailed troubleshooting steps related to this code.\",\n    \"Monitor the inverter's temperature and power output closely for any further degradation or signs of imminent shutdown.\"\n  ],\n  \"urgency\": \"immediate\",\n  \"estimated_impact\": \"Failure to address these conditions could lead to an unscheduled inverter shutdown, resulting in significant energy production loss and potential long-term damage to the inverter components due to sustained high temperatures.\"\n}\n```",
+        "latency_seconds": 11.557,
+        "input_tokens": 855,
+        "output_tokens": 639,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "immediate",
+            "expected": [
+              "immediate",
+              "within_24h"
+            ],
+            "details": "Correct: 'immediate' matches shutdown_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 324,
+            "details": "Good quality"
+          },
+          "latency_seconds": 11.557
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "{\n  \"title\": \"Critical Overheating and Alarm on Inverter INV-P1-L2-0\",\n  \"priority\": \"P1-Critical\",\n  \"description\": \"A critical shutdown risk has been identified for Inverter INV-P1-L2-0 at Plant 1 (Celestical), Block B, with a risk score of 0.8900. The inverter is currently operating with an internal temperature of 78.6\u00b0C and reporting alarm code 4003. Ambient temperature is 47.3\u00b0C. The inverter's power output is 4100.0 with a limit percentage of 42. This condition indicates a severe operational anomaly requiring immediate attention to prevent equipment damage or complete failure.\",\n  \"root_cause_analysis\": \"The high risk score is primarily driven by an elevated inverter internal temperature (`inverters[0].temp: 78.6`, SHAP +0.3500), which is significantly contributing to the shutdown risk. This is exacerbated by an elevated ambient temperature (`sensors[0].ambient_temp: 47.3`, SHAP +0.1500). The presence of `inverters[0].alarm_code: 4003` (SHAP +0.1200) indicates a specific fault condition, likely related to the thermal stress. Current power output (`inverters[0].power: 4100.0`, SHAP +0.1000) and a reduced limit percentage (`inverters[0].limit_percent: 42`, SHAP +0.0800) suggest the inverter may be operating under stress or attempting to self-regulate due to the detected issue. The combination of these factors points to an imminent risk of thermal shutdown or component failure.\",\n  \"recommended_actions\": [\n    \"Immediately dispatch a qualified technician to Plant 1, Block B, to inspect Inverter INV-P1-L2-0.\",\n    \"Conduct a thorough visual inspection of the inverter for any obvious signs of damage, blockages to cooling vents, or environmental factors contributing to high temperature.\",\n    \"Verify the meaning of `alarm_code: 4003` using available internal documentation or general inverter fault code references, as specific inverter manual context is unavailable.\",\n    \"Monitor `inverters[0].temp` (78.6\u00b0C) and `sensors[0].ambient_temp` (47.3\u00b0C) for further increases and assess the effectiveness of the inverter's cooling system (fans, heat sinks).\",\n    \"If safe to do so and after initial assessment, consider a controlled shutdown and restart of the inverter to clear temporary faults, while closely monitoring temperature and alarm status.\",\n    \"Collect comprehensive diagnostic logs and operational data for further analysis.\"\n  ],\n  \"estimated_downtime\": \"4-8 hours for initial diagnosis and potential resolution, potentially longer if parts replacement is required.\",\n  \"parts_needed\": [\n    \"Standard electrical toolkit (multimeter, screwdrivers, wrenches)\",\n    \"Thermal imaging camera\",\n    \"Personal Protective Equipment (PPE)\",\n    \"Lockout/Tagout (LOTO) kit\",\n    \"Cleaning supplies (e.g., compressed air for vents)\"\n  ],\n  \"safety_notes\": [\n    \"Strict adherence to Lockout/Tagout (LOTO) procedures before any physical interaction with the inverter.\",\n    \"Wear appropriate Personal Protective Equipment (PPE), including arc flash rated gear, safety glasses, and insulated gloves.\",\n    \"Verify de-energization using a properly rated voltage detector before commencing work.\",\n    \"Be aware of high temperatures on inverter surfaces.\",\n    \"Follow all site-specific safety protocols for working with high-voltage",
+        "latency_seconds": 11.325,
+        "input_tokens": 768,
+        "output_tokens": 813,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.5,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 0.0,
+            "checks": {
+              "has_title": false,
+              "has_priority": false,
+              "has_description": false,
+              "has_root_cause": false,
+              "has_actions": false,
+              "has_safety": false,
+              "has_parts": false
+            },
+            "details": "0/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 414,
+            "details": "Good quality"
+          },
+          "latency_seconds": 11.325
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "INV-P1-L2-0 has a risk of 0.89 and is classified as `shutdown_risk`.\n\nI don't have maintenance recommendations available right now.",
+        "latency_seconds": 2.774,
+        "input_tokens": 331,
+        "output_tokens": 39,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.712,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 0.75,
+            "word_count": 19,
+            "details": "Too short (19 words)"
+          },
+          "latency_seconds": 2.774
+        }
+      }
+    ]
+  },
+  "hf_qwen_72b": {
+    "display_name": "Qwen 2.5 72B (HuggingFace)",
+    "provider": "huggingface",
+    "model_id": "Qwen/Qwen2.5-72B-Instruct",
+    "results": [
+      {
+        "task": "explanation",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "{\n  \"summary\": \"The inverter INV-P1-L1-0 at Plant 1 - Celestical is currently operating within safe parameters, with a low risk score of 0.12. The key factors contributing to this assessment include stable power output, moderate inverter temperature, and favorable ambient conditions.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[0].power\",\n      \"impact\": \"high\",\n      \"explanation\": \"The inverter is producing a consistent power output of 8750.0 W, which is within expected operational ranges and contributes significantly to the low risk score.\"\n    },\n    {\n      \"feature\": \"inverters[0].temp\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter temperature is 42.3\u00b0C, which is within a safe operating range and does not indicate overheating concerns.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"low\",\n      \"explanation\": \"The ambient temperature is 34.2\u00b0C, which is moderate and does not pose a significant risk to inverter performance.\"\n    },\n    {\n      \"feature\": \"inverters[0].pv1_current\",\n      \"impact\": \"low\",\n      \"explanation\": \"The PV1 current is 9.8 A, indicating normal operation of the photovoltaic input and contributing to the overall stability of the inverter.\"\n    },\n    {\n      \"feature\": \"meters[0].pf\",\n      \"impact\": \"low\",\n      \"explanation\": \"The power factor is 0.98, which is close to ideal and indicates efficient power usage.\"\n    },\n    {\n      \"feature\": \"inverters[0].kwh_today\",\n      \"impact\": \"low\",\n      \"explanation\": \"The inverter has generated 42.5 kWh today, which is a reasonable daily production value and aligns with expected performance.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Continue monitoring inverter power output and temperature to ensure they remain within safe operational limits.\",\n    \"Perform routine maintenance checks to verify the integrity of all connections and components.\"\n  ],\n  \"urgency\": \"routine\",\n  \"estimated_impact\": \"If these conditions persist, the inverter is expected to continue operating safely without immediate risk of failure or performance degradation.\"\n}",
+        "latency_seconds": 23.56,
+        "input_tokens": 822,
+        "output_tokens": 500,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "routine",
+            "expected": [
+              "routine",
+              "scheduled"
+            ],
+            "details": "Correct: 'routine' matches no_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 258,
+            "details": "Good quality"
+          },
+          "latency_seconds": 23.56
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "{\n  \"title\": \"Routine Maintenance Check for Inverter INV-P1-L1-0\",\n  \"priority\": \"P4-Low\",\n  \"description\": \"The ML risk assessment for Inverter INV-P1-L1-0 at Plant 1 - Celestical, Block A, indicates a low risk score of 0.1200 with a risk class of 'no_risk'. The current sensor readings show that the inverter is operating within normal parameters. However, a routine maintenance check is recommended to ensure continued optimal performance.\",\n  \"root_cause_analysis\": \"The SHAP values indicate that the key factors contributing to the low risk score are the inverter's power output (8750.0 W), temperature (42.3\u00b0C), ambient temperature (34.2\u00b0C), PV1 current (9.8 A), power factor (0.98), and kWh generated today (42.5 kWh). These values are all within acceptable ranges, suggesting that the inverter is functioning as expected.\",\n  \"recommended_actions\": [\n    \"Perform a visual inspection of the inverter to ensure there are no physical damages or signs of wear.\",\n    \"Check all connections and terminals for tightness and corrosion.\",\n    \"Verify that the cooling system is functioning properly by inspecting fans and heat sinks.\",\n    \"Review the inverter logs for any recent alarms or warnings, even if the current alarm code is 0.\",\n    \"Ensure that the inverter's firmware is up to date.\"\n  ],\n  \"estimated_downtime\": \"1 hour\",\n  \"parts_needed\": [],\n  \"safety_notes\": [\n    \"Ensure the inverter is powered down before performing any physical inspections or maintenance tasks.\",\n    \"Wear appropriate personal protective equipment (PPE) including gloves and safety glasses.\",\n    \"Follow all local electrical safety guidelines and procedures.\"\n  ],\n  \"escalation_needed\": false\n}",
+        "latency_seconds": 13.042,
+        "input_tokens": 735,
+        "output_tokens": 396,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 233,
+            "details": "Good quality"
+          },
+          "latency_seconds": 13.042
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "normal_operation",
+        "risk_class": "no_risk",
+        "response": "The current status of INV-P1-L1-0 in Plant 1, Block A, is as follows:\n\n- Risk Level: 0.12\n- Risk Class: No Risk\n\nBased on the provided data, the inverter is currently classified as having no risk. The factors contributing to this low risk include:\n- Power: -0.040\n- Temperature: -0.030\n- Ambient Temperature: -0.020\n\nSince the inverter is classified as no risk, no immediate action is required. Continue with regular monitoring and maintenance schedules. If you notice any changes or if the risk level increases, reassess the situation accordingly. \n\nI don't have that data available right now for specific maintenance steps, but you can refer to the inverter manual for routine maintenance procedures.",
+        "latency_seconds": 6.113,
+        "input_tokens": 316,
+        "output_tokens": 168,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 113,
+            "details": "Good quality"
+          },
+          "latency_seconds": 6.113
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "{\n  \"summary\": \"The inverter INV-P1-L1-1 at Plant 1 - Celestical, Block A, is showing signs of degradation risk with a risk score of 0.65. The primary contributing factors are the PV3 current, string 3 current, and power output.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[1].pv3_current\",\n      \"impact\": \"high\",\n      \"explanation\": \"The PV3 current is significantly lower than expected (3.1 A), which may indicate issues with the PV3 string or its connection.\"\n    },\n    {\n      \"feature\": \"smu[1].string3\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The current in string 3 (3.1 A) is also low, suggesting potential shading, soiling, or a fault in the string.\"\n    },\n    {\n      \"feature\": \"inverters[1].power\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The power output (6200 W) is below optimal levels, which aligns with the low currents in PV3 and string 3.\"\n    },\n    {\n      \"feature\": \"inverters[1].pv3_voltage\",\n      \"impact\": \"low\",\n      \"explanation\": \"The PV3 voltage (28.4 V) is slightly lower than typical operating conditions, which may contribute to the reduced current.\"\n    },\n    {\n      \"feature\": \"inverters[1].kwh_today\",\n      \"impact\": \"low\",\n      \"explanation\": \"The energy produced today (28.3 kWh) is lower than expected, reflecting the overall suboptimal performance.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"low\",\n      \"explanation\": \"The ambient temperature (35.8\u00b0C) is within normal operating range and does not significantly impact the current issue.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Inspect the PV3 string and its connections for physical damage, shading, or soiling.\",\n    \"Check the string 3 current and ensure it is properly connected and free from faults.\",\n    \"Monitor the power output and energy production over the next few days to assess the impact of any corrective actions.\"\n  ],\n  \"urgency\": \"within_24h\",\n  \"estimated_impact\": \"If not addressed, the degraded performance could lead to further efficiency losses and potential equipment damage over time.\"\n}",
+        "latency_seconds": 35.243,
+        "input_tokens": 856,
+        "output_tokens": 527,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "within_24h",
+            "expected": [
+              "within_24h",
+              "scheduled"
+            ],
+            "details": "Correct: 'within_24h' matches degradation_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 268,
+            "details": "Good quality"
+          },
+          "latency_seconds": 35.243
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "{\n  \"title\": \"Degradation Risk Detected in Inverter INV-P1-L1-1\",\n  \"priority\": \"P3-Medium\",\n  \"description\": \"The ML risk assessment has identified a degradation risk for Inverter INV-P1-L1-1 located in Plant 1 - Celestical, Block A. The risk score is 0.6500, indicating a moderate likelihood of performance degradation. Key risk factors include elevated PV3 current, string 3 performance, power output, PV3 voltage, kWh generated today, ambient temperature, and PV4 current.\",\n  \"root_cause_analysis\": \"The SHAP values indicate that the PV3 current (3.1 A) and string 3 performance (3.1 A) are the primary contributors to the risk score. The inverter's power output (6200.0 W) and PV3 voltage (28.4 V) also contribute significantly. The ambient temperature (35.8\u00b0C) and PV4 current (7.2 A) are additional factors. These readings suggest potential issues with the PV3 string or its connections, which may be causing reduced efficiency and increased stress on the inverter.\",\n  \"recommended_actions\": [\n    \"Inspect the PV3 string connections and ensure they are secure and free from corrosion.\",\n    \"Check the PV3 module for any visible damage or shading issues.\",\n    \"Verify the inverter's cooling system to ensure it is functioning properly, given the ambient temperature.\",\n    \"Monitor the inverter's power output and PV3 current over the next 24 hours to assess if the issue persists.\"\n  ],\n  \"estimated_downtime\": \"2-4 hours\",\n  \"parts_needed\": [\"Multimeter\", \"Infrared thermometer\", \"Inspection mirror\"],\n  \"safety_notes\": [\n    \"Ensure the inverter is powered down before performing any physical inspections.\",\n    \"Wear appropriate personal protective equipment (PPE), including gloves and safety glasses.\",\n    \"Follow all local electrical safety guidelines and lockout/tagout procedures.\"\n  ],\n  \"escalation_needed\": false\n}",
+        "latency_seconds": 50.347,
+        "input_tokens": 769,
+        "output_tokens": 435,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 248,
+            "details": "Good quality"
+          },
+          "latency_seconds": 50.347
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "degradation_risk",
+        "risk_class": "degradation_risk",
+        "response": "The current status of INV-P1-L1-1 in Plant 1, Block A, shows a risk level of 0.65, classified as degradation risk. The key factors contributing to this risk are the PV3 current (+0.180), string 3 of the SMU (+0.140), and the power output (+0.120).\n\nGiven this information, it is recommended to:\n\n1. Monitor the PV3 current and string 3 of the SMU closely, as they are the primary contributors to the risk.\n2. Check the power output to ensure it remains within expected parameters.\n3. Consider scheduling a maintenance check to investigate potential issues with these components.\n\nIf any of these values continue to degrade or show abnormal behavior, further action may be necessary. \n\nI don't have specific manual guidance available, but these steps should help mitigate the risk.",
+        "latency_seconds": 14.17,
+        "input_tokens": 323,
+        "output_tokens": 182,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 128,
+            "details": "Good quality"
+          },
+          "latency_seconds": 14.17
+        }
+      },
+      {
+        "task": "explanation",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "{\n  \"summary\": \"The inverter INV-P1-L2-0 at Plant 1 - Celestical, Block B, has a high risk of shutdown due to elevated temperatures and an active alarm code. Immediate attention is required to prevent potential system failure.\",\n  \"key_factors\": [\n    {\n      \"feature\": \"inverters[0].temp\",\n      \"impact\": \"high\",\n      \"explanation\": \"The inverter temperature is 78.6\u00b0C, which is significantly above normal operating conditions, indicating a high risk of overheating and potential shutdown.\"\n    },\n    {\n      \"feature\": \"sensors[0].ambient_temp\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The ambient temperature is 47.3\u00b0C, which is relatively high and may contribute to the inverter's elevated temperature.\"\n    },\n    {\n      \"feature\": \"inverters[0].alarm_code\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter is reporting an alarm code 4003, which indicates a specific issue that needs to be diagnosed and resolved.\"\n    },\n    {\n      \"feature\": \"inverters[0].power\",\n      \"impact\": \"medium\",\n      \"explanation\": \"The inverter is currently producing 4100.0 W of power, which is a significant load and may be contributing to the high temperature.\"\n    },\n    {\n      \"feature\": \"inverters[0].limit_percent\",\n      \"impact\": \"low\",\n      \"explanation\": \"The inverter is operating at 42% of its power limit, which suggests that it is not fully utilizing its capacity, possibly as a safety measure.\"\n    },\n    {\n      \"feature\": \"inverters[0].pv1_current\",\n      \"impact\": \"low\",\n      \"explanation\": \"The current on PV1 is 8.1 A, which is within normal operating range but may still contribute to the overall power output and heat generation.\"\n    }\n  ],\n  \"recommended_actions\": [\n    \"Inspect the inverter's cooling system and ensure all fans and vents are clear and functioning properly.\",\n    \"Check the ambient temperature around the inverter and ensure there are no obstructions or sources of additional heat.\",\n    \"Diagnose and resolve the issue indicated by alarm code 4003.\",\n    \"Monitor the inverter's temperature and power output closely and reduce the load if necessary.\"\n  ],\n  \"urgency\": \"immediate\",\n  \"estimated_impact\": \"If not addressed immediately, the inverter may shut down due to overheating, leading to a loss of power generation and potential damage to the equipment.\"\n}",
+        "latency_seconds": 25.278,
+        "input_tokens": 823,
+        "output_tokens": 556,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "immediate",
+            "expected": [
+              "immediate",
+              "within_24h"
+            ],
+            "details": "Correct: 'immediate' matches shutdown_risk"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_summary": true,
+              "has_factors": true,
+              "has_actions": true,
+              "has_urgency": true,
+              "has_impact": true,
+              "mentions_sensor_values": true,
+              "mentions_shap": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 301,
+            "details": "Good quality"
+          },
+          "latency_seconds": 25.278
+        }
+      },
+      {
+        "task": "ticket",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "{\n  \"title\": \"High Temperature and Alarm Code Indicate Potential Shutdown Risk at INV-P1-L2-0\",\n  \"priority\": \"P2-High\",\n  \"description\": \"The inverter INV-P1-L2-0 at Plant 1 - Celestical, Block B is showing a high risk of shutdown with a risk score of 0.8900. Key factors contributing to this risk include elevated inverter temperature (78.6\u00b0C), high ambient temperature (47.3\u00b0C), an active alarm code (4003), and operational power output (4100.0W). The inverter is currently operating at 42% of its limit.\",\n  \"root_cause_analysis\": \"The high inverter temperature (+0.3500) and ambient temperature (+0.1500) suggest that the inverter may be overheating. The alarm code 4003 indicates a potential issue with the cooling system or thermal management. The inverter's power output (+0.1000) and limit percent (+0.0800) further indicate that the inverter is under stress. The PV current readings (8.1A, 7.9A, 7.8A) are within normal range but contribute to the overall load on the inverter.\",\n  \"recommended_actions\": [\n    \"Inspect the inverter's cooling system, including fans and heat sinks, for any blockages or malfunctions.\",\n    \"Check the ambient temperature around the inverter to ensure proper ventilation and cooling.\",\n    \"Review the inverter's alarm log for additional details on alarm code 4003 and take appropriate corrective actions as per the inverter manual.\",\n    \"Monitor the inverter's temperature and power output to ensure they return to normal levels after addressing the issues.\"\n  ],\n  \"estimated_downtime\": \"2 hours\",\n  \"parts_needed\": [\n    \"Cooling fan (if damaged)\",\n    \"Thermal paste (if reapplication is necessary)\"\n  ],\n  \"safety_notes\": [\n    \"Ensure the inverter is powered down before performing any physical inspections or repairs.\",\n    \"Use personal protective equipment (PPE) when handling electrical components.\",\n    \"Follow all local safety regulations and guidelines.\"\n  ],\n  \"escalation_needed\": true\n}",
+        "latency_seconds": 17.005,
+        "input_tokens": 736,
+        "output_tokens": 485,
+        "error": null,
+        "evaluation": {
+          "overall_score": 1.0,
+          "json_validity": {
+            "score": 1.0,
+            "valid_json": true,
+            "has_required_fields": true,
+            "details": "All required fields present"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "has_title": true,
+              "has_priority": true,
+              "has_description": true,
+              "has_root_cause": true,
+              "has_actions": true,
+              "has_safety": true,
+              "has_parts": true
+            },
+            "details": "7/7 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 265,
+            "details": "Good quality"
+          },
+          "latency_seconds": 17.005
+        }
+      },
+      {
+        "task": "chat",
+        "scenario_name": "shutdown_risk",
+        "risk_class": "shutdown_risk",
+        "response": "The current status of INV-P1-L2-0 in Plant 1, Block B, shows a high shutdown risk with a risk score of 0.89. The main factors contributing to this risk are:\n\n- Inverter temperature (+0.350)\n- Ambient temperature (+0.150)\n- Alarm code (+0.120)\n\nGiven the high risk, it is advisable to:\n\n1. Check the inverter temperature and ambient temperature to ensure they are within safe operating limits.\n2. Review any active alarm codes and address them promptly.\n3. Consider performing a maintenance check on the inverter to prevent a potential shutdown.\n\nIf the temperatures or alarm codes indicate an issue, take immediate action to resolve them. If you need further guidance, refer to the inverter manual or contact support.",
+        "latency_seconds": 6.076,
+        "input_tokens": 319,
+        "output_tokens": 166,
+        "error": null,
+        "evaluation": {
+          "overall_score": 0.75,
+          "json_validity": {
+            "score": 0.0,
+            "valid_json": false,
+            "has_required_fields": false,
+            "details": "Not valid JSON"
+          },
+          "hallucination": {
+            "score": 1.0,
+            "hallucinated_values": [],
+            "details": "No hallucinations detected"
+          },
+          "urgency_accuracy": {
+            "score": 1.0,
+            "predicted_urgency": "N/A",
+            "expected": [],
+            "details": "Not applicable"
+          },
+          "completeness": {
+            "score": 1.0,
+            "checks": {
+              "is_substantive": true,
+              "references_data": true,
+              "is_actionable": true,
+              "is_grounded": true,
+              "is_concise": true
+            },
+            "details": "5/5 checks passed"
+          },
+          "response_quality": {
+            "score": 1.0,
+            "word_count": 117,
+            "details": "Good quality"
+          },
+          "latency_seconds": 6.076
+        }
+      }
+    ]
+  }
+}

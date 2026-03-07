@@ -1,5 +1,5 @@
 """
-SolarGuard AI – GenAI Explanation Layer for Solar Plant Risk Assessment.
+LUMIN.AI – GenAI Explanation Layer for Solar Plant Risk Assessment.
 
 Run:  uvicorn app.main:app --reload --port 8000
 Docs: http://localhost:8000/docs
@@ -60,11 +60,11 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         print(f"[WARN] RAG init failed ({exc}). Running without manual context.")
     yield
-    print("SolarGuard AI shutting down.")
+    print("LUMIN.AI shutting down.")
 
 
 app = FastAPI(
-    title="SolarGuard AI",
+    title="LUMIN.AI",
     description=(
         "GenAI explanation layer that converts ML risk predictions into "
         "human-readable guidance for solar plant operators."
