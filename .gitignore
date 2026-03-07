@@ -40,3 +40,8 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Large SQL dump files
+*.sql
+hackamined_dump.sql
+hackamined_dump_utf8.sql
