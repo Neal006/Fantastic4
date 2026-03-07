@@ -25,16 +25,7 @@ ENV/
 .env.local
 
 # ML Data and Models - DO NOT COMMIT THESE
-ml/data/**/*.csv
-ml/data/**/*.parquet
-ml/processed/*.parquet
-ml/processed/*.pkl
-ml/models/*.pkl
-ml/models/*.joblib
-ml/outputs/*.png
-ml/outputs/*.csv
-mlinference/models/*.pkl
-mlinference/models/*.joblib
+/ml
 
 # Large binary files
 *.parquet
