@@ -46,8 +46,8 @@ export default function OperatorLayout() {
     <button
       onClick={() => { navigate(path); if (window.innerWidth < 1024) setSidebarOpen(false); }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive(path)
-          ? 'bg-primary/20 text-primary-foreground'
-          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+        ? 'bg-primary/20 text-primary-foreground'
+        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
         }`}
     >
       {icon}
@@ -72,7 +72,7 @@ export default function OperatorLayout() {
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <Zap className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-bold text-lg text-sidebar-foreground">SolarWatch</span>
+          <span className="font-bold text-lg text-sidebar-foreground">Lumin AI</span>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -97,8 +97,8 @@ export default function OperatorLayout() {
                       key={block.id}
                       onClick={() => { navigate(`/operator/plant/${plant.id}/block/${block.id}`); if (window.innerWidth < 1024) setSidebarOpen(false); }}
                       className={`w-full text-left px-3 py-1.5 rounded text-xs transition-colors ${location.pathname === `/operator/plant/${plant.id}/block/${block.id}`
-                          ? 'bg-primary/20 text-primary-foreground font-medium'
-                          : 'text-sidebar-foreground/50 hover:text-sidebar-foreground/80'
+                        ? 'bg-primary/20 text-primary-foreground font-medium'
+                        : 'text-sidebar-foreground/50 hover:text-sidebar-foreground/80'
                         }`}
                     >
                       {block.name} ({block.inverterCount ?? '—'})

@@ -9,9 +9,9 @@ const ago = (mins: number) => new Date(Date.now() - mins * 60000).toISOString();
 
 // ── Users ──
 export const mockUsers: User[] = [
-  { id: 'admin01', password: 'admin123', role: 'admin', name: 'Priya Sharma', email: 'priya@solarwatch.in', assignedPlants: [], status: 'active', lastLogin: ago(12) },
-  { id: 'operator01', password: 'oper123', role: 'operator', name: 'Rahul Kumar', email: 'rahul@solarwatch.in', assignedPlants: ['plant-a', 'plant-b'], status: 'active', lastLogin: ago(5) },
-  { id: 'operator02', password: 'oper456', role: 'operator', name: 'Sneha Patel', email: 'sneha@solarwatch.in', assignedPlants: ['plant-a'], status: 'active', lastLogin: ago(60) },
+  { id: 'admin01', password: 'admin123', role: 'admin', name: 'Priya Sharma', email: 'priya@lumin.ai', assignedPlants: [], status: 'active', lastLogin: ago(12) },
+  { id: 'operator01', password: 'oper123', role: 'operator', name: 'Rahul Kumar', email: 'rahul@lumin.ai', assignedPlants: ['plant-a', 'plant-b'], status: 'active', lastLogin: ago(5) },
+  { id: 'operator02', password: 'oper456', role: 'operator', name: 'Sneha Patel', email: 'sneha@lumin.ai', assignedPlants: ['plant-a'], status: 'active', lastLogin: ago(60) },
 ];
 
 // ── Readings Generator ──

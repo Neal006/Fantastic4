@@ -4,68 +4,141 @@ const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 router.use(authenticate);
 
-const mockResponses = {
-    fault: [
-        'Based on the SHAP analysis, the primary contributor to this fault is **elevated DC voltage**, which is {shapVal}% above normal range. This typically indicates a string voltage mismatch caused by one or more panels in the string producing higher voltage due to partial shading or module degradation.',
-        'The fault on {inverterId} appears to be caused by **{faultType}**. The most significant factor is the DC current imbalance across strings. Recommend checking the string fusing and DC cable connections.',
-        'Analysis shows **AC power output** has dropped significantly while DC input remains near normal — this is characteristic of an inverter trip or MPPT failure. Recommend a manual restart and monitoring for recurrence.',
-    ],
-    maintenance: [
-        '**Maintenance Steps for {faultType}:**\n1. Isolate the inverter from the AC grid\n2. Check DC string fuses — replace any blown fuses\n3. Inspect DC cable connections for corrosion or loose contacts\n4. Verify string open-circuit voltages with a multimeter\n5. Re-energize and monitor for 30 minutes before resuming normal operation',
-        '**Procedure:**\n- Shut down the inverter using the emergency stop\n- Wait 5 minutes for capacitors to discharge\n- Inspect all terminal connections for signs of arcing or overheating\n- Clean any dust accumulation from ventilation slots\n- Document findings and re-enable',
-    ],
-    general: [
-        'Solar inverter performance degrades primarily due to: (1) **Thermal stress** — high temperatures reduce panel efficiency by ~0.5% per °C above 25°C; (2) **Soiling** — dust reduces output by 5-25% in arid regions; (3) **Shading** — partial shading has a disproportionate impact on MPPT efficiency.',
-        'Category grades represent: **A (Healthy)** → All parameters normal; **B (Low Risk)** → Minor deviations, monitor closely; **C (Moderate)** → Attention needed, schedule inspection; **D (High Risk)** → Pre-fault condition, urgent inspection; **E (Critical)** → Active fault, immediate intervention required.',
-        'SHAP values (SHapley Additive exPlanations) represent each feature\'s contribution to the AI model\'s fault prediction. Positive values push toward fault classification, negative values push toward healthy classification. The absolute magnitude indicates the strength of influence.',
-    ],
-};
+const GENAI_URL = process.env.GENAI_URL || 'http://localhost:8000';
 
-function getRandomResponse(arr, replacements = {}) {
-    let response = arr[Math.floor(Math.random() * arr.length)];
-    for (const [key, value] of Object.entries(replacements)) {
-        response = response.replace(new RegExp(`{${key}}`, 'g'), value);
+/**
+ * Generic helper: forward a request to the GenAI FastAPI server and pipe the
+ * response back to Express.  Returns the parsed JSON body on success or throws
+ * an Error with a readable message on failure.
+ */
+async function callGenAI(method, path, body) {
+    const url = `${GENAI_URL}${path}`;
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+    };
+    if (body !== undefined) {
+        opts.body = JSON.stringify(body);
     }
-    return response;
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    if (!res.ok) {
+        let detail = text;
+        try { detail = JSON.parse(text)?.detail || text; } catch (_) { /* ignored */ }
+        throw Object.assign(new Error(detail), { status: res.status });
+    }
+    try { return JSON.parse(text); } catch (_) { return text; }
 }
 
-// POST /api/chatbot/query
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/chatbot/health
+//  Proxy the GenAI server health check
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/health', async (req, res) => {
+    try {
+        const data = await callGenAI('GET', '/health');
+        res.json(data);
+    } catch (err) {
+        console.error('[Chatbot] Health check failed:', err.message);
+        res.status(503).json({ error: 'GenAI service unavailable', detail: err.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/chatbot/query
+//  Multi-turn RAG-augmented conversational Q&A (proxies to POST /chat)
+//  Body: { message, session_id? }
+// ─────────────────────────────────────────────────────────────────────────────
 router.post('/query', async (req, res) => {
     try {
-        const { message, context } = req.body;
+        const { message, session_id } = req.body;
         if (!message) return res.status(400).json({ error: 'Message is required' });
 
-        const lowerMsg = message.toLowerCase();
-        let category = 'general';
-        if (lowerMsg.includes('fault') || lowerMsg.includes('causing') || lowerMsg.includes('why') || lowerMsg.includes('shap')) {
-            category = 'fault';
-        } else if (lowerMsg.includes('fix') || lowerMsg.includes('maintenance') || lowerMsg.includes('procedure') || lowerMsg.includes('how to')) {
-            category = 'maintenance';
-        }
-
-        // Simulate typing delay
-        await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
-
-        const replacements = {
-            inverterId: context?.inverter_id || 'the inverter',
-            faultType: context?.fault_type || 'the detected fault',
-            shapVal: context?.shap_values ? Math.round(Math.max(...Object.values(context.shap_values)) * 100) : 42,
-        };
-
-        let responseText = getRandomResponse(mockResponses[category], replacements);
-
-        // Add context-aware prefix if context provided
-        if (context?.inverter_id) {
-            responseText = `**Context: ${context.inverter_id}** (${context.current_category || 'unknown'} — ${context.fault_type || 'no active fault'})\n\n` + responseText;
-        }
-
+        const data = await callGenAI('POST', '/chat', { message, session_id: session_id || null });
+        // Return: { session_id, response, sources_used }
         res.json({
-            response: responseText,
-            context_used: !!context,
+            response: data.response,
+            session_id: data.session_id,
+            sources_used: data.sources_used || [],
         });
     } catch (err) {
-        console.error('Chatbot error:', err);
-        res.status(500).json({ error: 'The AI assistant is currently unavailable. Please try again.' });
+        console.error('[Chatbot] Query error:', err.message);
+        res.status(err.status || 500).json({ error: 'The AI assistant is currently unavailable. Please try again.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/chatbot/explanation/:inverterId
+//  AI plain-English risk explanation for a single inverter
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/explanation/:inverterId', async (req, res) => {
+    try {
+        const { inverterId } = req.params;
+        const data = await callGenAI('GET', `/explanation/${encodeURIComponent(inverterId)}`);
+        res.json(data);
+    } catch (err) {
+        console.error('[Chatbot] Explanation error:', err.message);
+        const status = err.status === 404 ? 404 : 500;
+        res.status(status).json({ error: err.message || 'Failed to get AI explanation' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/chatbot/ticket/:inverterId
+//  Generate a maintenance ticket (JSON) for an inverter
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/ticket/:inverterId', async (req, res) => {
+    try {
+        const { inverterId } = req.params;
+        const data = await callGenAI('POST', `/agent/maintenance-ticket/${encodeURIComponent(inverterId)}`);
+        res.json(data);
+    } catch (err) {
+        console.error('[Chatbot] Ticket generation error:', err.message);
+        const status = err.status === 404 ? 404 : 500;
+        res.status(status).json({ error: err.message || 'Failed to generate maintenance ticket' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/chatbot/ticket/:inverterId/pdf
+//  Download the maintenance ticket PDF — streams bytes from GenAI server
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/ticket/:inverterId/pdf', async (req, res) => {
+    try {
+        const { inverterId } = req.params;
+        const url = `${GENAI_URL}/agent/maintenance-ticket/${encodeURIComponent(inverterId)}/pdf`;
+        const upstream = await fetch(url, { method: 'GET' });
+        if (!upstream.ok) {
+            const text = await upstream.text();
+            let detail = text;
+            try { detail = JSON.parse(text)?.detail || text; } catch (_) { /* ignored */ }
+            return res.status(upstream.status).json({ error: detail });
+        }
+        // Stream the PDF bytes straight through to the client
+        const contentDisposition = upstream.headers.get('content-disposition') || `attachment; filename="${inverterId}.pdf"`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', contentDisposition);
+        // Node 18+ fetch returns a web ReadableStream; pipe via arrayBuffer for simplicity
+        const buffer = await upstream.arrayBuffer();
+        res.send(Buffer.from(buffer));
+    } catch (err) {
+        console.error('[Chatbot] PDF download error:', err.message);
+        res.status(500).json({ error: 'Failed to download maintenance ticket PDF' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/chatbot/predictions/:inverterId
+//  Raw ML prediction for a single inverter (useful for the frontend)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/predictions/:inverterId', async (req, res) => {
+    try {
+        const { inverterId } = req.params;
+        const data = await callGenAI('GET', `/predictions/${encodeURIComponent(inverterId)}`);
+        res.json(data);
+    } catch (err) {
+        const status = err.status === 404 ? 404 : 500;
+        res.status(status).json({ error: err.message || 'Failed to get prediction' });
     }
 });
 

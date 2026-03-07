@@ -1,11 +1,12 @@
 -- ============================================================
--- SolarWatch Seed Data
+-- SolarWatch Seed Data  —  Synthetic Inverter Dataset
+-- Matches genai/app/synthetic_data.py exactly (12 inverters, 3 plants)
 -- Run after schema.sql
 -- ============================================================
 
 USE hackamined;
 
--- Clear existing data (order matters due to FK constraints)
+-- Clear existing data (FK-safe order)
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE audit_logs;
 TRUNCATE TABLE alerts;
@@ -18,156 +19,181 @@ TRUNCATE TABLE operators;
 TRUNCATE TABLE admins;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ── Admins ──
+-- ── Admins ───────────────────────────────────────────────────
 -- Password: admin123
 INSERT INTO admins (id, name, email, password_hash) VALUES
 ('admin-001', 'Priya Sharma', 'priya@solarwatch.in', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY.5c0EiDPCKS6a');
 
--- ── Operators ──
--- operator01 / oper123
+-- ── Operators ────────────────────────────────────────────────
+-- OP001 / operator123
 INSERT INTO operators (id, name, email, password_hash, is_active, created_by) VALUES
-('op-001', 'Rahul Kumar', 'rahul@solarwatch.in', '$2a$12$nGHWfEWfimT9vCn1DliL4.2Bwi51qQr0fvfVtG3u1kgJHWGX..LZi', TRUE, 'admin-001'),
--- operator02 / oper456
-('op-002', 'Sneha Patel', 'sneha@solarwatch.in', '$2a$12$vMYoYhDlCL3nJQQpZ5YGlua7yCe0mCIB7E2NKCq3FfZr1gkpBUhsi', TRUE, 'admin-001');
+('op-001', 'Rahul Kumar',  'rahul@solarwatch.in', '$2a$12$nGHWfEWfimT9vCn1DliL4.2Bwi51qQr0fvfVtG3u1kgJHWGX..LZi', TRUE, 'admin-001'),
+-- OP002 / operator456
+('op-002', 'Sneha Patel',  'sneha@solarwatch.in', '$2a$12$vMYoYhDlCL3nJQQpZ5YGlua7yCe0mCIB7E2NKCq3FfZr1gkpBUhsi', TRUE, 'admin-001');
 
--- ── Plants ──
+-- ── Plants  (match synthetic_data.py PLANTS dict) ────────────
+-- plant_1 → Plant 1 - Celestical
+-- plant_2 → Plant 2
+-- plant_3 → Plant 3
 INSERT INTO plants (id, name, location, status, total_capacity_kw, created_by) VALUES
-('plant-a', 'Rajasthan Solar Park', 'Jodhpur, Rajasthan', 'active', 5000, 'admin-001'),
-('plant-b', 'Gujarat Sun Farm', 'Kutch, Gujarat', 'active', 3500, 'admin-001'),
-('plant-c', 'Tamil Nadu Solar Grid', 'Ramanathapuram, TN', 'active', 4200, 'admin-001');
+('plant-1', 'Plant 1 - Celestical', 'Rajasthan, India',  'active', 500, 'admin-001'),
+('plant-2', 'Plant 2',              'Gujarat, India',    'active', 500, 'admin-001'),
+('plant-3', 'Plant 3',              'Tamil Nadu, India', 'active', 500, 'admin-001');
 
--- ── Operator Plant Access ──
+-- ── Operator Plant Access ────────────────────────────────────
 INSERT INTO operator_plant_access (operator_id, plant_id) VALUES
-('op-001', 'plant-a'),
-('op-001', 'plant-b'),
-('op-002', 'plant-a');
+('op-001', 'plant-1'),
+('op-001', 'plant-2'),
+('op-002', 'plant-2'),
+('op-002', 'plant-3');
 
--- ── Blocks ──
+-- ── Blocks  (2 per plant: Block A and Block B) ───────────────
 INSERT INTO blocks (id, plant_id, name) VALUES
-('plant-a-block-1', 'plant-a', 'Block 1'),
-('plant-a-block-2', 'plant-a', 'Block 2'),
-('plant-a-block-3', 'plant-a', 'Block 3'),
-('plant-b-block-1', 'plant-b', 'Block 1'),
-('plant-b-block-2', 'plant-b', 'Block 2'),
-('plant-c-block-1', 'plant-c', 'Block 1'),
-('plant-c-block-2', 'plant-c', 'Block 2'),
-('plant-c-block-3', 'plant-c', 'Block 3'),
-('plant-c-block-4', 'plant-c', 'Block 4');
+('p1-block-a', 'plant-1', 'Block A'),   -- ICR2-LT1 / INV-P1-L1-*
+('p1-block-b', 'plant-1', 'Block B'),   -- ICR2-LT2 / INV-P1-L2-*
+('p2-block-a', 'plant-2', 'Block A'),   -- Logger-AC12 / INV-P2-L1-*
+('p2-block-b', 'plant-2', 'Block B'),   -- Logger-ACBB / INV-P2-L2-*
+('p3-block-a', 'plant-3', 'Block A'),   -- Logger-1469 / INV-P3-L1-*
+('p3-block-b', 'plant-3', 'Block B');   -- Logger-146E / INV-P3-L2-*
 
--- ── Inverters ──
--- Plant A - Block 1 (10 inverters)
+-- ── Inverters  (12 total — names match GenAI synthetic inverter IDs) ──
+-- Category derived from risk score:
+--   A = 0–12%  B = 13–24%  C = 25–64%  D = 65–79%  E = 80–100%
 INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-001', 'plant-a-block-1', 'INV-001', 'SN-PA-B1-001', 100, 'A', TRUE, NOW()),
-('inv-002', 'plant-a-block-1', 'INV-002', 'SN-PA-B1-002', 100, 'B', TRUE, NOW()),
-('inv-003', 'plant-a-block-1', 'INV-003', 'SN-PA-B1-003', 75,  'C', TRUE, NOW()),
-('inv-004', 'plant-a-block-1', 'INV-004', 'SN-PA-B1-004', 100, 'A', TRUE, NOW()),
-('inv-005', 'plant-a-block-1', 'INV-005', 'SN-PA-B1-005', 100, 'D', TRUE, NOW()),
-('inv-006', 'plant-a-block-1', 'INV-006', 'SN-PA-B1-006', 75,  'A', TRUE, NOW()),
-('inv-007', 'plant-a-block-1', 'INV-007', 'SN-PA-B1-007', 100, 'E', TRUE, NOW()),
-('inv-008', 'plant-a-block-1', 'INV-008', 'SN-PA-B1-008', 50,  'A', TRUE, NOW()),
-('inv-009', 'plant-a-block-1', 'INV-009', 'SN-PA-B1-009', 100, 'B', TRUE, NOW()),
-('inv-010', 'plant-a-block-1', 'INV-010', 'SN-PA-B1-010', 75,  'offline', FALSE, DATE_SUB(NOW(), INTERVAL 20 MINUTE));
+-- Plant 1 / Block A
+('p1a-inv-0', 'p1-block-a', 'INV-P1-L1-0', 'ICR2-LT1-0', 100, 'A', TRUE, NOW()),  -- risk 12%
+('p1a-inv-1', 'p1-block-a', 'INV-P1-L1-1', 'ICR2-LT1-1', 100, 'D', TRUE, NOW()),  -- risk 65%
+-- Plant 1 / Block B
+('p1b-inv-0', 'p1-block-b', 'INV-P1-L2-0', 'ICR2-LT2-0', 100, 'E', TRUE, NOW()),  -- risk 89%  CRITICAL
+('p1b-inv-1', 'p1-block-b', 'INV-P1-L2-1', 'ICR2-LT2-1', 100, 'A', TRUE, NOW()),  -- risk  8%
+-- Plant 2 / Block A
+('p2a-inv-0', 'p2-block-a', 'INV-P2-L1-0', 'ACBB-L1-0',  100, 'D', TRUE, NOW()),  -- risk 72%
+('p2a-inv-1', 'p2-block-a', 'INV-P2-L1-1', 'ACBB-L1-1',  100, 'B', TRUE, NOW()),  -- risk 15%
+-- Plant 2 / Block B
+('p2b-inv-0', 'p2-block-b', 'INV-P2-L2-0', 'ACBB-L2-0',  100, 'C', TRUE, NOW()),  -- risk 58%
+('p2b-inv-1', 'p2-block-b', 'INV-P2-L2-1', 'ACBB-L2-1',  100, 'E', FALSE, DATE_SUB(NOW(), INTERVAL 5 MINUTE)),  -- risk 91%  CRITICAL / grid fault
+-- Plant 3 / Block A
+('p3a-inv-0', 'p3-block-a', 'INV-P3-L1-0', '1469-L1-0',  100, 'A', TRUE, NOW()),  -- risk  5%
+('p3a-inv-1', 'p3-block-a', 'INV-P3-L1-1', '1469-L1-1',  100, 'A', TRUE, NOW()),  -- risk 11%
+-- Plant 3 / Block B
+('p3b-inv-0', 'p3-block-b', 'INV-P3-L2-0', '146E-L2-0',  100, 'C', TRUE, NOW()),  -- risk 45%
+('p3b-inv-1', 'p3-block-b', 'INV-P3-L2-1', '146E-L2-1',  100, 'C', TRUE, NOW());  -- risk 52%
 
--- Plant A - Block 2 (12 inverters)
-INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-011', 'plant-a-block-2', 'INV-011', 'SN-PA-B2-001', 100, 'A', TRUE, NOW()),
-('inv-012', 'plant-a-block-2', 'INV-012', 'SN-PA-B2-002', 100, 'A', TRUE, NOW()),
-('inv-013', 'plant-a-block-2', 'INV-013', 'SN-PA-B2-003', 100, 'B', TRUE, NOW()),
-('inv-014', 'plant-a-block-2', 'INV-014', 'SN-PA-B2-004', 75,  'C', TRUE, NOW()),
-('inv-015', 'plant-a-block-2', 'INV-015', 'SN-PA-B2-005', 100, 'A', TRUE, NOW()),
-('inv-016', 'plant-a-block-2', 'INV-016', 'SN-PA-B2-006', 100, 'A', TRUE, NOW()),
-('inv-017', 'plant-a-block-2', 'INV-017', 'SN-PA-B2-007', 50,  'D', TRUE, NOW()),
-('inv-018', 'plant-a-block-2', 'INV-018', 'SN-PA-B2-008', 100, 'A', TRUE, NOW()),
-('inv-019', 'plant-a-block-2', 'INV-019', 'SN-PA-B2-009', 75,  'B', TRUE, NOW()),
-('inv-020', 'plant-a-block-2', 'INV-020', 'SN-PA-B2-010', 100, 'A', TRUE, NOW()),
-('inv-021', 'plant-a-block-2', 'INV-021', 'SN-PA-B2-011', 100, 'C', TRUE, NOW()),
-('inv-022', 'plant-a-block-2', 'INV-022', 'SN-PA-B2-012', 75,  'A', TRUE, NOW());
+-- ── Initial inverter_readings  (one seed reading per inverter) ──
+-- dc_voltage  = pv1_voltage (V)
+-- dc_current  = pv1_current (A)
+-- ac_power    = power   (kW)    — raw is Watts so /1000
+-- module_temp = inverters[x].temp (°C)
+-- ambient_temp= sensors[0].ambient_temp (°C)
+-- irradiation = derived from power / capacity (W/m²) — use sensible placeholder
+-- shap_values = JSON array of {label, value} for the top SHAP features
 
--- Plant A - Block 3 (8 inverters)
-INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-023', 'plant-a-block-3', 'INV-023', 'SN-PA-B3-001', 100, 'A', TRUE, NOW()),
-('inv-024', 'plant-a-block-3', 'INV-024', 'SN-PA-B3-002', 100, 'B', TRUE, NOW()),
-('inv-025', 'plant-a-block-3', 'INV-025', 'SN-PA-B3-003', 75,  'E', TRUE, NOW()),
-('inv-026', 'plant-a-block-3', 'INV-026', 'SN-PA-B3-004', 100, 'A', TRUE, NOW()),
-('inv-027', 'plant-a-block-3', 'INV-027', 'SN-PA-B3-005', 100, 'A', TRUE, NOW()),
-('inv-028', 'plant-a-block-3', 'INV-028', 'SN-PA-B3-006', 75,  'C', TRUE, NOW()),
-('inv-029', 'plant-a-block-3', 'INV-029', 'SN-PA-B3-007', 100, 'D', TRUE, NOW()),
-('inv-030', 'plant-a-block-3', 'INV-030', 'SN-PA-B3-008', 50,  'A', TRUE, NOW());
+-- INV-P1-L1-0 : normal operation (risk 12%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p1a-inv-0', NOW(), 'A', 0.9700, FALSE, NULL,
+  38.20, 9.80, 8.750, 42.3, 34.2, 920.0,
+  '[{"label":"power","value":-0.04},{"label":"temp","value":-0.03},{"label":"ambient_temp","value":-0.02},{"label":"pv1_current","value":-0.01},{"label":"pf","value":-0.01}]');
 
--- Plant B - Block 1 (8 inverters)
-INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-031', 'plant-b-block-1', 'INV-031', 'SN-PB-B1-001', 60, 'A', TRUE, NOW()),
-('inv-032', 'plant-b-block-1', 'INV-032', 'SN-PB-B1-002', 60, 'B', TRUE, NOW()),
-('inv-033', 'plant-b-block-1', 'INV-033', 'SN-PB-B1-003', 60, 'A', TRUE, NOW()),
-('inv-034', 'plant-b-block-1', 'INV-034', 'SN-PB-B1-004', 60, 'C', TRUE, NOW()),
-('inv-035', 'plant-b-block-1', 'INV-035', 'SN-PB-B1-005', 60, 'A', TRUE, NOW()),
-('inv-036', 'plant-b-block-1', 'INV-036', 'SN-PB-B1-006', 60, 'A', TRUE, NOW()),
-('inv-037', 'plant-b-block-1', 'INV-037', 'SN-PB-B1-007', 60, 'D', TRUE, NOW()),
-('inv-038', 'plant-b-block-1', 'INV-038', 'SN-PB-B1-008', 60, 'offline', FALSE, DATE_SUB(NOW(), INTERVAL 15 MINUTE));
+-- INV-P1-L1-1 : string degradation (risk 65%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p1a-inv-1', NOW(), 'D', 0.6500, TRUE, 'String Degradation',
+  37.80, 9.50, 6.200, 44.1, 35.8, 820.0,
+  '[{"label":"pv3_current","value":0.18},{"label":"string3","value":0.14},{"label":"power","value":0.12},{"label":"pv3_voltage","value":0.08},{"label":"ambient_temp","value":0.04}]');
 
--- Plant B - Block 2 (6 inverters)
-INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-039', 'plant-b-block-2', 'INV-039', 'SN-PB-B2-001', 60, 'A', TRUE, NOW()),
-('inv-040', 'plant-b-block-2', 'INV-040', 'SN-PB-B2-002', 60, 'B', TRUE, NOW()),
-('inv-041', 'plant-b-block-2', 'INV-041', 'SN-PB-B2-003', 60, 'A', TRUE, NOW()),
-('inv-042', 'plant-b-block-2', 'INV-042', 'SN-PB-B2-004', 60, 'A', TRUE, NOW()),
-('inv-043', 'plant-b-block-2', 'INV-043', 'SN-PB-B2-005', 60, 'E', TRUE, NOW()),
-('inv-044', 'plant-b-block-2', 'INV-044', 'SN-PB-B2-006', 60, 'A', TRUE, NOW());
+-- INV-P1-L2-0 : overheating — SHUTDOWN RISK (risk 89%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p1b-inv-0', NOW(), 'E', 0.8900, TRUE, 'Overheating — Thermal Shutdown Risk',
+  36.50, 8.10, 4.100, 78.6, 47.3, 750.0,
+  '[{"label":"temp","value":0.35},{"label":"ambient_temp","value":0.15},{"label":"alarm_code","value":0.12},{"label":"power","value":0.10},{"label":"limit_percent","value":0.08}]');
 
--- Plant C inverters (blocks 1-4)
-INSERT INTO inverters (id, block_id, name, serial_number, capacity_kw, current_category, is_online, last_data_at) VALUES
-('inv-045', 'plant-c-block-1', 'INV-045', 'SN-PC-B1-001', 75, 'A', TRUE, NOW()),
-('inv-046', 'plant-c-block-1', 'INV-046', 'SN-PC-B1-002', 75, 'B', TRUE, NOW()),
-('inv-047', 'plant-c-block-1', 'INV-047', 'SN-PC-B1-003', 75, 'A', TRUE, NOW()),
-('inv-048', 'plant-c-block-1', 'INV-048', 'SN-PC-B1-004', 75, 'C', TRUE, NOW()),
-('inv-049', 'plant-c-block-1', 'INV-049', 'SN-PC-B1-005', 75, 'A', TRUE, NOW()),
-('inv-050', 'plant-c-block-1', 'INV-050', 'SN-PC-B1-006', 75, 'D', TRUE, NOW()),
-('inv-051', 'plant-c-block-1', 'INV-051', 'SN-PC-B1-007', 75, 'A', TRUE, NOW()),
-('inv-052', 'plant-c-block-2', 'INV-052', 'SN-PC-B2-001', 75, 'A', TRUE, NOW()),
-('inv-053', 'plant-c-block-2', 'INV-053', 'SN-PC-B2-002', 75, 'E', TRUE, NOW()),
-('inv-054', 'plant-c-block-2', 'INV-054', 'SN-PC-B2-003', 75, 'A', TRUE, NOW()),
-('inv-055', 'plant-c-block-2', 'INV-055', 'SN-PC-B2-004', 75, 'B', TRUE, NOW()),
-('inv-056', 'plant-c-block-2', 'INV-056', 'SN-PC-B2-005', 75, 'A', TRUE, NOW()),
-('inv-057', 'plant-c-block-3', 'INV-057', 'SN-PC-B3-001', 75, 'A', TRUE, NOW()),
-('inv-058', 'plant-c-block-3', 'INV-058', 'SN-PC-B3-002', 75, 'C', TRUE, NOW()),
-('inv-059', 'plant-c-block-3', 'INV-059', 'SN-PC-B3-003', 75, 'A', TRUE, NOW()),
-('inv-060', 'plant-c-block-3', 'INV-060', 'SN-PC-B3-004', 75, 'A', TRUE, NOW()),
-('inv-061', 'plant-c-block-3', 'INV-061', 'SN-PC-B3-005', 75, 'D', TRUE, NOW()),
-('inv-062', 'plant-c-block-3', 'INV-062', 'SN-PC-B3-006', 75, 'A', TRUE, NOW()),
-('inv-063', 'plant-c-block-3', 'INV-063', 'SN-PC-B3-007', 75, 'A', TRUE, NOW()),
-('inv-064', 'plant-c-block-3', 'INV-064', 'SN-PC-B3-008', 75, 'B', TRUE, NOW()),
-('inv-065', 'plant-c-block-4', 'INV-065', 'SN-PC-B4-001', 75, 'A', TRUE, NOW()),
-('inv-066', 'plant-c-block-4', 'INV-066', 'SN-PC-B4-002', 75, 'A', TRUE, NOW()),
-('inv-067', 'plant-c-block-4', 'INV-067', 'SN-PC-B4-003', 75, 'E', TRUE, NOW()),
-('inv-068', 'plant-c-block-4', 'INV-068', 'SN-PC-B4-004', 75, 'A', TRUE, NOW()),
-('inv-069', 'plant-c-block-4', 'INV-069', 'SN-PC-B4-005', 75, 'C', TRUE, NOW()),
-('inv-070', 'plant-c-block-4', 'INV-070', 'SN-PC-B4-006', 75, 'A', TRUE, NOW());
+-- INV-P1-L2-1 : normal operation (risk 8%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p1b-inv-1', NOW(), 'A', 0.9800, FALSE, NULL,
+  38.50, 9.90, 9.100, 40.5, 33.8, 950.0,
+  NULL);
 
--- ── Seed some alerts ──
-INSERT INTO alerts (id, inverter_id, type, message, category_from, category_to, acknowledged, acknowledged_by, acknowledged_at) VALUES
-(UUID(), 'inv-007', 'critical', 'Arc Fault detected on INV-007', 'D', 'E', FALSE, NULL, NULL),
-(UUID(), 'inv-005', 'warning', 'MPPT Drift detected on INV-005', 'C', 'D', FALSE, NULL, NULL),
-(UUID(), 'inv-025', 'critical', 'Ground Fault detected on INV-025', 'D', 'E', TRUE, 'op-001', DATE_SUB(NOW(), INTERVAL 5 MINUTE)),
-(UUID(), 'inv-017', 'warning', 'String Failure on INV-017', 'C', 'D', FALSE, NULL, NULL),
-(UUID(), 'inv-037', 'warning', 'Overcurrent Warning on INV-037', 'C', 'D', TRUE, 'op-001', DATE_SUB(NOW(), INTERVAL 10 MINUTE)),
-(UUID(), 'inv-043', 'critical', 'Inverter Shutdown on INV-043', 'D', 'E', FALSE, NULL, NULL),
-(UUID(), 'inv-053', 'critical', 'DC Overcurrent on INV-053', 'D', 'E', FALSE, NULL, NULL),
-(UUID(), 'inv-067', 'critical', 'Arc Fault on INV-067', 'D', 'E', FALSE, NULL, NULL),
-(UUID(), 'inv-050', 'warning', 'MPPT Drift on INV-050', 'C', 'D', TRUE, 'op-002', DATE_SUB(NOW(), INTERVAL 20 MINUTE)),
-(UUID(), 'inv-029', 'warning', 'String Failure on INV-029', 'C', 'D', FALSE, NULL, NULL);
+-- INV-P2-L1-0 : alarm triggered (risk 72%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p2a-inv-0', NOW(), 'D', 0.7200, TRUE, 'Alarm Code 3021 — Operational Fault',
+  35.10, 6.80, 5.500, 51.2, 36.5, 700.0,
+  '[{"label":"alarm_code","value":0.28},{"label":"op_state","value":0.18},{"label":"power","value":0.12},{"label":"pv1_current","value":0.06},{"label":"meter_active_power","value":0.05}]');
 
--- ── Seed Audit Logs ──
+-- INV-P2-L1-1 : normal operation (risk 15%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p2a-inv-1', NOW(), 'B', 0.9200, FALSE, NULL,
+  38.00, 9.60, 8.900, 41.8, 35.1, 910.0,
+  NULL);
+
+-- INV-P2-L2-0 : low power output (risk 58%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p2b-inv-0', NOW(), 'C', 0.5800, TRUE, 'Low Power Output — String Issue',
+  37.50, 9.30, 5.100, 43.7, 36.0, 780.0,
+  '[{"label":"power","value":0.22},{"label":"pv5_current","value":0.09},{"label":"pv6_current","value":0.08},{"label":"kwh_today","value":0.07},{"label":"pf","value":0.05}]');
+
+-- INV-P2-L2-1 : grid fault — SHUTDOWN RISK (risk 91%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p2b-inv-1', DATE_SUB(NOW(), INTERVAL 5 MINUTE), 'E', 0.9100, TRUE, 'Grid Fault — Frequency Deviation 51.8 Hz',
+  38.10, 0.00, 0.000, 38.2, 34.5, 200.0,
+  '[{"label":"freq","value":0.30},{"label":"v_r","value":0.20},{"label":"alarm_code","value":0.15},{"label":"op_state","value":0.12},{"label":"pf","value":0.08}]');
+
+-- INV-P3-L1-0 : normal operation (risk 5%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p3a-inv-0', NOW(), 'A', 0.9900, FALSE, NULL,
+  38.60, 9.90, 9.200, 39.8, 32.1, 960.0,
+  NULL);
+
+-- INV-P3-L1-1 : normal operation (risk 11%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p3a-inv-1', NOW(), 'A', 0.9700, FALSE, NULL,
+  38.10, 9.70, 8.800, 41.0, 32.5, 930.0,
+  NULL);
+
+-- INV-P3-L2-0 : partial shading (risk 45%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p3b-inv-0', NOW(), 'C', 0.4500, TRUE, 'Partial Shading — Strings 7 & 8',
+  37.80, 9.40, 7.100, 42.0, 33.5, 800.0,
+  '[{"label":"string7","value":0.12},{"label":"string8","value":0.10},{"label":"pv7_current","value":0.08},{"label":"pv8_current","value":0.06},{"label":"power","value":0.05}]');
+
+-- INV-P3-L2-1 : communication issue (risk 52%)
+INSERT INTO inverter_readings (id, inverter_id, timestamp, category, confidence, is_faulty, fault_type,
+  dc_voltage, dc_current, ac_power, module_temp, ambient_temp, irradiation, shap_values) VALUES
+(UUID(), 'p3b-inv-1', NOW(), 'C', 0.5200, TRUE, 'Communication Issue — Alarm Code 2010',
+  37.00, 8.80, 6.800, 43.5, 34.0, 830.0,
+  '[{"label":"op_state","value":0.18},{"label":"alarm_code","value":0.12},{"label":"power","value":0.10},{"label":"string1","value":0.05},{"label":"string2","value":0.04}]');
+
+-- ── Alerts  (for critical & warning inverters) ────────────────
+INSERT INTO alerts (id, inverter_id, type, message, category_from, category_to, acknowledged) VALUES
+(UUID(), 'p1b-inv-0', 'critical', 'Thermal Shutdown Risk on INV-P1-L2-0 — temp 78.6°C (alarm 4003)', 'D', 'E', FALSE),
+(UUID(), 'p2b-inv-1', 'critical', 'Grid Fault on INV-P2-L2-1 — freq 51.8 Hz, voltage deviation detected', 'D', 'E', FALSE),
+(UUID(), 'p1a-inv-1', 'warning',  'String Degradation on INV-P1-L1-1 — pv3_current 3.1A (expected ~9.5A)', 'C', 'D', FALSE),
+(UUID(), 'p2a-inv-0', 'warning',  'Alarm Code 3021 on INV-P2-L1-0 — power limited to 60%', 'C', 'D', FALSE),
+(UUID(), 'p2b-inv-0', 'info',     'Low Power Output on INV-P2-L2-0 — pv5/pv6 strings underperforming', 'B', 'C', FALSE),
+(UUID(), 'p3b-inv-0', 'info',     'Partial Shading on INV-P3-L2-0 — strings 7 & 8 reduced output', 'B', 'C', FALSE),
+(UUID(), 'p3b-inv-1', 'info',     'Communication Issue on INV-P3-L2-1 — alarm code 2010, op_state 4', 'B', 'C', FALSE);
+
+-- ── Audit Logs ───────────────────────────────────────────────
 INSERT INTO audit_logs (id, user_id, user_role, action, details, ip_address) VALUES
-(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Rajasthan Solar Park"}', '192.168.1.10'),
-(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Gujarat Sun Farm"}', '192.168.1.10'),
-(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Tamil Nadu Solar Grid"}', '192.168.1.10'),
+(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Plant 1 - Celestical"}', '192.168.1.10'),
+(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Plant 2"}',               '192.168.1.10'),
+(UUID(), 'admin-001', 'admin', 'create_plant', '{"plant_name":"Plant 3"}',               '192.168.1.10'),
 (UUID(), 'admin-001', 'admin', 'add_operator', '{"operator_name":"Rahul Kumar","email":"rahul@solarwatch.in"}', '192.168.1.10'),
-(UUID(), 'admin-001', 'admin', 'add_operator', '{"operator_name":"Sneha Patel","email":"sneha@solarwatch.in"}', '192.168.1.10'),
-(UUID(), 'admin-001', 'admin', 'assign_plant', '{"operator":"Rahul Kumar","plant":"Rajasthan Solar Park"}', '192.168.1.10'),
-(UUID(), 'admin-001', 'admin', 'assign_plant', '{"operator":"Rahul Kumar","plant":"Gujarat Sun Farm"}', '192.168.1.10'),
-(UUID(), 'op-001', 'operator', 'acknowledge_alert', '{"inverter":"INV-025","fault_type":"Ground Fault"}', '10.0.0.22');
+(UUID(), 'admin-001', 'admin', 'add_operator', '{"operator_name":"Sneha Patel","email":"sneha@solarwatch.in"}',  '192.168.1.10');
 
--- Confirm
+-- ── Confirm ──────────────────────────────────────────────────
 SELECT 'Seed complete!' AS status;
-SELECT COUNT(*) AS inverter_count FROM inverters;
-SELECT COUNT(*) AS alert_count FROM alerts;
+SELECT COUNT(*) AS inverter_count   FROM inverters;
+SELECT COUNT(*) AS block_count      FROM blocks;
+SELECT COUNT(*) AS plant_count      FROM plants;
+SELECT COUNT(*) AS reading_count    FROM inverter_readings;
+SELECT COUNT(*) AS alert_count      FROM alerts;

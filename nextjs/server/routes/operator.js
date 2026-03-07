@@ -153,10 +153,13 @@ router.get('/plants/:plantId/blocks/:blockId/inverters', async (req, res) => {
               r.confidence, r.is_faulty, r.fault_type, r.shap_values, r.timestamp AS reading_at
        FROM inverters i
        LEFT JOIN (
-         SELECT ir.* FROM inverter_readings ir
-         INNER JOIN (
-           SELECT inverter_id, MAX(timestamp) AS max_ts FROM inverter_readings GROUP BY inverter_id
-         ) latest ON ir.inverter_id = latest.inverter_id AND ir.timestamp = latest.max_ts
+         SELECT *
+         FROM (
+           SELECT ir.*,
+                  ROW_NUMBER() OVER (PARTITION BY ir.inverter_id ORDER BY ir.timestamp DESC) AS rn
+           FROM inverter_readings ir
+         ) ranked
+         WHERE ranked.rn = 1
        ) r ON r.inverter_id = i.id
        WHERE i.block_id = ?
        ORDER BY i.name`,

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,43 +7,79 @@
 @layer base {
   :root {
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-heading: 'Montserrat', sans-serif;
 
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    /* Solar brand tokens */
+    --color-bg-primary: #FFFDF5;
+    --color-bg-secondary: #FFF8E7;
+    --color-bg-tertiary: #FFF3CC;
+    --color-brand-primary: #D4900A;
+    --color-brand-accent: #F5A623;
+    --color-brand-light: #FFD166;
+    --color-brand-muted: #FFE599;
+    --color-green-primary: #6B8F5E;
+    --color-green-light: #D4E6CF;
+    --color-text-primary: #2C2C2C;
+    --color-text-secondary: #6B6560;
+    --color-text-inverse: #FFF8E7;
+    --color-border: #E8D5A3;
+    --color-shadow: #D4900A22;
+    --color-error: #C0392B;
+    --color-warning: #E67E22;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    /* Font sizes */
+    --text-hero: clamp(3rem, 8vw, 7rem);
+    --text-display: clamp(2rem, 5vw, 4rem);
+    --text-h1: 2rem;
+    --text-h2: 1.5rem;
+    --text-h3: 1.25rem;
+    --text-body: 1rem;
+    --text-small: 0.875rem;
+    --text-caption: 0.75rem;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    /* Shape */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-card: 0 4px 20px #D4900A22;
 
-    --primary: 234 89% 63%;
-    --primary-foreground: 0 0% 100%;
+    /* shadcn tokens */
+    --background: 48 100% 98%;
+    --foreground: 0 0% 17%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --card: 45 100% 97%;
+    --card-foreground: 0 0% 17%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --popover: 45 100% 97%;
+    --popover-foreground: 0 0% 17%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --primary: 38 92% 44%;
+    --primary-foreground: 45 100% 97%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --secondary: 43 100% 93%;
+    --secondary-foreground: 0 0% 17%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 234 89% 63%;
+    --muted: 43 60% 93%;
+    --muted-foreground: 20 8% 40%;
+
+    --accent: 43 100% 90%;
+    --accent-foreground: 0 0% 17%;
+
+    --destructive: 0 72% 40%;
+    --destructive-foreground: 45 100% 97%;
+
+    --border: 38 40% 82%;
+    --input: 38 40% 82%;
+    --ring: 38 92% 44%;
 
     --radius: 0.75rem;
-
-    /* SolarWatch semantic tokens */
-    --sw-sidebar-bg: 217 33% 17%;
-    --sw-sidebar-text: 0 0% 100%;
-    --sw-sidebar-muted: 215 20% 65%;
-    --sw-sidebar-hover: 217 33% 22%;
-    --sw-sidebar-active: 234 89% 63%;
+    /* Lumin AI semantic tokens */
+    --sw-sidebar-bg: 30 25% 14%;
+    --sw-sidebar-text: 45 100% 97%;
+    --sw-sidebar-muted: 38 30% 65%;
+    --sw-sidebar-hover: 30 25% 20%;
+    --sw-sidebar-active: 38 92% 44%;
 
     --sw-healthy: 142 71% 45%;
     --sw-healthy-bg: 138 76% 97%;
@@ -54,33 +90,34 @@
     --sw-good-border: 84 74% 52%;
 
     --sw-warning: 38 92% 50%;
-    --sw-warning-bg: 48 96% 95%;
+    --sw-warning-bg: 43 100% 95%;
     --sw-warning-border: 38 92% 60%;
 
     --sw-danger: 25 95% 53%;
     --sw-danger-bg: 33 100% 96%;
     --sw-danger-border: 25 95% 63%;
 
-    --sw-critical: 0 84% 60%;
+    --sw-critical: 0 72% 40%;
     --sw-critical-bg: 0 86% 97%;
-    --sw-critical-border: 0 84% 70%;
+    --sw-critical-border: 0 72% 55%;
 
     --sw-offline: 215 14% 34%;
     --sw-offline-bg: 210 20% 96%;
     --sw-offline-border: 215 14% 77%;
 
-    --sw-login-from: 234 89% 63%;
-    --sw-login-to: 270 67% 47%;
+    --sw-login-from: 38 92% 44%;
+    --sw-login-to: 25 90% 35%;
 
-    --sidebar-background: 217 33% 17%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 234 89% 63%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 22%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 217 33% 25%;
-    --sidebar-ring: 234 89% 63%;
+    --sidebar-background: 30 25% 14%;
+    --sidebar-foreground: 45 100% 97%;
+    --sidebar-primary: 38 92% 44%;
+    --sidebar-primary-foreground: 45 100% 97%;
+    --sidebar-accent: 30 25% 20%;
+    --sidebar-accent-foreground: 45 100% 97%;
+    --sidebar-border: 30 20% 22%;
+    --sidebar-ring: 38 92% 44%;
   }
+
 
   .dark {
     --background: 222 47% 4%;
@@ -153,9 +190,22 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+  }
+
+  /* PREVENT page-level horizontal overflow without breaking GSAP pin */
+  html,
+  body {
+    overflow-x: hidden;
+    /* DO NOT use overflow: hidden on any ancestor of .story-panel */
+  }
+
+  /* Ensure GSAP pin spacer doesn't inherit bad overflow */
+  .pin-spacer {
+    overflow: visible !important;
   }
 }
 
@@ -164,15 +214,33 @@
     background: hsl(var(--sw-sidebar-bg));
     color: hsl(var(--sw-sidebar-text));
   }
+
   .sw-login-gradient {
     background: linear-gradient(135deg, hsl(var(--sw-login-from)), hsl(var(--sw-login-to)));
   }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 .animate-shake {
@@ -180,8 +248,15 @@
 }
 
 @keyframes pulse-border {
-  0%, 100% { border-color: hsl(var(--sw-critical-border)); }
-  50% { border-color: hsl(var(--sw-critical) / 0.3); }
+
+  0%,
+  100% {
+    border-color: hsl(var(--sw-critical-border));
+  }
+
+  50% {
+    border-color: hsl(var(--sw-critical) / 0.3);
+  }
 }
 
 .animate-pulse-border {
