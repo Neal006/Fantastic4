@@ -7,7 +7,7 @@ Usage:
     python run_pipeline.py --sample-frac 0.05  # quick smoke-test on 5 %
 
 Stages (in order):
-    ingest → clean → features → labels → anomaly → split → xgb → lstm → ensemble → evaluate → shap
+    ingest -> clean -> features -> labels -> anomaly -> split -> xgb -> catboost -> ensemble -> evaluate -> shap
 """
 
 import argparse
@@ -30,7 +30,7 @@ STAGES = [
     "anomaly",
     "split",
     "xgb",
-    "lstm",
+    "catboost",
     "ensemble",
     "evaluate",
     "shap",
@@ -60,8 +60,8 @@ def _run_stage(name: str, sample_frac: float = 1.0):
     elif name == "xgb":
         from model.train_xgb import run
         return run()
-    elif name == "lstm":
-        from model.train_lstm import run
+    elif name == "catboost":
+        from model.train_catboost import run
         return run()
     elif name == "ensemble":
         from model.ensemble import run

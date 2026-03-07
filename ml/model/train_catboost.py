@@ -1,14 +1,14 @@
 """
-Stage 7a -- Train XGBoost
-=========================
-Multi-class XGBoost with Optuna hyper-parameter tuning on walk-forward CV.
+Stage 7b -- Train CatBoost
+===========================
+Multi-class CatBoost with Optuna hyper-parameter tuning on walk-forward CV.
 Reports per-fold precision, recall, F1, and AUC.
 After training, computes Accuracy, Precision, Recall, F1, AUC on
 Train / Validation / Test splits and saves metrics CSV + AUC-curve plot.
 
 Input  -> processed/splits.pkl
-Output -> models/xgb_best.pkl, models/xgb_optuna_study.pkl,
-          outputs/xgb_metrics.csv, outputs/xgb_auc_curve.png
+Output -> models/cbc_best.pkl, models/cbc_optuna_study.pkl,
+          outputs/cbc_metrics.csv, outputs/cbc_auc_curve.png
 """
 
 import sys
@@ -25,13 +25,13 @@ from sklearn.metrics import (
     roc_auc_score, roc_curve, auc,
 )
 from sklearn.preprocessing import label_binarize
-from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import (
     PROCESSED_DIR, MODELS_DIR, OUTPUTS_DIR, SEED,
-    XGB_SEARCH_SPACE, XGB_OPTUNA_TRIALS, CLASS_NAMES,
+    CBC_SEARCH_SPACE, CBC_OPTUNA_TRIALS, CLASS_NAMES,
 )
 from utils import log_section, log_step, save_pickle, load_pickle, Timer
 
@@ -41,7 +41,7 @@ N_CLASSES = len(CLASS_NAMES)
 
 
 def _ensure_all_classes(X, y, n_classes=N_CLASSES):
-    """Add one dummy sample per missing class so XGBoost sees all classes."""
+    """Add one dummy sample per missing class so CatBoost sees all classes."""
     present = set(np.unique(y))
     missing = set(range(n_classes)) - present
     if not missing:
@@ -54,7 +54,7 @@ def _ensure_all_classes(X, y, n_classes=N_CLASSES):
 
 def _compute_metrics(clf, X, y, label: str):
     """Compute accuracy, precision, recall, F1, AUC for a given split."""
-    y_pred = clf.predict(X)
+    y_pred = clf.predict(X).astype(int).ravel()
     y_prob = clf.predict_proba(X)
     acc = accuracy_score(y, y_pred)
     p = precision_score(y, y_pred, average="macro", zero_division=0)
@@ -84,7 +84,7 @@ def _plot_auc_curve(clf, X_test, y_test, save_path: Path):
     ax.plot([0, 1], [0, 1], "k--", lw=1, alpha=0.5)
     ax.set_xlabel("False Positive Rate", fontsize=12)
     ax.set_ylabel("True Positive Rate", fontsize=12)
-    ax.set_title("XGBoost – ROC / AUC Curves (Test Set)", fontsize=14)
+    ax.set_title("CatBoost -- ROC / AUC Curves (Test Set)", fontsize=14)
     ax.legend(loc="lower right", fontsize=10)
     ax.grid(alpha=0.3)
     plt.tight_layout()
@@ -96,22 +96,19 @@ def _plot_auc_curve(clf, X_test, y_test, save_path: Path):
 def _objective(trial, folds):
     """Optuna objective: macro-F1 averaged across walk-forward folds."""
     params = {
-        "max_depth": trial.suggest_int("max_depth", *XGB_SEARCH_SPACE["max_depth"]),
-        "learning_rate": trial.suggest_float("learning_rate", *XGB_SEARCH_SPACE["learning_rate"], log=True),
-        "n_estimators": trial.suggest_int("n_estimators", *XGB_SEARCH_SPACE["n_estimators"], step=50),
-        "subsample": trial.suggest_float("subsample", *XGB_SEARCH_SPACE["subsample"]),
-        "colsample_bytree": trial.suggest_float("colsample_bytree", *XGB_SEARCH_SPACE["colsample_bytree"]),
-        "min_child_weight": trial.suggest_int("min_child_weight", *XGB_SEARCH_SPACE["min_child_weight"]),
-        "gamma": trial.suggest_float("gamma", *XGB_SEARCH_SPACE["gamma"]),
-        "reg_alpha": trial.suggest_float("reg_alpha", *XGB_SEARCH_SPACE["reg_alpha"]),
-        "reg_lambda": trial.suggest_float("reg_lambda", *XGB_SEARCH_SPACE["reg_lambda"]),
-        "objective": "multi:softprob",
-        "num_class": N_CLASSES,
-        "eval_metric": "mlogloss",
-        "random_state": SEED,
-        "n_jobs": -1,
-        "tree_method": "hist",
-        "verbosity": 0,
+        "depth": trial.suggest_int("depth", *CBC_SEARCH_SPACE["depth"]),
+        "learning_rate": trial.suggest_float("learning_rate", *CBC_SEARCH_SPACE["learning_rate"], log=True),
+        "iterations": trial.suggest_int("iterations", *CBC_SEARCH_SPACE["iterations"], step=50),
+        "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", *CBC_SEARCH_SPACE["l2_leaf_reg"]),
+        "bagging_temperature": trial.suggest_float("bagging_temperature", *CBC_SEARCH_SPACE["bagging_temperature"]),
+        "random_strength": trial.suggest_float("random_strength", *CBC_SEARCH_SPACE["random_strength"]),
+        "border_count": trial.suggest_int("border_count", *CBC_SEARCH_SPACE["border_count"]),
+        "loss_function": "MultiClass",
+        "eval_metric": "MultiClass",
+        "random_seed": SEED,
+        "verbose": 0,
+        "auto_class_weights": "Balanced",
+        "thread_count": -1,
     }
 
     scores = []
@@ -119,9 +116,9 @@ def _objective(trial, folds):
         X_tr, y_tr = _ensure_all_classes(fold["X_train"], fold["y_train"])
         X_va, y_va = _ensure_all_classes(fold["X_val"], fold["y_val"])
 
-        clf = XGBClassifier(**params)
-        clf.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], verbose=False)
-        y_pred = clf.predict(fold["X_val"])  # predict on original val (no dummies)
+        clf = CatBoostClassifier(**params)
+        clf.fit(X_tr, y_tr, eval_set=(X_va, y_va), early_stopping_rounds=30, verbose=0)
+        y_pred = clf.predict(fold["X_val"]).astype(int).ravel()
         f1 = f1_score(fold["y_val"], y_pred, average="macro", zero_division=0)
         scores.append(f1)
 
@@ -131,16 +128,16 @@ def _objective(trial, folds):
 
 
 def run():
-    log_section("Stage 7a - Train XGBoost (Optuna)")
+    log_section("Stage 7b - Train CatBoost (Optuna)")
 
     splits = load_pickle(PROCESSED_DIR / "splits.pkl")
     folds = splits["folds"]
 
-    log_step(f"Starting Optuna study with {XGB_OPTUNA_TRIALS} trials on {len(folds)} CV folds ...")
+    log_step(f"Starting Optuna study with {CBC_OPTUNA_TRIALS} trials on {len(folds)} CV folds ...")
 
     with Timer():
         study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=SEED))
-        study.optimize(lambda t: _objective(t, folds), n_trials=XGB_OPTUNA_TRIALS, show_progress_bar=True)
+        study.optimize(lambda t: _objective(t, folds), n_trials=CBC_OPTUNA_TRIALS, show_progress_bar=True)
 
     best = study.best_params
     log_step(f"Best macro-F1: {study.best_value:.4f}")
@@ -149,17 +146,16 @@ def run():
     # Retrain on full train+val with best params
     log_step("Retraining on full training set ...")
     best.update({
-        "objective": "multi:softprob",
-        "num_class": N_CLASSES,
-        "eval_metric": "mlogloss",
-        "random_state": SEED,
-        "n_jobs": -1,
-        "tree_method": "hist",
-        "verbosity": 0,
+        "loss_function": "MultiClass",
+        "eval_metric": "MultiClass",
+        "random_seed": SEED,
+        "verbose": 0,
+        "auto_class_weights": "Balanced",
+        "thread_count": -1,
     })
-    final_clf = XGBClassifier(**best)
+    final_clf = CatBoostClassifier(**best)
     X_full, y_full = _ensure_all_classes(splits["X_trainval"], splits["y_trainval"])
-    final_clf.fit(X_full, y_full, verbose=False)
+    final_clf.fit(X_full, y_full, verbose=0)
 
     # ── Per-split evaluation ──────────────────────────────────────
     log_step("Per-split evaluation:")
@@ -191,15 +187,15 @@ def run():
 
     # Save metrics CSV
     metrics_df = pd.DataFrame(metrics_rows)
-    metrics_path = OUTPUTS_DIR / "xgb_metrics.csv"
+    metrics_path = OUTPUTS_DIR / "cbc_metrics.csv"
     metrics_df.to_csv(metrics_path, index=False)
     log_step(f"Saved metrics -> {metrics_path}")
 
     # AUC curve on test set
-    _plot_auc_curve(final_clf, splits["X_test"], splits["y_test"], OUTPUTS_DIR / "xgb_auc_curve.png")
+    _plot_auc_curve(final_clf, splits["X_test"], splits["y_test"], OUTPUTS_DIR / "cbc_auc_curve.png")
 
-    save_pickle(final_clf, MODELS_DIR / "xgb_best.pkl", "XGBoost best model")
-    save_pickle(study, MODELS_DIR / "xgb_optuna_study.pkl", "Optuna study")
+    save_pickle(final_clf, MODELS_DIR / "cbc_best.pkl", "CatBoost best model")
+    save_pickle(study, MODELS_DIR / "cbc_optuna_study.pkl", "Optuna study")
     return final_clf
 
 

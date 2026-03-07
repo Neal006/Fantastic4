@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
     classification_report, confusion_matrix,
-    f1_score, precision_score, recall_score, roc_auc_score,
+    accuracy_score, f1_score, precision_score, recall_score, roc_auc_score,
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -38,16 +38,17 @@ def run():
 
     # Produce final predictions
     if method == "stacking":
-        meta_features = np.hstack([ens["xgb_prob"], ens["lstm_prob"]])
+        meta_features = np.hstack([ens["xgb_prob"], ens["cbc_prob"]])
         meta_clf = ens["meta_clf"]
         y_prob = meta_clf.predict_proba(meta_features)
         y_pred = meta_clf.predict(meta_features)
     else:
         w = ens["xgb_weight"]
-        y_prob = w * ens["xgb_prob"] + (1 - w) * ens["lstm_prob"]
+        y_prob = w * ens["xgb_prob"] + (1 - w) * ens["cbc_prob"]
         y_pred = y_prob.argmax(axis=1)
 
     # ── Metrics ──
+    acc = accuracy_score(y_test, y_pred)
     p_macro = precision_score(y_test, y_pred, average="macro", zero_division=0)
     r_macro = recall_score(y_test, y_pred, average="macro", zero_division=0)
     f1_macro = f1_score(y_test, y_pred, average="macro", zero_division=0)
@@ -57,7 +58,7 @@ def run():
         auc_macro = float("nan")
 
     log_step(f"Ensemble method: {method}")
-    log_step(f"Macro  ─  P={p_macro:.4f}  R={r_macro:.4f}  F1={f1_macro:.4f}  AUC={auc_macro:.4f}")
+    log_step(f"Macro  --  Acc={acc:.4f}  P={p_macro:.4f}  R={r_macro:.4f}  F1={f1_macro:.4f}  AUC={auc_macro:.4f}")
 
     # Classification report
     report_str = classification_report(
@@ -71,7 +72,7 @@ def run():
     report_df = pd.DataFrame(report_dict).T
     report_path = OUTPUTS_DIR / "classification_report.csv"
     report_df.to_csv(report_path)
-    log_step(f"Saved classification report → {report_path}")
+    log_step(f"Saved classification report -> {report_path}")
 
     # ── Confusion Matrix ──
     cm = confusion_matrix(y_test, y_pred)
@@ -80,16 +81,17 @@ def run():
         cm, annot=True, fmt="d", cmap="Blues",
         xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES, ax=ax,
     )
-    ax.set_title("Confusion Matrix – Ensemble (Hold-out Test)", fontsize=14)
+    ax.set_title("Confusion Matrix -- Ensemble (Hold-out Test)", fontsize=14)
     ax.set_xlabel("Predicted", fontsize=12)
     ax.set_ylabel("Actual", fontsize=12)
     plt.tight_layout()
     cm_path = OUTPUTS_DIR / "confusion_matrix.png"
     fig.savefig(cm_path, dpi=150)
     plt.close(fig)
-    log_step(f"Saved confusion matrix → {cm_path}")
+    log_step(f"Saved confusion matrix -> {cm_path}")
 
     return {
+        "accuracy": acc,
         "precision": p_macro,
         "recall": r_macro,
         "f1": f1_macro,

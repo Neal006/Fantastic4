@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import (
     PROCESSED_DIR, TIMESTAMP_COL, INVERTER_ID_COL, PLANT_ID_COL, MAC_COL,
-    ROLLING_WINDOWS, SAMPLES_PER_DAY, PV_STRING_CURRENT_COLS, SEED,
+    ROLLING_WINDOWS, SAMPLES_PER_HOUR, SAMPLES_PER_DAY, PV_STRING_CURRENT_COLS, SEED,
 )
 from utils import log_section, log_step, save_parquet, load_parquet, Timer
 
@@ -135,9 +135,69 @@ def _add_time_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+# ── Rate of change ───────────────────────────────────────────────
+ROC_TARGETS = ["power", "temp", "pv1_current"]
+ROC_WINDOWS = {"6h": SAMPLES_PER_HOUR * 6, "24h": SAMPLES_PER_DAY}
+
+
+def _add_rate_of_change(df: pd.DataFrame) -> pd.DataFrame:
+    """Rate of change: diff of rolling mean (is the signal accelerating / decelerating?)."""
+    grp_cols = [c for c in [PLANT_ID_COL, MAC_COL, INVERTER_ID_COL] if c in df.columns]
+    for label, win in ROC_WINDOWS.items():
+        for col in ROC_TARGETS:
+            rmean_col = f"{col}_rmean_{label}"
+            if rmean_col not in df.columns:
+                continue
+            df[f"{col}_roc_{label}"] = df.groupby(grp_cols)[rmean_col].diff().fillna(0)
+    log_step("Rate-of-change features added")
+    return df
+
+
+# ── Alarm frequency & time-since-alarm ───────────────────────────
+ALARM_FREQ_WINDOWS = {"24h": SAMPLES_PER_DAY, "48h": SAMPLES_PER_DAY * 2, "72h": SAMPLES_PER_DAY * 3}
+
+
+def _add_alarm_frequency(df: pd.DataFrame) -> pd.DataFrame:
+    """Rolling count of alarm activations in recent windows."""
+    if "alarm_active" not in df.columns:
+        return df
+    grp_cols = [c for c in [PLANT_ID_COL, MAC_COL, INVERTER_ID_COL] if c in df.columns]
+    for label, win in ALARM_FREQ_WINDOWS.items():
+        df[f"alarm_freq_{label}"] = df.groupby(grp_cols)["alarm_active"].transform(
+            lambda s: s.rolling(win, min_periods=1).sum()
+        )
+    log_step("Alarm frequency features added")
+    return df
+
+
+def _add_time_since_alarm(df: pd.DataFrame) -> pd.DataFrame:
+    """Cumulative samples since last alarm per inverter (capped at 2016 = 7 days)."""
+    if "alarm_active" not in df.columns:
+        df["time_since_alarm"] = 9999
+        return df
+    grp_cols = [c for c in [PLANT_ID_COL, MAC_COL, INVERTER_ID_COL] if c in df.columns]
+
+    def _since_last(s: pd.Series) -> pd.Series:
+        alarm_mask = s == 1
+        groups = alarm_mask.cumsum()
+        result = s.groupby(groups).cumcount()
+        # Where no alarm has happened yet, set to max
+        result[groups == 0] = 2016
+        return result.clip(upper=2016)
+
+    df["time_since_alarm"] = df.groupby(grp_cols)["alarm_active"].transform(_since_last)
+    log_step("Time-since-alarm feature added")
+    return df
+
+
 # ── Lag features ─────────────────────────────────────────────────
 LAG_TARGETS = ["power", "temp", "string_imbalance", "power_variability"]
-LAG_PERIODS = {"1d": SAMPLES_PER_DAY, "7d": SAMPLES_PER_DAY * 7}
+LAG_PERIODS = {
+    "6h": SAMPLES_PER_HOUR * 6,    # 72 samples
+    "12h": SAMPLES_PER_HOUR * 12,  # 144 samples
+    "1d": SAMPLES_PER_DAY,          # 288 samples
+    "7d": SAMPLES_PER_DAY * 7,      # 2016 samples
+}
 
 
 def _add_lag_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -169,6 +229,9 @@ def run():
         df = _add_rolling_features(df)
         df = _add_kpis(df)
         df = _add_alarm_features(df)
+        df = _add_rate_of_change(df)
+        df = _add_alarm_frequency(df)
+        df = _add_time_since_alarm(df)
         df = _add_time_features(df)
         df = _add_lag_features(df)
 

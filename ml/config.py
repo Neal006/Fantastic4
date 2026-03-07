@@ -31,6 +31,8 @@ ROLLING_WINDOWS = {
     "1h": SAMPLES_PER_HOUR,        # 12
     "6h": SAMPLES_PER_HOUR * 6,    # 72
     "24h": SAMPLES_PER_DAY,        # 288
+    "48h": SAMPLES_PER_DAY * 2,    # 576
+    "72h": SAMPLES_PER_DAY * 7,    # 2016
 }
 
 # ──────────────────────────── Column groups ────────────────────
@@ -73,27 +75,29 @@ CRITICAL_ALARM_CODES = set()   # will be populated from data exploration
 
 # ──────────────────────────── XGBoost Optuna search space ──────
 XGB_SEARCH_SPACE = {
-    "max_depth": (3, 10),
-    "learning_rate": (0.01, 0.3),
-    "n_estimators": (100, 800),
+    "max_depth": (4, 8),
+    "learning_rate": (0.005, 0.2),
+    "n_estimators": (100, 500),
     "subsample": (0.6, 1.0),
     "colsample_bytree": (0.5, 1.0),
     "min_child_weight": (1, 10),
-    "gamma": (0.0, 5.0),
-    "reg_alpha": (0.0, 5.0),
-    "reg_lambda": (0.5, 5.0),
+    "gamma": (0.0, 2.5),
+    "reg_alpha": (0.0, 2.0),
+    "reg_lambda": (0.5, 2.0),
 }
-XGB_OPTUNA_TRIALS = 40
+XGB_OPTUNA_TRIALS = 30
 
-# ──────────────────────────── LSTM hyper-params ────────────────
-LSTM_SEQ_LEN = SAMPLES_PER_DAY   # 24-h sequence
-LSTM_UNITS_1 = 128
-LSTM_UNITS_2 = 64
-LSTM_DROPOUT = 0.45
-LSTM_DENSE = 32
-LSTM_EPOCHS = 50
-LSTM_BATCH = 256
-LSTM_PATIENCE = 4
+# ──────────────────────────── CatBoost Optuna search space ─────
+CBC_SEARCH_SPACE = {
+    "depth": (4, 12),
+    "learning_rate": (0.01, 0.3),
+    "iterations": (200, 1000),
+    "l2_leaf_reg": (1.0, 10.0),
+    "bagging_temperature": (0.0, 1.0),
+    "random_strength": (0.0, 10.0),
+    "border_count": (32, 255),
+}
+CBC_OPTUNA_TRIALS = 30
 
 # ──────────────────────────── Walk-forward CV ──────────────────
 N_CV_FOLDS = 4
