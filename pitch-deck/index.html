@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUMIN.AI — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a2e;
+    --accent: #f59e0b;
+    --accent-light: #fbbf24;
+    --accent-glow: rgba(245, 158, 11, 0.15);
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255,255,255,0.06);
+    --gradient-1: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-2: linear-gradient(135deg, #3b82f6, #a855f7);
+    --gradient-3: linear-gradient(135deg, #22c55e, #06b6d4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    overflow-y: auto;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+  }
+
+  .slide.prev {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* NAVIGATION */
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    padding: 10px 24px;
+    border-radius: 40px;
+    border: 1px solid var(--border);
+  }
+
+  .nav button {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .nav button:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+  }
+
+  .nav .counter {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--gradient-1);
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* DOTS */
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+  .dots .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    opacity: 0.3;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .dots .dot.active {
+    background: var(--accent);
+    opacity: 1;
+    transform: scale(1.3);
+  }
+
+  /* TYPOGRAPHY */
+  .slide-number {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.5vw, 48px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  h3 {
+    font-size: clamp(18px, 2vw, 24px);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: clamp(16px, 1.8vw, 22px);
+    color: var(--text-secondary);
+    font-weight: 400;
+    line-height: 1.6;
+    max-width: 700px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+
+  .tag-amber { background: rgba(245,158,11,0.15); color: var(--accent); }
+  .tag-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .tag-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .tag-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: var(--cyan); }
+
+  .gradient-text {
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-blue {
+    background: var(--gradient-2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-green {
+    background: var(--gradient-3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* LAYOUT HELPERS */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .card p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .card h3 {
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .w-full { width: 100%; max-width: 1100px; }
+  .text-center { text-align: center; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mb-32 { margin-bottom: 32px; }
+  .mb-40 { margin-bottom: 40px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .gap-8 { gap: 8px; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+
+  /* SPECIAL ELEMENTS */
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 140px;
+  }
+
+  .flow-connector {
+    color: var(--accent);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-name {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .metric-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .code-block {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .code-block .hl-green { color: var(--green); }
+  .code-block .hl-amber { color: var(--accent); }
+  .code-block .hl-red { color: var(--red); }
+  .code-block .hl-blue { color: var(--blue); }
+
+  .health-bar {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .health-bar div { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .hb-a { background: #22c55e; flex: 3; }
+  .hb-b { background: #84cc16; flex: 2; }
+  .hb-c { background: #f59e0b; flex: 1.5; color: #000; }
+  .hb-d { background: #f97316; flex: 1; }
+  .hb-e { background: #ef4444; flex: 0.5; }
+
+  .table-simple {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .table-simple th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-simple td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .table-simple tr:last-child td { border-bottom: none; }
+
+  .table-simple .val { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary); }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .pill-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .pill-amber { background: rgba(245,158,11,0.15); color: var(--accent); }
+  .pill-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .pill-blue { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+  ul.feature-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  ul.feature-list li {
+    padding: 8px 0;
+    padding-left: 24px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  ul.feature-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .tier-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s;
+  }
+
+  .tier-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 0 40px var(--accent-glow);
+  }
+
+  .tier-card .tier-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #000;
+    padding: 4px 16px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .tier-price {
+    font-size: 36px;
+    font-weight: 900;
+    margin: 16px 0 4px;
+  }
+
+  .tier-period {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .tier-features {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+  }
+
+  .tier-features li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .tier-features li::before {
+    content: '\2713';
+    color: var(--green);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* GLOW ORB BG */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: 0.15;
+  }
+
+  .orb-amber { background: var(--accent); }
+  .orb-blue { background: var(--blue); }
+  .orb-green { background: var(--green); }
+  .orb-purple { background: var(--purple); }
+
+  /* LOGO */
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    position: fixed;
+    top: 28px;
+    left: 40px;
+    z-index: 100;
+  }
+
+  .logo span { color: var(--accent); }
+
+  /* KEYBOARD HINT */
+  .key-hint {
+    position: fixed;
+    bottom: 24px;
+    right: 40px;
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    z-index: 100;
+  }
+
+  .key-hint kbd {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  @media (max-width: 900px) {
+    .slide { padding: 40px 24px; }
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .flow-arrow { flex-direction: column; }
+    .flow-connector { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">LUMIN<span>.AI</span></div>
+<div class="progress-bar" id="progressBar"></div>
+<div class="key-hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> to navigate</div>
+
+<div class="deck" id="deck">
+
+  <!-- ============ SLIDE 1: TITLE ============ -->
+  <div class="slide active" data-slide="0">
+    <div class="orb orb-amber" style="width:400px;height:400px;top:-100px;right:-100px;"></div>
+    <div class="orb orb-blue" style="width:300px;height:300px;bottom:-50px;left:-50px;"></div>
+    <span class="slide-number">01</span>
+    <div class="text-center">
+      <span class="tag tag-amber">Enterprise Solar Intelligence</span>
+      <h1 class="mb-16">
+        <span class="gradient-text">LUMIN.AI</span>
+      </h1>
+      <p class="subtitle mb-40" style="max-width:640px;margin:0 auto 40px;">
+        AI-Powered Real-Time Inverter Diagnostics, Predictive Maintenance &amp; Operator Guidance for Utility-Scale Solar Farms
+      </p>
+      <div class="flow-arrow mb-40">
+        <div class="flow-step">Raw SCADA Data</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">ML Prediction</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">GenAI Explanation</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">Operator Action</div>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);">Built by Team Fantastic4 &bull; Production-Ready &bull; 4 Microservices</p>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 2: THE PROBLEM ============ -->
+  <div class="slide" data-slide="1">
+    <div class="orb orb-amber" style="width:300px;height:300px;top:10%;right:5%;"></div>
+    <span class="slide-number">02</span>
+    <span class="tag tag-red">The Problem</span>
+    <h2 class="text-center">Solar Operations Are <span class="gradient-text">Broken</span></h2>
+    <p class="subtitle text-center mb-40">Utility-scale farms deploy thousands of inverters. When one degrades, operators drown in raw telemetry they can't interpret.</p>
+    <div class="grid-2 w-full">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(239,68,68,0.12);color:var(--red);">&#9888;</div>
+        <h3>Alarm Fatigue</h3>
+        <p>SCADA systems push hundreds of discrete metrics at 5-minute intervals. Subtle pre-fault signatures are buried under routine data noise.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(245,158,11,0.12);color:var(--accent);">&#128270;</div>
+        <h3>Black-Box AI</h3>
+        <p>ML models output risk percentages and SHAP log-odds. Field technicians lack context to operationalize these data-science outputs.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(168,85,247,0.12);color:var(--purple);">&#128196;</div>
+        <h3>Manual Ticket Writing</h3>
+        <p>Maintenance tickets are written by hand, slow and error-prone. No automated triage; same failures recur across fleet.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">&#127760;</div>
+        <h3>No Unified View</h3>
+        <p>No centralized monitoring across multiple plants, blocks, and inverters. Siloed data prevents fleet-wide pattern recognition.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 3: MARKET OPPORTUNITY ============ -->
+  <div class="slide" data-slide="2">
+    <div class="orb orb-green" style="width:350px;height:350px;bottom:0;left:10%;"></div>
+    <span class="slide-number">03</span>
+    <span class="tag tag-green">Market Opportunity</span>
+    <h2 class="text-center">A <span class="gradient-text-green">Massive</span> &amp; Growing Market</h2>
+    <p class="subtitle text-center mb-40">The global solar O&amp;M market is experiencing explosive growth as installed capacity accelerates worldwide.</p>
+    <div class="grid-4 w-full mb-32">
+      <div class="card text-center">
+        <div class="stat-value gradient-text-green">$11B+</div>
+        <div class="stat-label">Global Solar O&M Market by 2028</div>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value gradient-text-green">1.6 TW</div>
+        <div class="stat-label">Global Installed Solar Capacity</div>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value gradient-text-green">30%</div>
+        <div class="stat-label">Revenue Lost to Unplanned Downtime</div>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value gradient-text-green">$3.2M</div>
+        <div class="stat-label">Avg. Annual Loss per 100MW Plant</div>
+      </div>
+    </div>
+    <div class="card w-full" style="padding:20px 28px;">
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.7;">
+        <strong style="color:var(--green);">The gap:</strong> Existing SCADA systems provide raw data but zero intelligence. Operators need an AI layer that translates telemetry into actionable guidance. LUMIN.AI fills this gap as a plug-and-play intelligence platform that sits on top of existing infrastructure.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 4: OUR SOLUTION ============ -->
+  <div class="slide" data-slide="3">
+    <div class="orb orb-amber" style="width:300px;height:300px;top:5%;left:5%;"></div>
+    <span class="slide-number">04</span>
+    <span class="tag tag-amber">Our Solution</span>
+    <h2 class="text-center">End-to-End <span class="gradient-text">Intelligence Platform</span></h2>
+    <p class="subtitle text-center mb-40">Four independently deployable microservices covering the full telemetry-to-action pipeline.</p>
+    <div class="grid-2 w-full">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">&#129302;</div>
+        <h3>ML Pipeline</h3>
+        <p>7-stage pipeline: SCADA ingestion, 183 engineered features, SMOTE balancing, Optuna-tuned XGBoost, SHAP explainability. Predicts no_risk, degradation_risk, and shutdown_risk.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(245,158,11,0.12);color:var(--accent);">&#9889;</div>
+        <h3>ML Inference Server</h3>
+        <p>FastAPI real-time prediction API. Single &lt;50ms, batch &lt;200ms. Per-prediction SHAP bar charts, 5-category mapping (A-E), contextual fault descriptions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(168,85,247,0.12);color:var(--purple);">&#128161;</div>
+        <h3>GenAI Explanation Layer</h3>
+        <p>Groq Llama 3.3 70B with RAG, 4-layer hallucination guardrails, agentic PDF ticket generation, multi-turn chat, LangSmith observability. 0% hallucination rate.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128187;</div>
+        <h3>Web Application</h3>
+        <p>Next.js 15 operator/admin dashboards, color-coded health grid, real-time alerts with sound, AI chatbot, JWT auth, role-based access, AWS RDS MySQL.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 5: HOW IT WORKS ============ -->
+  <div class="slide" data-slide="4">
+    <div class="orb orb-blue" style="width:350px;height:350px;bottom:-50px;right:0;"></div>
+    <span class="slide-number">05</span>
+    <span class="tag tag-blue">Architecture</span>
+    <h2 class="text-center">How It <span class="gradient-text-blue">Works</span></h2>
+    <p class="subtitle text-center mb-32">A seamless data flow from raw sensor readings to human-readable operator guidance in under 5 seconds.</p>
+    <div class="w-full">
+      <div class="flow-arrow mb-32">
+        <div class="flow-step" style="border-color:rgba(59,130,246,0.3);">
+          <div style="font-size:20px;margin-bottom:4px;">&#128225;</div>
+          SCADA Sensors<br><span style="font-size:11px;color:var(--text-muted);">Every 15s</span>
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step" style="border-color:rgba(59,130,246,0.3);">
+          <div style="font-size:20px;margin-bottom:4px;">&#129302;</div>
+          ML Inference<br><span style="font-size:11px;color:var(--text-muted);">XGBoost + SHAP</span>
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step" style="border-color:rgba(168,85,247,0.3);">
+          <div style="font-size:20px;margin-bottom:4px;">&#128161;</div>
+          GenAI Layer<br><span style="font-size:11px;color:var(--text-muted);">LLM + RAG</span>
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step" style="border-color:rgba(34,197,94,0.3);">
+          <div style="font-size:20px;margin-bottom:4px;">&#128202;</div>
+          Dashboard<br><span style="font-size:11px;color:var(--text-muted);">Real-time UI</span>
+        </div>
+      </div>
+      <div class="grid-3 w-full">
+        <div class="card" style="text-align:center;">
+          <h3 style="color:var(--blue);">Predict</h3>
+          <p>XGBoost classifies risk across 183 features with SHAP attribution for every prediction</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h3 style="color:var(--purple);">Explain</h3>
+          <p>LLM translates SHAP values + sensor data into plain-English guidance with manual references</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <h3 style="color:var(--green);">Act</h3>
+          <p>Auto-generated PDF maintenance tickets, priority alerts, and conversational Q&A for operators</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 6: WHAT OPERATORS SEE ============ -->
+  <div class="slide" data-slide="5">
+    <div class="orb orb-amber" style="width:250px;height:250px;top:10%;right:10%;"></div>
+    <span class="slide-number">06</span>
+    <span class="tag tag-amber">Operator Experience</span>
+    <h2 class="text-center">What Your Operators <span class="gradient-text">Actually See</span></h2>
+    <p class="subtitle text-center mb-32">Complex ML outputs transformed into actionable, plain-English guidance.</p>
+    <div class="grid-2 w-full">
+      <div class="code-block" style="font-size:12px;">
+<span class="hl-red">CRITICAL SHUTDOWN RISK (89%)</span>
+
+<span class="hl-amber">Summary:</span>
+Inverter INV-P1-L2-0 is experiencing
+severe overheating at <span class="hl-red">78.6 C</span>,
+above the safe operating threshold.
+Immediate intervention required.
+
+<span class="hl-amber">Key Risk Factors:</span>
+<span class="hl-red">* Temperature (HIGH):</span> 78.6 C
+<span class="hl-amber">* Ambient Temp (MED):</span> 47.3 C
+<span class="hl-amber">* Alarm 4003 (MED):</span> Over-temp
+
+<span class="hl-green">Recommended Actions:</span>
+1. Inspect cooling fans/air filters
+2. Check blocked ventilation
+3. Verify ambient temp sensors
+4. Review alarm 4003 - Manual S7.3
+5. Shutdown if temp exceeds 80 C
+
+<span class="hl-red">Urgency: IMMEDIATE</span>
+      </div>
+      <div class="flex flex-col" style="gap:16px;">
+        <div class="card">
+          <h3>Color-Coded Health Grid</h3>
+          <p class="mb-16">Instant visual status across all inverters — green to red with pulsing animations for critical units.</p>
+          <div class="health-bar">
+            <div class="hb-a">A</div>
+            <div class="hb-b">B</div>
+            <div class="hb-c">C</div>
+            <div class="hb-d">D</div>
+            <div class="hb-e">E</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>AI Chatbot</h3>
+          <p>Multi-turn conversational Q&A grounded in live data + inverter technical manual via RAG. Operators ask in natural language, get actionable answers.</p>
+        </div>
+        <div class="card">
+          <h3>Auto PDF Tickets</h3>
+          <p>Professional A4 maintenance tickets with root cause, actions, parts needed, safety notes, and escalation flags — generated autonomously.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 7: ML ENGINE DEEP DIVE ============ -->
+  <div class="slide" data-slide="6">
+    <div class="orb orb-blue" style="width:300px;height:300px;top:5%;left:5%;"></div>
+    <span class="slide-number">07</span>
+    <span class="tag tag-blue">Machine Learning</span>
+    <h2 class="text-center"><span class="gradient-text-blue">ML Engine</span> Deep Dive</h2>
+    <p class="subtitle text-center mb-32">A 7-stage production pipeline from raw SCADA to explainable risk classification.</p>
+    <div class="w-full">
+      <div class="flow-arrow mb-32">
+        <div class="flow-step">Ingest CSVs</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">Clean Data</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">183 Features</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">Auto-Label</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">Anomaly Enrich</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">SMOTE + Split</div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">XGBoost + SHAP</div>
+      </div>
+      <div class="grid-3 w-full">
+        <div class="card">
+          <h3 style="color:var(--cyan);">Feature Engineering</h3>
+          <ul class="feature-list">
+            <li>Rolling windows: 1h, 6h, 24h</li>
+            <li>Means, stdevs, deltas, min/max</li>
+            <li>183 engineered features total</li>
+            <li>Captures temporal degradation patterns</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--accent);">Optuna Tuning</h3>
+          <ul class="feature-list">
+            <li>40 Bayesian optimization trials</li>
+            <li>max_depth, learning_rate, L1/L2</li>
+            <li>Walk-forward cross validation</li>
+            <li>No future data leakage</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--green);">SHAP Explainability</h3>
+          <ul class="feature-list">
+            <li>Exact Shapley values via TreeExplainer</li>
+            <li>Per-prediction feature attribution</li>
+            <li>Visual bar charts (base64 PNG)</li>
+            <li>Per-class probability breakdown</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 8: GenAI LAYER ============ -->
+  <div class="slide" data-slide="7">
+    <div class="orb orb-purple" style="width:350px;height:350px;bottom:0;right:5%;"></div>
+    <span class="slide-number">08</span>
+    <span class="tag tag-purple">Generative AI</span>
+    <h2 class="text-center"><span class="gradient-text-blue">GenAI</span> Explanation Layer</h2>
+    <p class="subtitle text-center mb-32">Zero-hallucination LLM that transforms ML outputs into operator-ready guidance.</p>
+    <div class="grid-2 w-full mb-24">
+      <div class="card">
+        <h3>RAG Pipeline</h3>
+        <p class="mb-16">Inverter OEM manual (34 MB) parsed, chunked, embedded, and indexed in FAISS for retrieval-augmented generation.</p>
+        <table class="table-simple">
+          <tr><td>Parser</td><td class="val">PyMuPDF</td></tr>
+          <tr><td>Chunking</td><td class="val">800 words / 200 overlap</td></tr>
+          <tr><td>Embeddings</td><td class="val">all-MiniLM-L6-v2</td></tr>
+          <tr><td>Vector Store</td><td class="val">FAISS (cached)</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>4-Layer Hallucination Guardrails</h3>
+        <ul class="feature-list">
+          <li><strong>Layer 1:</strong> Input validation — filter SHAP features against canonical schema</li>
+          <li><strong>Layer 2:</strong> Strict prompt rules — "NEVER fabricate sensor readings"</li>
+          <li><strong>Layer 3:</strong> Output cross-reference — every cited value verified against input</li>
+          <li><strong>Layer 4:</strong> Auto-appended disclaimer on all AI responses</li>
+        </ul>
+        <div class="mt-16" style="padding:10px 16px;background:rgba(34,197,94,0.08);border-radius:8px;">
+          <span style="color:var(--green);font-weight:700;font-size:13px;">Result: 0% hallucination rate across 27 test cases</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid-3 w-full">
+      <div class="card text-center">
+        <div class="stat-value" style="color:var(--green);">~1.0s</div>
+        <div class="stat-label">Avg. LLM Response Time (Groq)</div>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value" style="color:var(--accent);">91.7%</div>
+        <div class="stat-label">Overall Accuracy Score</div>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value" style="color:var(--purple);">15+</div>
+        <div class="stat-label">API Endpoints</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 9: LLM ABLATION STUDY ============ -->
+  <div class="slide" data-slide="8">
+    <div class="orb orb-amber" style="width:250px;height:250px;top:5%;right:15%;"></div>
+    <span class="slide-number">09</span>
+    <span class="tag tag-purple">Research Rigor</span>
+    <h2 class="text-center">LLM <span class="gradient-text-blue">Ablation Study</span></h2>
+    <p class="subtitle text-center mb-32">3 models x 3 tasks x 3 risk scenarios = 27 test cases, auto-evaluated on 5 weighted metrics.</p>
+    <div class="w-full">
+      <div class="card mb-24" style="overflow-x:auto;">
+        <table class="table-simple" style="min-width:600px;">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Overall Score</th>
+              <th>Avg Latency</th>
+              <th>Hallucination-Free</th>
+              <th>JSON Compliance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="val" style="color:var(--accent);">#1</td>
+              <td class="val">Groq Llama 3.3 70B</td>
+              <td class="val" style="color:var(--green);">91.7%</td>
+              <td class="val" style="color:var(--green);">1.0s</td>
+              <td><span class="pill pill-green">100%</span></td>
+              <td class="val">67%</td>
+            </tr>
+            <tr>
+              <td class="val">#2</td>
+              <td>Qwen 2.5 72B (HF)</td>
+              <td class="val">91.7%</td>
+              <td class="val" style="color:var(--red);">21.2s</td>
+              <td><span class="pill pill-green">100%</span></td>
+              <td class="val">67%</td>
+            </tr>
+            <tr>
+              <td class="val">#3</td>
+              <td>Gemini 2.5 Flash</td>
+              <td class="val" style="color:var(--accent);">79.4%</td>
+              <td class="val">8.8s</td>
+              <td><span class="pill pill-green">100%</span></td>
+              <td class="val" style="color:var(--red);">44%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid-3 w-full">
+        <div class="card text-center">
+          <div class="stat-value gradient-text">21x</div>
+          <div class="stat-label">Groq faster than Qwen</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-value gradient-text-green">248</div>
+          <div class="stat-label">Avg tokens/response (most efficient)</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-value gradient-text-blue">7</div>
+          <div class="stat-label">Auto-generated comparison charts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 10: EXPLAINABILITY ============ -->
+  <div class="slide" data-slide="9">
+    <div class="orb orb-green" style="width:300px;height:300px;top:10%;left:5%;"></div>
+    <span class="slide-number">10</span>
+    <span class="tag tag-green">Explainable AI</span>
+    <h2 class="text-center">Explainability at <span class="gradient-text-green">Every Layer</span></h2>
+    <p class="subtitle text-center mb-32">Not just predictions — full transparency from model to operator.</p>
+    <div class="grid-3 w-full mb-24">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">1</div>
+        <h3>SHAP Values (ML)</h3>
+        <p>Exact Shapley values via TreeExplainer. Top 5 features ranked by absolute contribution. Per-class breakdown.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(168,85,247,0.12);color:var(--purple);">2</div>
+        <h3>Plain English (GenAI)</h3>
+        <p>SHAP + sensor data translated into structured summaries with urgency levels and manual section references.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">3</div>
+        <h3>Visual (Frontend)</h3>
+        <p>Color-coded grid, SHAP bar charts, 24h trend lines, fault history timeline — all on the operator dashboard.</p>
+      </div>
+    </div>
+    <div class="card w-full">
+      <h3 class="mb-16">Health Category Mapping</h3>
+      <table class="table-simple">
+        <thead><tr><th>Category</th><th>Label</th><th>Condition</th><th>Operator Action</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill pill-green">A</span></td><td>Healthy</td><td class="val">P(no_risk) &ge; 90%</td><td>No action needed</td></tr>
+          <tr><td><span class="pill" style="background:rgba(132,204,22,0.15);color:#84cc16;">B</span></td><td>Low Risk</td><td class="val">P(no_risk) 70-89%</td><td>Monitor on next cycle</td></tr>
+          <tr><td><span class="pill pill-amber">C</span></td><td>Moderate</td><td class="val">P(degradation) &lt; 70%</td><td>Schedule inspection</td></tr>
+          <tr><td><span class="pill" style="background:rgba(249,115,22,0.15);color:#f97316;">D</span></td><td>High Risk</td><td class="val">P(degradation) &ge; 70%</td><td>Priority maintenance</td></tr>
+          <tr><td><span class="pill pill-red">E</span></td><td>Critical</td><td class="val">Any shutdown_risk</td><td>Immediate intervention</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 11: PERFORMANCE ============ -->
+  <div class="slide" data-slide="10">
+    <div class="orb orb-amber" style="width:350px;height:350px;bottom:-50px;left:10%;"></div>
+    <span class="slide-number">11</span>
+    <span class="tag tag-cyan">Performance</span>
+    <h2 class="text-center">Production-Grade <span class="gradient-text">Performance</span></h2>
+    <p class="subtitle text-center mb-32">Real-time inference, sub-second LLM responses, and graceful fallbacks.</p>
+    <div class="grid-2 w-full">
+      <div class="card">
+        <h3 class="mb-16">Latency Benchmarks</h3>
+        <div class="metric-row">
+          <span class="metric-name">ML single prediction</span>
+          <span class="metric-val" style="color:var(--green);">&lt; 50ms</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">ML batch (12 inverters)</span>
+          <span class="metric-val" style="color:var(--green);">&lt; 200ms</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">SHAP explanation + plot</span>
+          <span class="metric-val" style="color:var(--accent);">~300ms</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">GenAI explanation</span>
+          <span class="metric-val" style="color:var(--accent);">2-4s</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">PDF ticket generation</span>
+          <span class="metric-val">3-5s</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-name">Full simulator cycle (12 inv)</span>
+          <span class="metric-val" style="color:var(--green);">&lt; 2s</span>
+        </div>
+      </div>
+      <div class="flex flex-col" style="gap:16px;">
+        <div class="card text-center">
+          <div class="stat-value gradient-text">12</div>
+          <div class="stat-label">Inverters monitored across 3 plants, 6 blocks</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-value gradient-text-green">15s</div>
+          <div class="stat-label">Simulator cycle interval</div>
+        </div>
+        <div class="card text-center">
+          <div class="stat-value gradient-text-blue">183</div>
+          <div class="stat-label">Engineered features per prediction</div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--green);">Graceful Fallback</h3>
+          <p>When ML servers are unavailable, the simulator falls back to local prediction generation. The frontend <strong>never goes blank</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 12: TECHNOLOGY STACK ============ -->
+  <div class="slide" data-slide="11">
+    <div class="orb orb-blue" style="width:300px;height:300px;top:5%;right:5%;"></div>
+    <span class="slide-number">12</span>
+    <span class="tag tag-blue">Technology</span>
+    <h2 class="text-center">Enterprise <span class="gradient-text-blue">Tech Stack</span></h2>
+    <p class="subtitle text-center mb-32">Modern, scalable, and production-ready at every layer.</p>
+    <div class="w-full">
+      <div class="card mb-24" style="overflow-x:auto;">
+        <table class="table-simple" style="min-width:700px;">
+          <thead>
+            <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="val">ML Training</td><td>Python, XGBoost, Optuna, SHAP, scikit-learn, SMOTE</td><td>Model training + hyperparameter optimization</td></tr>
+            <tr><td class="val">ML Inference</td><td>FastAPI, XGBoost, SHAP, NumPy, Matplotlib</td><td>Real-time prediction API with explainability</td></tr>
+            <tr><td class="val">GenAI</td><td>FastAPI, Groq (Llama 3.3 70B), LangSmith</td><td>LLM explanations, RAG, ticket generation</td></tr>
+            <tr><td class="val">RAG</td><td>PyMuPDF, SentenceTransformers, FAISS</td><td>Inverter manual retrieval-augmented generation</td></tr>
+            <tr><td class="val">Backend API</td><td>Express.js, MySQL2, JWT, bcrypt, Zod</td><td>REST API, auth, data ingestion</td></tr>
+            <tr><td class="val">Frontend</td><td>Next.js 15, TailwindCSS v4, shadcn/ui, Recharts</td><td>Operator + Admin dashboards</td></tr>
+            <tr><td class="val">Database</td><td>AWS RDS MySQL (ap-south-1)</td><td>Production cloud database</td></tr>
+            <tr><td class="val">Observability</td><td>LangSmith (LangChain)</td><td>LLM tracing, latency monitoring, token analytics</td></tr>
+            <tr><td class="val">PDF Generation</td><td>ReportLab</td><td>Professional A4 maintenance tickets</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 13: SECURITY ============ -->
+  <div class="slide" data-slide="12">
+    <div class="orb orb-green" style="width:300px;height:300px;bottom:10%;left:5%;"></div>
+    <span class="slide-number">13</span>
+    <span class="tag tag-green">Security</span>
+    <h2 class="text-center">Enterprise-Grade <span class="gradient-text-green">Security</span></h2>
+    <p class="subtitle text-center mb-32">Built for industrial SCADA environments with comprehensive security at every layer.</p>
+    <div class="grid-3 w-full mb-24">
+      <div class="card">
+        <div class="card-icon" style="background:rgba(34,197,94,0.12);color:var(--green);">&#128274;</div>
+        <h3>Authentication</h3>
+        <ul class="feature-list">
+          <li>JWT in httpOnly cookies</li>
+          <li>bcrypt (12 salt rounds)</li>
+          <li>5 attempts/min rate limiting</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(59,130,246,0.12);color:var(--blue);">&#128737;</div>
+        <h3>Authorization</h3>
+        <ul class="feature-list">
+          <li>Role-based access (Admin/Operator)</li>
+          <li>Middleware JWT + role check</li>
+          <li>Operator scoped to assigned plants</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(168,85,247,0.12);color:var(--purple);">&#128737;</div>
+        <h3>Data Protection</h3>
+        <ul class="feature-list">
+          <li>Parameterized SQL queries</li>
+          <li>Zod input validation on all inputs</li>
+          <li>React auto-escaping + XSS protection</li>
+          <li>AWS RDS with SSL/TLS enabled</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card w-full">
+      <h3 class="mb-8">Audit Trail</h3>
+      <p style="color:var(--text-secondary);font-size:14px;">Complete admin action audit logging, chat conversation history, and LangSmith LLM trace observability for full regulatory compliance and accountability.</p>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 14: DIGITAL TWIN ROADMAP ============ -->
+  <div class="slide" data-slide="13">
+    <div class="orb orb-purple" style="width:400px;height:400px;top:-50px;left:-50px;"></div>
+    <span class="slide-number">14</span>
+    <span class="tag tag-purple">Future Vision</span>
+    <h2 class="text-center">Predictive <span class="gradient-text-blue">Digital Twin</span></h2>
+    <p class="subtitle text-center mb-32">A real-time 3D representation mirroring physical state, health, and financial performance. Architecture fully designed for enterprise deployment.</p>
+    <div class="grid-2 w-full">
+      <div class="card">
+        <h3>3D Asset Rendering</h3>
+        <ul class="feature-list">
+          <li>Compressed .glb models for zero-lag WebGL rendering</li>
+          <li>Targetable meshes: Chassis, Cooling System, Status Screen</li>
+          <li>Dynamic material swapping based on health alerts</li>
+          <li>60 FPS via Three.js / Google model-viewer</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Real-Time Telemetry</h3>
+        <ul class="feature-list">
+          <li>WebSocket high-frequency data streaming</li>
+          <li>Visual effects tied to sensor thresholds</li>
+          <li>Click-to-inspect component diagnostics</li>
+          <li>Financial impact calculations (TCOC)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>GenAI Copilot Integration</h3>
+        <p>AI narrates root cause directly on the 3D model: <em>"Insulation fault detected. High DC voltage, zero current. Check for roof water ingress."</em></p>
+      </div>
+      <div class="card">
+        <h3>Premium Enterprise Feature</h3>
+        <p>Digital Twin serves as a high-value add-on for enterprise customers wanting immersive, context-rich monitoring beyond traditional dashboards.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 15: COMPETITIVE ADVANTAGE ============ -->
+  <div class="slide" data-slide="14">
+    <div class="orb orb-amber" style="width:300px;height:300px;bottom:0;right:0;"></div>
+    <span class="slide-number">15</span>
+    <span class="tag tag-amber">Why Us</span>
+    <h2 class="text-center">Competitive <span class="gradient-text">Advantage</span></h2>
+    <p class="subtitle text-center mb-32">What sets LUMIN.AI apart from existing solar monitoring solutions.</p>
+    <div class="w-full">
+      <div class="card mb-24" style="overflow-x:auto;">
+        <table class="table-simple" style="min-width:700px;">
+          <thead>
+            <tr><th>Capability</th><th>Traditional SCADA</th><th>Basic ML Solutions</th><th style="color:var(--accent);">LUMIN.AI</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="val">Failure Prediction</td>
+              <td><span class="pill pill-red">None</span></td>
+              <td><span class="pill pill-amber">Risk score only</span></td>
+              <td><span class="pill pill-green">3-class + 5-category</span></td>
+            </tr>
+            <tr>
+              <td class="val">Explainability</td>
+              <td><span class="pill pill-red">Raw alarms</span></td>
+              <td><span class="pill pill-amber">Feature importance</span></td>
+              <td><span class="pill pill-green">SHAP + Plain English</span></td>
+            </tr>
+            <tr>
+              <td class="val">Ticket Generation</td>
+              <td><span class="pill pill-red">Manual</span></td>
+              <td><span class="pill pill-red">Manual</span></td>
+              <td><span class="pill pill-green">Autonomous PDF</span></td>
+            </tr>
+            <tr>
+              <td class="val">Operator Guidance</td>
+              <td><span class="pill pill-red">None</span></td>
+              <td><span class="pill pill-red">None</span></td>
+              <td><span class="pill pill-green">LLM + RAG + Chat</span></td>
+            </tr>
+            <tr>
+              <td class="val">Hallucination Safety</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td><span class="pill pill-green">4-layer guardrails</span></td>
+            </tr>
+            <tr>
+              <td class="val">LLM Observability</td>
+              <td>N/A</td>
+              <td>N/A</td>
+              <td><span class="pill pill-green">LangSmith tracing</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 16: BUSINESS MODEL ============ -->
+  <div class="slide" data-slide="15">
+    <div class="orb orb-green" style="width:350px;height:350px;top:-50px;right:-50px;"></div>
+    <span class="slide-number">16</span>
+    <span class="tag tag-green">Business Model</span>
+    <h2 class="text-center">Flexible <span class="gradient-text-green">Pricing</span></h2>
+    <p class="subtitle text-center mb-40">SaaS subscription model scaled by plant size and feature tier.</p>
+    <div class="grid-3 w-full">
+      <div class="tier-card">
+        <h3>Starter</h3>
+        <div class="tier-price" style="color:var(--text-secondary);">Custom</div>
+        <div class="tier-period">per plant / month</div>
+        <ul class="tier-features">
+          <li>Up to 50 inverters</li>
+          <li>Real-time ML predictions</li>
+          <li>Operator dashboard</li>
+          <li>SHAP visual explainability</li>
+          <li>Color-coded health grid</li>
+          <li>Email support</li>
+        </ul>
+      </div>
+      <div class="tier-card featured">
+        <div class="tier-badge">Most Popular</div>
+        <h3 style="color:var(--accent);">Professional</h3>
+        <div class="tier-price gradient-text">Custom</div>
+        <div class="tier-period">per plant / month</div>
+        <ul class="tier-features">
+          <li>Up to 500 inverters</li>
+          <li>Everything in Starter</li>
+          <li>GenAI explanations + RAG</li>
+          <li>Autonomous PDF tickets</li>
+          <li>AI chatbot for operators</li>
+          <li>Admin panel + audit logs</li>
+          <li>LangSmith observability</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <h3>Enterprise</h3>
+        <div class="tier-price" style="color:var(--text-secondary);">Custom</div>
+        <div class="tier-period">per fleet / year</div>
+        <ul class="tier-features">
+          <li>Unlimited inverters</li>
+          <li>Everything in Professional</li>
+          <li>Digital Twin (3D)</li>
+          <li>Multi-plant fleet view</li>
+          <li>Custom ML model tuning</li>
+          <li>On-premise deployment</li>
+          <li>Dedicated success manager</li>
+          <li>SLA + 24/7 support</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 17: ROI ============ -->
+  <div class="slide" data-slide="16">
+    <div class="orb orb-amber" style="width:300px;height:300px;top:10%;left:10%;"></div>
+    <span class="slide-number">17</span>
+    <span class="tag tag-amber">ROI</span>
+    <h2 class="text-center">Return on <span class="gradient-text">Investment</span></h2>
+    <p class="subtitle text-center mb-32">Concrete cost savings from predictive maintenance and AI-driven operations.</p>
+    <div class="grid-2 w-full mb-24">
+      <div class="card text-center">
+        <div class="stat-value gradient-text">30%</div>
+        <div class="stat-label">Reduction in Unplanned Downtime</div>
+        <p class="mt-16" style="font-size:13px;color:var(--text-muted);">Predict failures before they happen with 7-day lookahead window</p>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value gradient-text-green">60%</div>
+        <div class="stat-label">Faster Ticket Resolution</div>
+        <p class="mt-16" style="font-size:13px;color:var(--text-muted);">Autonomous PDF tickets with root cause, parts, and safety notes</p>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value gradient-text-blue">80%</div>
+        <div class="stat-label">Reduced Diagnostic Time</div>
+        <p class="mt-16" style="font-size:13px;color:var(--text-muted);">Plain-English AI explanations replace manual SCADA interpretation</p>
+      </div>
+      <div class="card text-center">
+        <div class="stat-value" style="color:var(--green);">5x</div>
+        <div class="stat-label">Operator Efficiency Multiplier</div>
+        <p class="mt-16" style="font-size:13px;color:var(--text-muted);">One operator can monitor what previously required five</p>
+      </div>
+    </div>
+    <div class="card w-full" style="padding:20px 28px;">
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.7;">
+        <strong style="color:var(--accent);">For a 100MW plant:</strong> Industry average unplanned downtime costs ~$3.2M/year. LUMIN.AI's predictive maintenance can reclaim up to $960K annually while reducing operator headcount requirements and eliminating recurring failure patterns across your fleet.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 18: ROADMAP ============ -->
+  <div class="slide" data-slide="17">
+    <div class="orb orb-blue" style="width:300px;height:300px;top:5%;right:5%;"></div>
+    <span class="slide-number">18</span>
+    <span class="tag tag-blue">Roadmap</span>
+    <h2 class="text-center">Product <span class="gradient-text-blue">Roadmap</span></h2>
+    <p class="subtitle text-center mb-32">A clear path from current capabilities to enterprise-scale deployment.</p>
+    <div class="grid-2 w-full">
+      <div class="card">
+        <h3 style="color:var(--green);">Now (Delivered)</h3>
+        <ul class="feature-list">
+          <li>7-stage ML pipeline with 183 features</li>
+          <li>Real-time XGBoost + SHAP inference</li>
+          <li>GenAI explanation with RAG &amp; guardrails</li>
+          <li>Autonomous PDF ticket generation</li>
+          <li>Full-stack operator/admin dashboards</li>
+          <li>AI chatbot with multi-turn memory</li>
+          <li>AWS RDS cloud database</li>
+          <li>3-model LLM ablation study</li>
+          <li>LangSmith observability</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--accent);">Next (Q3-Q4 2026)</h3>
+        <ul class="feature-list">
+          <li>Few-shot prompting + chain-of-thought</li>
+          <li>Self-critique LLM loop</li>
+          <li>Email alert auto-dispatch</li>
+          <li>Historical trend analysis</li>
+          <li>Docker + Kubernetes containerization</li>
+          <li>Redis caching layer</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--blue);">Future (2027)</h3>
+        <ul class="feature-list">
+          <li>Predictive Digital Twin (3D)</li>
+          <li>LSTM / Temporal Fusion Transformer</li>
+          <li>Bayesian survival models for RUL</li>
+          <li>Dedicated vector DB (Pinecone/Weaviate)</li>
+          <li>Prometheus + Grafana monitoring</li>
+          <li>Multi-language operator support</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--purple);">Vision (2028+)</h3>
+        <ul class="feature-list">
+          <li>Ensemble ML with meta-learner</li>
+          <li>Changepoint detection (no labels needed)</li>
+          <li>Gaussian Process for new plants</li>
+          <li>Full event-driven Kafka architecture</li>
+          <li>Multi-asset: wind, battery, grid</li>
+          <li>Global fleet management</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 19: TEAM ============ -->
+  <div class="slide" data-slide="18">
+    <div class="orb orb-amber" style="width:350px;height:350px;bottom:-50px;left:-50px;"></div>
+    <span class="slide-number">19</span>
+    <span class="tag tag-amber">Team</span>
+    <h2 class="text-center">Team <span class="gradient-text">Fantastic4</span></h2>
+    <p class="subtitle text-center mb-40">Second-year engineering students who ship production code, not prototypes.</p>
+    <div class="grid-4 w-full mb-32">
+      <div class="card text-center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gradient-1);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;">TP</div>
+        <h3>Tirth Patel</h3>
+        <p style="color:var(--accent);font-size:12px;font-weight:600;margin-bottom:8px;">TEAM LEADER</p>
+        <p>Full Stack Developer</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Nirma University '28</p>
+      </div>
+      <div class="card text-center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gradient-2);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;">ND</div>
+        <h3>Neal Daftary</h3>
+        <p style="color:var(--blue);font-size:12px;font-weight:600;margin-bottom:8px;">ML ENGINEER</p>
+        <p>ML Pipeline &amp; Inference</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Nirma University '28</p>
+      </div>
+      <div class="card text-center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--gradient-3);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;">PS</div>
+        <h3>Parshva Shah</h3>
+        <p style="color:var(--green);font-size:12px;font-weight:600;margin-bottom:8px;">DATA RESEARCHER</p>
+        <p>Data Pipeline &amp; Analysis</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Nirma University '28</p>
+      </div>
+      <div class="card text-center">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#ec4899);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;">PD</div>
+        <h3>Priyanshu Doshi</h3>
+        <p style="color:var(--purple);font-size:12px;font-weight:600;margin-bottom:8px;">GENAI DEVELOPER</p>
+        <p>GenAI, RAG &amp; LLM</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Nirma University '28</p>
+      </div>
+    </div>
+    <div class="card w-full" style="padding:20px 28px;">
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.7;">
+        <strong style="color:var(--text-primary);">What we bring:</strong> End-to-end ML (7-stage pipeline, 183 features, SHAP) &bull; Production GenAI (RAG, agentic workflows, guardrails) &bull; Full-stack engineering (React, Express, AWS) &bull; Research rigor (ablation studies, prompt iterations) &bull; System design (4 independent microservices)
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ SLIDE 20: CTA ============ -->
+  <div class="slide" data-slide="19">
+    <div class="orb orb-amber" style="width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+    <div class="orb orb-blue" style="width:300px;height:300px;bottom:0;left:0;"></div>
+    <span class="slide-number">20</span>
+    <div class="text-center">
+      <span class="tag tag-amber">Next Steps</span>
+      <h1 class="mb-24" style="font-size:clamp(36px,5vw,56px);">
+        Ready to <span class="gradient-text">Transform</span><br>Your Solar Operations?
+      </h1>
+      <p class="subtitle mb-40" style="max-width:600px;margin:0 auto 40px;">
+        LUMIN.AI is production-ready. Let us show you how AI-powered diagnostics can save your plant millions while keeping your operators informed and empowered.
+      </p>
+      <div class="grid-3" style="max-width:700px;margin:0 auto;">
+        <div class="card text-center">
+          <h3 style="font-size:14px;">Live Demo</h3>
+          <p style="font-size:12px;">See LUMIN.AI running on real solar data</p>
+        </div>
+        <div class="card text-center" style="border-color:var(--accent);">
+          <h3 style="font-size:14px;color:var(--accent);">Pilot Program</h3>
+          <p style="font-size:12px;">Deploy on your plant for 30 days</p>
+        </div>
+        <div class="card text-center">
+          <h3 style="font-size:14px;">Contact Us</h3>
+          <p style="font-size:12px;">Schedule a technical deep-dive</p>
+        </div>
+      </div>
+      <p class="mt-24" style="font-size:13px;color:var(--text-muted);">
+        Team Fantastic4 &bull; Nirma University &bull; Built for HACKaMINeD 2026
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button id="prevBtn" onclick="navigate(-1)">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <span class="counter" id="counter">1 / 20</span>
+  <button id="nextBtn" onclick="navigate(1)">&#8594;</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  // Build dots
+  const dotsContainer = document.getElementById('dots');
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= total || index === current) return;
+    const prev = current;
+    current = index;
+
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === current) s.classList.add('active');
+      else if (i < current) s.classList.add('prev');
+    });
+
+    // Update dots
+    document.querySelectorAll('.dots .dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+
+    // Update counter
+    document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+
+    // Update progress bar
+    document.getElementById('progressBar').style.width = `${((current + 1) / total) * 100}%`;
+  }
+
+  function navigate(dir) {
+    goTo(current + dir);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+  });
+
+  // Initialize progress bar
+  document.getElementById('progressBar').style.width = `${(1 / total) * 100}%`;
+</script>
+
+</body>
+</html>
