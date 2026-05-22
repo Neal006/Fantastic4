@@ -20,6 +20,12 @@ const catBadge: Record<string, { color: string; label: string; icon: any }> = {
   C: { color: 'bg-orange-500 text-white', label: 'C — Degradation Risk', icon: ShieldAlert },
   D: { color: 'bg-red-500 text-white', label: 'D — Shutdown Risk', icon: ShieldX },
   E: { color: 'bg-red-500 text-white', label: 'E — Shutdown Risk', icon: ShieldX },
+  // ML inference text labels (direct API response)
+  no_risk:          { color: 'bg-emerald-500 text-white', label: 'No Risk', icon: ShieldCheck },
+  degradation:      { color: 'bg-orange-500 text-white', label: 'Degradation Risk', icon: ShieldAlert },
+  degradation_risk: { color: 'bg-orange-500 text-white', label: 'Degradation Risk', icon: ShieldAlert },
+  shutdown:         { color: 'bg-red-500 text-white', label: 'Shutdown Risk', icon: ShieldX },
+  shutdown_risk:    { color: 'bg-red-500 text-white', label: 'Shutdown Risk', icon: ShieldX },
 };
 
 interface FormData {
