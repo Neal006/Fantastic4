@@ -216,9 +216,9 @@ def predict_single(req: ManualPredictRequest):
         "op_state": req.op_state or 5120,
     }
     if req.power_factor is not None:
-        raw_input["pf"] = req.power_factor
+        raw_input["meter_pf"] = req.power_factor
     if req.frequency is not None:
-        raw_input["freq"] = req.frequency
+        raw_input["meter_freq"] = req.frequency
 
     try:
         result = engine.predict(raw_input, mode="manual")
@@ -231,10 +231,9 @@ def predict_single(req: ManualPredictRequest):
     if req.include_shap and shap_explainer.ready:
         try:
             vec = engine._build_feature_vector_from_raw(raw_input)
-            vec_scaled = engine.scaler.transform(vec.reshape(1, -1))[0]
-            predicted_idx = CLASS_NAMES.index(result["predicted_class"])
+            predicted_idx = result["_class_idx"]
             shap_data = shap_explainer.explain(
-                feature_vector=vec_scaled,
+                feature_vector=vec,
                 feature_cols=engine.feature_cols,
                 class_names=CLASS_NAMES,
                 predicted_class_idx=predicted_idx,
@@ -295,10 +294,9 @@ def predict_batch(req: BatchPredictRequest):
                     vec = engine._build_feature_vector_from_raw(features)
                 else:
                     vec = engine._build_feature_vector_from_full(features)
-                vec_scaled = engine.scaler.transform(vec.reshape(1, -1))[0]
                 predicted_idx = CLASS_NAMES.index(results[i]["predicted_class"])
                 shap_data = shap_explainer.explain(
-                    feature_vector=vec_scaled,
+                    feature_vector=vec,
                     feature_cols=engine.feature_cols,
                     class_names=CLASS_NAMES,
                     predicted_class_idx=predicted_idx,

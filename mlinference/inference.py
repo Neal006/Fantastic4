@@ -1,28 +1,45 @@
 """
-Core inference engine for the XGBoost solar inverter risk model.
-Loads the trained model, scaler, label encoder, and feature columns at import time.
-Provides predict() and predict_batch() for single and batch inference.
+Core inference engine for the InverterShield XGBoost models.
+
+Loads three model artifacts from ml/models/:
+  - binary_model.joblib     (XGB binary, used for SHAP)
+  - multiclass_model.joblib (XGB multi-class, used for A-E classification)
+  - anomaly_model.joblib    (IsolationForest, appended as features)
+  - feature_names.joblib    (ordered list; last two are always anomaly_score, is_anomaly)
+
+No StandardScaler — XGBoost is tree-based and scale-invariant.
 """
 
-import pickle
+import json
 import logging
 from pathlib import Path
 from typing import Optional
 
+import joblib
 import numpy as np
 
 logger = logging.getLogger("mlinference")
 
-# ── Paths ────────────────────────────────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent
-MODELS_DIR = BASE_DIR / "models"
-MODEL_PATH = MODELS_DIR / "xgb_best.pkl"
-ARTIFACTS_PATH = MODELS_DIR / "inference_artifacts.pkl"
+# ── Paths ──────────────────────────────────────────────────────────
+_BASE          = Path(__file__).resolve().parent          # mlinference/
+_ML_ROOT       = _BASE.parent / "ml"                      # ml/
+_MODELS_DIR    = _ML_ROOT / "models"                      # ml/models/
+_BASELINE_PATH = _ML_ROOT / "healthy_baseline.json"
 
-# ── Class names (must match training config) ─────────────────────
+# ── Class names ────────────────────────────────────────────────────
 CLASS_NAMES = ["no_risk", "degradation_risk", "shutdown_risk"]
 
-# ── Fault descriptions by category ──────────────────────────────
+# ── API field → feature column mapping ────────────────────────────
+# Operator submits 6 human-readable fields; map them to training column names.
+CORE_FIELD_MAP = {
+    "dc_voltage":   "inv_v_ab",       # Phase AB voltage (closest to DC bus)
+    "dc_current":   "inv_pv1_power",  # PV string 1 power (closest to DC input signal)
+    "ac_power":     "inv_power",      # AC output power (exact match)
+    "module_temp":  "module_temp",    # Module temperature (bonus column, exact)
+    "ambient_temp": "ambient_temp",   # Ambient temperature (exact)
+    "irradiation":  "irradiation",    # Solar irradiation (bonus column, exact)
+}
+
 FAULT_MAP = {
     "C": [
         "Low Power Output — String Issue",
@@ -45,121 +62,141 @@ FAULT_MAP = {
     ],
 }
 
-# ── 6 core readings that map to raw telemetry ────────────────────
-CORE_FIELD_MAP = {
-    "dc_voltage": "pv1_voltage",
-    "dc_current": "pv1_current",
-    "ac_power": "power",
-    "module_temp": "temp",
-    "ambient_temp": "ambient_temp",
-    "irradiation": "meter_active_power",
-}
-
 
 class InferenceEngine:
-    """Encapsulates model loading, feature alignment, scaling, and prediction."""
+    """Loads and serves all three InverterShield models."""
 
     def __init__(self):
-        self.model = None
-        self.scaler = None
-        self.label_encoder = None
-        self.feature_cols: list[str] = []
+        self.binary_model     = None   # XGB binary  — for SHAP
+        self.multiclass_model = None   # XGB 3-class — for A-E prediction
+        self.anomaly_model    = None   # IsolationForest
+        self.feature_cols:    list[str] = []
+        self.baseline:        dict      = {}
         self._loaded = False
 
-    def load(self):
-        """Load model and inference artifacts from disk."""
-        if self._loaded:
-            return
-
-        logger.info("Loading XGBoost model from %s ...", MODEL_PATH)
-        with open(MODEL_PATH, "rb") as f:
-            self.model = pickle.load(f)
-
-        logger.info("Loading inference artifacts from %s ...", ARTIFACTS_PATH)
-        with open(ARTIFACTS_PATH, "rb") as f:
-            artifacts = pickle.load(f)
-
-        self.scaler = artifacts["scaler"]
-        self.label_encoder = artifacts["label_encoder"]
-        self.feature_cols = artifacts["feature_cols"]
-
-        self._loaded = True
-        logger.info(
-            "Inference engine ready — %d features, %d classes",
-            len(self.feature_cols),
-            len(CLASS_NAMES),
-        )
+    # ── Backward-compat property (main.py passes engine.model to SHAP) ─
+    @property
+    def model(self):
+        return self.binary_model
 
     @property
     def n_features(self) -> int:
         return len(self.feature_cols)
 
-    # ── Build feature vector from raw operator input ─────────────
+    @property
+    def base_feature_cols(self) -> list[str]:
+        """Feature columns before anomaly augmentation (excludes last 2)."""
+        if (len(self.feature_cols) >= 2 and
+                self.feature_cols[-2:] == ["anomaly_score", "is_anomaly"]):
+            return self.feature_cols[:-2]
+        return self.feature_cols
+
+    # ── Load artifacts ─────────────────────────────────────────────
+    def load(self):
+        if self._loaded:
+            return
+
+        for name in ("binary_model", "multiclass_model", "anomaly_model", "feature_names"):
+            path = _MODELS_DIR / f"{name}.joblib"
+            if not path.exists():
+                raise FileNotFoundError(
+                    f"Model artifact not found: {path}\n"
+                    "Train first: cd ml && python run_pipeline.py"
+                )
+            obj = joblib.load(path)
+            if name == "feature_names":
+                self.feature_cols = obj
+            else:
+                setattr(self, name, obj)
+
+        if not _BASELINE_PATH.exists():
+            raise FileNotFoundError(f"Baseline not found: {_BASELINE_PATH}")
+        self.baseline = json.loads(_BASELINE_PATH.read_text())
+
+        self._loaded = True
+        logger.info(
+            "Inference engine ready — %d features (%d base + 2 anomaly), %d classes",
+            len(self.feature_cols),
+            len(self.base_feature_cols),
+            len(CLASS_NAMES),
+        )
+
+    # ── Feature vector builders ────────────────────────────────────
+
     def _build_feature_vector_from_raw(self, raw: dict) -> np.ndarray:
         """
-        Accept the 6 core readings (+ optional extras) and produce the
-        feature vector expected by the model.
-
-        Strategy: initialise every feature to its training-data mean so that
-        after StandardScaler transform the unknown features become z = 0
-        (neutral).  Only the 6 core sensor readings are overridden with the
-        actual operator values.  This avoids catastrophic z-scores from
-        zero-filled or raw-coded fields (e.g. op_state = 5120 → z = 1028).
+        Build augmented feature vector from 6-field operator input.
+        1. Start from healthy baseline (all unknowns default to healthy state).
+        2. Override with operator-provided values.
+        3. Derive KPI features from updated values.
+        4. Run anomaly model and append anomaly_score + is_anomaly.
         """
-        # Start from training means → z-score = 0 after scaling (neutral)
-        vec = np.array(self.scaler.mean_, dtype=np.float32).copy()
+        row = dict(self.baseline)
 
-        # Override the 6 core sensor features with actual raw values
-        for api_key, feature_key in CORE_FIELD_MAP.items():
-            if api_key in raw and feature_key in self.feature_cols:
-                idx = self.feature_cols.index(feature_key)
-                vec[idx] = float(raw[api_key])
+        # Map operator inputs to training column names
+        for api_key, feat_key in CORE_FIELD_MAP.items():
+            if api_key in raw:
+                row[feat_key] = float(raw[api_key])
 
-        return vec
+        # Optional meter fields (passed directly by name)
+        for key in ("meter_pf", "meter_freq"):
+            if key in raw:
+                row[key] = float(raw[key])
 
-    # ── Build feature vector from full feature dict ──────────────
+        # Alarm code → derive alarm-history features
+        alarm_code = int(raw.get("alarm_code", 0))
+        if alarm_code != 0:
+            row["alarm_count_24h"]        = 1.0
+            row["alarm_count_7d"]         = 1.0
+            row["hours_since_last_alarm"] = 0.0
+        # else: baseline keeps 0 alarms / 9999 hours (healthy default)
+
+        _recompute_kpis(row, self.baseline)
+
+        return self._make_vector(row)
+
     def _build_feature_vector_from_full(self, features: dict) -> np.ndarray:
         """
-        Accept a dict with all 183 feature columns (from the data pipeline).
-        Missing ones are zero-filled.
+        Build augmented feature vector from a full feature dict (pipeline / batch).
+        Provided values take priority; missing columns fall back to baseline.
         """
-        vec = np.zeros(self.n_features, dtype=np.float32)
-        for i, col in enumerate(self.feature_cols):
-            if col in features:
-                vec[i] = float(features[col])
-        return vec
+        row = dict(self.baseline)
+        row.update({k: float(v) for k, v in features.items() if isinstance(v, (int, float))})
+        # Only fill missing KPIs, don't override the pre-computed ones
+        if "voltage_imbalance" not in features:
+            _recompute_kpis(row, self.baseline)
+        return self._make_vector(row)
 
-    # ── Category mapping (3-class → A–E) ────────────────────────
+    def _make_vector(self, row: dict) -> np.ndarray:
+        """Build base vector, run anomaly model, return augmented vector."""
+        base_cols = self.base_feature_cols
+        base_vec  = np.array(
+            [float(row.get(col, 0.0)) for col in base_cols],
+            dtype=np.float32,
+        )
+        return self._augment_with_anomaly(base_vec)
+
+    def _augment_with_anomaly(self, base_vec: np.ndarray) -> np.ndarray:
+        """Append anomaly_score and is_anomaly (-1/1) to match training layout."""
+        if self.feature_cols[-2:] != ["anomaly_score", "is_anomaly"]:
+            return base_vec
+        X = base_vec.reshape(1, -1)
+        anomaly_score = float(self.anomaly_model.decision_function(X)[0])
+        is_anomaly    = float(self.anomaly_model.predict(X)[0])   # -1 or 1 (matches training)
+        return np.append(base_vec, [anomaly_score, is_anomaly]).astype(np.float32)
+
+    # ── Category mapping ────────────────────────────────────────────
     @staticmethod
-    def _map_category(predicted_class: int, probabilities: np.ndarray) -> str:
-        """Map 3-class XGBoost output to A–E category using confidence thresholds."""
-        # Class indices: 0=no_risk, 1=degradation_risk, 2=shutdown_risk
-        if predicted_class == 2:  # shutdown_risk
-            return "E"
-        elif predicted_class == 1:  # degradation_risk
-            prob = probabilities[1]
-            return "D" if prob >= 0.70 else "C"
-        else:  # no_risk
-            prob = probabilities[0]
-            if prob >= 0.90:
-                return "A"
-            elif prob >= 0.70:
-                return "B"
-            else:
-                return "C"  # Low confidence "no_risk" treated as minor issue
+    def _map_category(predicted_class: int) -> str:
+        return ["no_risk", "degradation", "shutdown"][predicted_class]
 
-    # ── Fault description ────────────────────────────────────────
+    # ── Fault description ───────────────────────────────────────────
     @staticmethod
     def _get_fault_description(
-        category: str,
-        raw_input: dict,
-        probabilities: np.ndarray,
+        category: str, raw_input: dict, probabilities: np.ndarray
     ) -> Optional[str]:
-        """Generate a contextual fault description based on category and readings."""
         if category in ("A", "B"):
             return None
-
-        # Pick a fault description based on the most likely root cause
         if category == "E":
             if raw_input.get("module_temp", 0) > 70:
                 return "Overheating — Thermal Shutdown Risk"
@@ -168,81 +205,50 @@ class InferenceEngine:
             if raw_input.get("dc_voltage", 999) == 0 and raw_input.get("dc_current", 999) == 0:
                 return "Inverter Shutdown — Critical"
             return "Ground Fault — Insulation Failure"
-
         if category == "D":
             if raw_input.get("dc_current", 10) < 5:
                 return "String Degradation"
-            if raw_input.get("alarm_code", 0) != 0:
-                return f"Alarm Code {int(raw_input.get('alarm_code', 0))} — Operational Fault"
+            if raw_input.get("alarm_code", 0):
+                return f"Alarm Code {int(raw_input['alarm_code'])} — Operational Fault"
             return "String Degradation"
-
         # Category C
         if raw_input.get("ac_power", 10) < 5:
             return "Low Power Output — String Issue"
         if raw_input.get("dc_voltage", 40) < 32:
             return "Partial Shading — Performance Loss"
-        if raw_input.get("alarm_code", 0) != 0:
-            return f"Communication Issue — Alarm Code {int(raw_input.get('alarm_code', 0))}"
+        if raw_input.get("alarm_code", 0):
+            return f"Communication Issue — Alarm Code {int(raw_input['alarm_code'])}"
         return "Low Power Output — String Issue"
 
-    # ── Single prediction ────────────────────────────────────────
-    def predict(
-        self, raw_input: dict, mode: str = "manual"
-    ) -> dict:
-        """
-        Run inference on a single reading.
-
-        Args:
-            raw_input: dict of input values (core 6 fields for manual, full 183 for pipeline)
-            mode: "manual" (operator input) or "full" (pipeline with all features)
-
-        Returns:
-            dict with category, confidence, probabilities, fault, readings
-        """
+    # ── Single prediction ───────────────────────────────────────────
+    def predict(self, raw_input: dict, mode: str = "manual") -> dict:
         if mode == "manual":
             vec = self._build_feature_vector_from_raw(raw_input)
         else:
             vec = self._build_feature_vector_from_full(raw_input)
 
-        # Scale
-        vec_scaled = self.scaler.transform(vec.reshape(1, -1))
+        X = vec.reshape(1, -1)
 
-        # Predict
-        proba = self.model.predict_proba(vec_scaled)[0]
+        proba           = self.multiclass_model.predict_proba(X)[0]
         predicted_class = int(np.argmax(proba))
-        confidence = float(np.max(proba))
-
-        # Map to A–E
-        category = self._map_category(predicted_class, proba)
-
-        # Fault description
-        fault = self._get_fault_description(category, raw_input, proba)
-
-        # Build probabilities dict
-        prob_dict = {}
-        for i, name in enumerate(CLASS_NAMES):
-            prob_dict[name] = round(float(proba[i]), 4)
+        confidence      = float(np.max(proba))
+        category        = self._map_category(predicted_class)
+        fault           = self._get_fault_description(category, raw_input, proba)
 
         return {
-            "category": category,
-            "confidence": round(confidence, 4),
-            "predicted_class": CLASS_NAMES[predicted_class],
-            "probabilities": prob_dict,
-            "fault": fault,
+            "category":        category,
+            "confidence":      round(confidence, 4),
+            "predicted_class": category,
+            "_class_idx":      predicted_class,   # internal — used by SHAP lookup
+            "probabilities":   {n: round(float(proba[i]), 4) for i, n in enumerate(CLASS_NAMES)},
+            "fault":           fault,
         }
 
-    # ── Batch prediction ─────────────────────────────────────────
-    def predict_batch(
-        self, readings: list[dict], mode: str = "manual"
-    ) -> list[dict]:
-        """
-        Run inference on multiple readings at once.
-        Uses vectorized scaling and prediction for performance.
-        """
+    # ── Batch prediction ────────────────────────────────────────────
+    def predict_batch(self, readings: list[dict], mode: str = "manual") -> list[dict]:
         if not readings:
             return []
 
-        # Build feature matrix
         vecs = []
         for r in readings:
             features = r.get("features", r)
@@ -251,40 +257,55 @@ class InferenceEngine:
             else:
                 vecs.append(self._build_feature_vector_from_full(features))
 
-        X = np.vstack(vecs)
-
-        # Scale
-        X_scaled = self.scaler.transform(X)
-
-        # Predict
-        probas = self.model.predict_proba(X_scaled)
+        probas = self.multiclass_model.predict_proba(np.vstack(vecs))
 
         results = []
         for i, r in enumerate(readings):
-            proba = probas[i]
+            proba           = probas[i]
             predicted_class = int(np.argmax(proba))
-            confidence = float(np.max(proba))
-            category = self._map_category(predicted_class, proba)
-
-            features = r.get("features", r)
-            fault = self._get_fault_description(category, features, proba)
-
-            prob_dict = {
-                name: round(float(proba[j]), 4)
-                for j, name in enumerate(CLASS_NAMES)
-            }
+            confidence      = float(np.max(proba))
+            category        = self._map_category(predicted_class)
+            features        = r.get("features", r)
+            fault           = self._get_fault_description(category, features, proba)
 
             results.append({
-                "inverter_id": r.get("inverter_id", f"unknown-{i}"),
-                "category": category,
-                "confidence": round(confidence, 4),
-                "predicted_class": CLASS_NAMES[predicted_class],
-                "probabilities": prob_dict,
-                "fault": fault,
+                "inverter_id":     r.get("inverter_id", f"unknown-{i}"),
+                "category":        category,
+                "confidence":      round(confidence, 4),
+                "predicted_class": category,
+                "_class_idx":      predicted_class,
+                "probabilities":   {n: round(float(proba[j]), 4) for j, n in enumerate(CLASS_NAMES)},
+                "fault":           fault,
             })
-
         return results
 
 
-# ── Module-level singleton ───────────────────────────────────────
+# ── Module-level singleton ──────────────────────────────────────────
 engine = InferenceEngine()
+
+
+# ── KPI helper (module-level so shap_explainer can import if needed) ─
+def _recompute_kpis(row: dict, baseline: dict) -> None:
+    """Recompute derived KPI features in-place from updated row values."""
+    v_r    = row.get("meter_v_r",  baseline.get("meter_v_r",  236.0))
+    v_y    = row.get("meter_v_y",  baseline.get("meter_v_y",  236.0))
+    v_b    = row.get("meter_v_b",  baseline.get("meter_v_b",  236.0))
+    mean_v = (v_r + v_y + v_b) / 3
+    row["voltage_imbalance"] = (
+        max(abs(v_r - mean_v), abs(v_y - mean_v), abs(v_b - mean_v)) / mean_v
+        if mean_v else 0.0
+    )
+
+    pf = row.get("meter_pf", baseline.get("meter_pf", 0.98))
+    row["pf_deviation"] = abs(1.0 - pf)
+
+    freq = row.get("meter_freq", baseline.get("meter_freq", 50.0))
+    row["freq_deviation"] = abs(freq - 50.0)
+
+    inv_power      = row.get("inv_power", 0.0)
+    baseline_power = baseline.get("inv_power", 3.889)
+    row["power_ratio_vs_24h"] = inv_power / baseline_power if baseline_power else 0.0
+
+    smu_zero  = row.get("smu_num_zero",      baseline.get("smu_num_zero",      0.0))
+    smu_total = row.get("smu_total_strings", baseline.get("smu_total_strings", 1.0))
+    row["smu_zero_fraction"] = smu_zero / smu_total if smu_total else 0.0

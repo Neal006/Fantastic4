@@ -1,96 +1,68 @@
 """
-Central configuration for the Inverter Failure-Risk Prediction pipeline.
-All paths, column lists, hyper-parameter search spaces, and constants live here.
+Central configuration for InverterShield ML pipeline.
 """
 
-import os
 from pathlib import Path
 
-# ──────────────────────────── Paths ────────────────────────────
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
+BASE_DIR    = Path(__file__).resolve().parent
 PROCESSED_DIR = BASE_DIR / "processed"
-MODELS_DIR = BASE_DIR / "models"
+MODELS_DIR  = BASE_DIR / "models"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
 for _d in (PROCESSED_DIR, MODELS_DIR, OUTPUTS_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
-# ──────────────────────────── Random seed ──────────────────────
-SEED = 42
+# ── Input ──────────────────────────────────────────────────────────
+FEATURED_PARQUET = PROCESSED_DIR / "featured_data.parquet"
 
-# ──────────────────────────── Time constants ───────────────────
-SAMPLE_INTERVAL_MIN = 5                     # 5-minute SCADA resolution
-SAMPLES_PER_HOUR = 60 // SAMPLE_INTERVAL_MIN  # 12
-SAMPLES_PER_DAY = SAMPLES_PER_HOUR * 24       # 288
-LOOKAHEAD_DAYS = 7
-LOOKAHEAD_SAMPLES = LOOKAHEAD_DAYS * SAMPLES_PER_DAY  # 2016
+# ── Training ───────────────────────────────────────────────────────
+SEED            = 42
+TRAIN_FRAC      = 0.80
+N_CV_FOLDS      = 5
+HORIZON_HOURS   = 168          # 7-day prediction window
+DAYTIME_START   = 6
+DAYTIME_END     = 18
 
-# ──────────────────────────── Rolling windows (in samples) ─────
-ROLLING_WINDOWS = {
-    "1h": SAMPLES_PER_HOUR,        # 12
-    "6h": SAMPLES_PER_HOUR * 6,    # 72
-    "24h": SAMPLES_PER_DAY,        # 288
-}
+# ── Anomaly model ─────────────────────────────────────────────────
+ISOLATION_CONTAMINATION = 0.05
+ISOLATION_N_ESTIMATORS  = 200
 
-# ──────────────────────────── Column groups ────────────────────
-# These are the standardised *long-format* column names after ingestion.
-INVERTER_ID_COL = "inverter_id"
-PLANT_ID_COL = "plant_id"
-MAC_COL = "mac"
-TIMESTAMP_COL = "timestamp"
-LABEL_COL = "risk_label"
-
-# Inverter-level raw numeric columns (per inverter after melt)
-PV_STRING_CURRENT_COLS = [f"pv{i}_current" for i in range(1, 10)]
-PV_STRING_VOLTAGE_COLS = [f"pv{i}_voltage" for i in range(1, 10)]
-PV_STRING_POWER_COLS = [f"pv{i}_power" for i in range(1, 3)]  # only pv1, pv2
-
-INVERTER_NUMERIC_COLS = (
-    ["power", "temp", "alarm_code", "op_state", "kwh_total", "kwh_today",
-     "limit_percent"]
-    + PV_STRING_CURRENT_COLS
-    + PV_STRING_VOLTAGE_COLS
-    + PV_STRING_POWER_COLS
+# ── XGBoost fixed params ───────────────────────────────────────────
+XGB_PARAMS_SHARED = dict(
+    n_estimators     = 500,
+    max_depth        = 6,
+    learning_rate    = 0.05,
+    subsample        = 0.8,
+    colsample_bytree = 0.8,
+    random_state     = SEED,
+    n_jobs           = -1,
+    tree_method      = "hist",
+    verbosity        = 0,
 )
 
-# Meter / grid columns (shared per data-logger row)
-METER_COLS = [
-    "meter_active_power", "meter_kwh_import", "meter_kwh_total",
-    "meter_kwh_today", "pf", "freq",
-    "p_r", "p_y", "p_b",
-    "v_r", "v_y", "v_b",
+# ── Class names ────────────────────────────────────────────────────
+CLASS_NAMES = ["no_risk", "degradation_risk", "shutdown_risk"]
+
+# ── Feature columns excluded from model input ──────────────────────
+EXCLUDE_COLS = [
+    "datetime", "plant_id", "logger_mac", "inverter_idx", "inverter_id",
+    "target_binary", "target_multiclass",
+    "inv_alarm_code", "inv_op_state", "alarm_active",
+    "shutdown_event", "degradation_event",
 ]
 
-SENSOR_COLS = ["ambient_temp"]
-
-# ──────────────────────────── Label thresholds ─────────────────
-POWER_DROP_THRESHOLD = 0.30    # >30 % drop → degradation
-ALARM_DURATION_THRESH = 6      # ≥6 consecutive alarm rows → degradation
-# op_state values indicating shutdown / critical fault
-SHUTDOWN_OP_STATES = {0}       # 0 = off / fault  (5120 = running)
-CRITICAL_ALARM_CODES = set()   # will be populated from data exploration
-
-# ──────────────────────────── XGBoost Optuna search space ──────
-XGB_SEARCH_SPACE = {
-    "max_depth": (3, 10),
-    "learning_rate": (0.01, 0.3),
-    "n_estimators": (100, 800),
-    "subsample": (0.6, 1.0),
-    "colsample_bytree": (0.5, 1.0),
-    "min_child_weight": (1, 10),
-    "gamma": (0.0, 5.0),
-    "reg_alpha": (0.0, 5.0),
-    "reg_lambda": (0.5, 5.0),
-}
-XGB_OPTUNA_TRIALS = 40
-
-# ──────────────────────────── Walk-forward CV ──────────────────
-N_CV_FOLDS = 4
-TEST_FRAC = 0.20   # last 20 % of data for hold-out test
-
-# ──────────────────────────── SMOTE ────────────────────────────
-SMOTE_K_NEIGHBORS = 5
-
-# ──────────────────────────── Class names ──────────────────────
-CLASS_NAMES = ["no_risk", "degradation_risk", "shutdown_risk"]
+# ── Lightweight 30-feature set (inference without rolling history) ──
+KEY_FEATURES = [
+    "inv_power", "inv_temp", "inv_freq",
+    "inv_v_ab", "inv_v_bc", "inv_v_ca",
+    "inv_pv1_power", "inv_kwh_today",
+    "meter_pf", "meter_freq",
+    "meter_v_r", "meter_v_y", "meter_v_b",
+    "meter_meter_active_power",
+    "ambient_temp",
+    "smu_string_mean", "smu_string_std", "smu_num_zero", "smu_total_strings",
+    "alarm_count_24h", "alarm_count_7d", "hours_since_last_alarm",
+    "hour", "month", "is_daytime",
+    "voltage_imbalance", "pf_deviation", "freq_deviation",
+    "power_ratio_vs_24h", "smu_zero_fraction",
+]
