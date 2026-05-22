@@ -24,14 +24,8 @@ ENV/
 .env
 .env.local
 
-# ML Data and Models
-/ml/models
-/ml/processed
-/ml/data
-/ml/run_pipeline.py
 /mlinference/debug
 /mlinference/test
-/mlinference/models
 # Large binary files
 *.parquet
 *.h5

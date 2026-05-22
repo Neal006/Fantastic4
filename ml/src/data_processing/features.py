@@ -13,6 +13,7 @@ import pandas as pd
 ROLLING_COLS = [
     "inv_power", "inv_temp", "ambient_temp", "meter_freq",
     "meter_pf", "meter_v_r", "meter_v_y", "meter_v_b", "smu_string_mean",
+    "performance_ratio",
 ]
 WINDOWS = [6, 24, 168]
 HORIZON = 168   # 7-day forward label window
@@ -97,22 +98,43 @@ def _derived_kpis(df: pd.DataFrame) -> pd.DataFrame:
             df["smu_num_zero"] / df["smu_total_strings"].replace(0, float("nan"))
         ).fillna(0)
 
+    # Performance ratio: actual power / theoretical power from irradiation
+    if "inv_power" in df.columns and "irradiation" in df.columns:
+        irr = df["irradiation"].clip(lower=50)
+        pr  = (df["inv_power"] / (irr / 1000)).replace([np.inf, -np.inf], np.nan).clip(0, 2)
+        df["performance_ratio"] = pr.fillna(0)
+
     return df
 
 
 def _build_targets(df: pd.DataFrame) -> pd.DataFrame:
+    # Strict shutdown: only critical alarms (code >= 10) OR sustained 3+ hour
+    # zero power during daytime — excludes minor informational alarms
+    df["critical_alarm"] = (df["inv_alarm_code"] >= 10).astype(int)
+    zero_daytime = ((df["inv_power"] == 0) & (df["is_daytime"] == 1)).astype(int)
+    df["sustained_shutdown"] = (zero_daytime.rolling(3, min_periods=3).sum() >= 3).astype(int)
     df["shutdown_event"] = (
-        (df["inv_alarm_code"] > 0) |
-        ((df["inv_power"] == 0) & (df["is_daytime"] == 1))
+        (df["sustained_shutdown"] == 1) | (df["critical_alarm"] == 1)
     ).astype(int)
 
-    avg_24h = df["inv_power"].rolling(24, min_periods=6).mean()
-    df["degradation_event"] = (
-        (df["inv_power"] > 0) &
-        (df["inv_power"] < 0.5 * avg_24h) &
-        (df["is_daytime"] == 1) &
-        (avg_24h > 0.1)
-    ).astype(int)
+    # Strict degradation: performance ratio < 75% of 7-day rolling median
+    # for 2+ consecutive hours — filters short dips and nighttime noise
+    if "performance_ratio" in df.columns:
+        pr_median_7d = df["performance_ratio"].rolling(168, min_periods=24).median()
+        low_pr = (
+            (df["performance_ratio"] < 0.75 * pr_median_7d) &
+            (df["is_daytime"] == 1) &
+            (df["irradiation"] > 150)
+        ).astype(int)
+        df["degradation_event"] = (low_pr.rolling(3, min_periods=3).sum() >= 2).astype(int)
+    else:
+        avg_24h = df["inv_power"].rolling(24, min_periods=6).mean()
+        df["degradation_event"] = (
+            (df["inv_power"] > 0) &
+            (df["inv_power"] < 0.5 * avg_24h) &
+            (df["is_daytime"] == 1) &
+            (avg_24h > 0.1)
+        ).astype(int)
 
     future_shutdown    = df["shutdown_event"].iloc[::-1].rolling(HORIZON, min_periods=1).sum().iloc[::-1]
     future_degradation = df["degradation_event"].iloc[::-1].rolling(HORIZON, min_periods=1).sum().iloc[::-1]

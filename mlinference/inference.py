@@ -126,22 +126,31 @@ class InferenceEngine:
     def _build_feature_vector_from_raw(self, raw: dict) -> np.ndarray:
         """
         Build augmented feature vector from 6-field operator input.
-        1. Start from healthy baseline (all unknowns default to healthy state).
+        1. Start from baseline (pre-computed KPIs are already correct — do NOT clobber them).
         2. Override with operator-provided values.
-        3. Derive KPI features from updated values.
+        3. Recompute ONLY the KPIs whose inputs were actually provided.
         4. Run anomaly model and append anomaly_score + is_anomaly.
         """
         row = dict(self.baseline)
 
-        # Map operator inputs to training column names
+        # Map core operator fields to training column names
         for api_key, feat_key in CORE_FIELD_MAP.items():
             if api_key in raw:
                 row[feat_key] = float(raw[api_key])
 
-        # Optional meter fields (passed directly by name)
-        for key in ("meter_pf", "meter_freq"):
-            if key in raw:
-                row[key] = float(raw[key])
+        # Power factor — accept both API alias and direct name
+        pf_provided = False
+        if "meter_pf" in raw:
+            row["meter_pf"] = float(raw["meter_pf"]); pf_provided = True
+        elif "power_factor" in raw:
+            row["meter_pf"] = float(raw["power_factor"]); pf_provided = True
+
+        # Frequency — accept both API alias and direct name
+        freq_provided = False
+        if "meter_freq" in raw:
+            row["meter_freq"] = float(raw["meter_freq"]); freq_provided = True
+        elif "frequency" in raw:
+            row["meter_freq"] = float(raw["frequency"]); freq_provided = True
 
         # Alarm code → derive alarm-history features
         alarm_code = int(raw.get("alarm_code", 0))
@@ -149,9 +158,27 @@ class InferenceEngine:
             row["alarm_count_24h"]        = 1.0
             row["alarm_count_7d"]         = 1.0
             row["hours_since_last_alarm"] = 0.0
-        # else: baseline keeps 0 alarms / 9999 hours (healthy default)
 
-        _recompute_kpis(row, self.baseline)
+        # Selectively recompute only the KPIs whose inputs were overridden.
+        # Baseline pre-computed values (e.g. pf_deviation=0.0, freq_deviation=0.0)
+        # reflect what the model saw during training — keep them intact unless
+        # the caller provided fresh meter readings.
+        if pf_provided:
+            row["pf_deviation"] = abs(1.0 - row["meter_pf"])
+
+        if freq_provided:
+            row["freq_deviation"] = abs(row["meter_freq"] - 50.0)
+
+        if "ac_power" in raw:
+            inv_power = float(raw["ac_power"])
+            baseline_power = self.baseline.get("inv_power", 3.889)
+            row["power_ratio_vs_24h"] = inv_power / baseline_power if baseline_power else 0.0
+
+        # Performance ratio — key degradation signal
+        if "ac_power" in raw and "irradiation" in raw:
+            irr = max(float(raw["irradiation"]), 50)
+            pr  = float(raw["ac_power"]) / (irr / 1000)
+            row["performance_ratio"] = min(max(pr, 0.0), 2.0)
 
         return self._make_vector(row)
 
@@ -159,12 +186,10 @@ class InferenceEngine:
         """
         Build augmented feature vector from a full feature dict (pipeline / batch).
         Provided values take priority; missing columns fall back to baseline.
+        Pre-computed KPI values in the dict are used as-is.
         """
         row = dict(self.baseline)
         row.update({k: float(v) for k, v in features.items() if isinstance(v, (int, float))})
-        # Only fill missing KPIs, don't override the pre-computed ones
-        if "voltage_imbalance" not in features:
-            _recompute_kpis(row, self.baseline)
         return self._make_vector(row)
 
     def _make_vector(self, row: dict) -> np.ndarray:
@@ -187,8 +212,15 @@ class InferenceEngine:
 
     # ── Category mapping ────────────────────────────────────────────
     @staticmethod
-    def _map_category(predicted_class: int) -> str:
-        return ["no_risk", "degradation", "shutdown"][predicted_class]
+    def _map_category(predicted_class: int, proba: np.ndarray) -> str:
+        # Threshold-based classification tuned for extreme class imbalance
+        # (~1% degradation in training).  Lowered thresholds prevent the
+        # majority class from drowning out the minority signals.
+        if proba[0] >= 0.55:    # strong no_risk signal needed before calling safe
+            return "no_risk"
+        if proba[1] >= 0.06:    # catch even small degradation probability
+            return "degradation"
+        return "shutdown"       # default to most urgent class when uncertain
 
     # ── Fault description ───────────────────────────────────────────
     @staticmethod
@@ -232,7 +264,7 @@ class InferenceEngine:
         proba           = self.multiclass_model.predict_proba(X)[0]
         predicted_class = int(np.argmax(proba))
         confidence      = float(np.max(proba))
-        category        = self._map_category(predicted_class)
+        category        = self._map_category(predicted_class, proba)
         fault           = self._get_fault_description(category, raw_input, proba)
 
         return {
@@ -264,7 +296,7 @@ class InferenceEngine:
             proba           = probas[i]
             predicted_class = int(np.argmax(proba))
             confidence      = float(np.max(proba))
-            category        = self._map_category(predicted_class)
+            category        = self._map_category(predicted_class, proba)
             features        = r.get("features", r)
             fault           = self._get_fault_description(category, features, proba)
 

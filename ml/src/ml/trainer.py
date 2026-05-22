@@ -145,15 +145,32 @@ def run():
     )
 
     # ── 6. Multi-class XGBoost ─────────────────────────────────────
-    log_step("Training Multi-class XGBoost ...")
-    y_multi  = train_df["target_multiclass"].values
-    weights  = compute_sample_weight("balanced", y_multi)
+    log_step("Training Multi-class XGBoost (aggressive minority-class boost) ...")
+    y_multi = train_df["target_multiclass"].values
+
+    # Class distribution is heavily skewed: ~67% shutdown, ~21% no_risk, ~11% degradation.
+    # compute_sample_weight("balanced") is not strong enough — model collapses to predicting
+    # shutdown for everything.  Manual boosts force the model to learn all three classes.
+    from collections import Counter
+    counts  = Counter(y_multi)
+    max_cnt = max(counts.values())
+    # Base inverse-frequency weight, then extra boost for degradation (rarest useful class)
+    CLASS_BOOST = {0: 2.0, 1: 25.0, 2: 1.0}   # no_risk x2, degradation x25, shutdown x1
+    base_w = {c: max_cnt / counts[c] for c in counts}
+    weights = np.array(
+        [base_w[y] * CLASS_BOOST[y] for y in y_multi], dtype=np.float32
+    )
+    log_step(f"  Sample weight range: {weights.min():.2f} – {weights.max():.2f}")
+    log_step(f"  Class counts: { {k: counts[k] for k in sorted(counts)} }")
 
     multi_params = {
         **XGB_PARAMS_SHARED,
-        "objective":   "multi:softprob",
-        "num_class":   3,
-        "eval_metric": "mlogloss",
+        "n_estimators":  700,    # more trees to learn minority patterns
+        "learning_rate": 0.03,   # slower learning helps minority classes
+        "objective":     "multi:softprob",
+        "num_class":     3,
+        "eval_metric":   "mlogloss",
+        "min_child_weight": 5,   # prevents overfitting to tiny minority groups
     }
 
     multiclass_model = XGBClassifier(**multi_params)
@@ -162,8 +179,19 @@ def run():
 
     y_pred_multi = multiclass_model.predict(X_test_aug)
     y_test_multi = test_df["target_multiclass"].values
-    multi_f1     = round(float(f1_score(y_test_multi, y_pred_multi, average="weighted", zero_division=0)), 4)
-    log_step(f"Multi-class weighted F1 (test): {multi_f1:.3f}")
+    multi_f1_w   = round(float(f1_score(y_test_multi, y_pred_multi, average="weighted",  zero_division=0)), 4)
+    multi_f1_m   = round(float(f1_score(y_test_multi, y_pred_multi, average="macro",     zero_division=0)), 4)
+    log_step(f"Multi-class weighted F1 (test): {multi_f1_w:.3f}  |  macro F1: {multi_f1_m:.3f}")
+
+    # Per-class breakdown
+    from sklearn.metrics import classification_report
+    report = classification_report(y_test_multi, y_pred_multi,
+                                   target_names=["no_risk","degradation_risk","shutdown_risk"],
+                                   zero_division=0)
+    for line in report.splitlines():
+        log_step("  " + line)
+
+    multi_f1 = multi_f1_w
 
     # ── 7. SHAP explainability ─────────────────────────────────────
     log_step("Computing SHAP values ...")

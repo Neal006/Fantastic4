@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from utils import log_section, log_step
 
 
-STAGES = ["features", "train"]
+STAGES = ["features", "retarget", "train", "all"]
 
 
 def _run_features():
@@ -39,6 +39,12 @@ def _run_features():
     log_step("  df_featured = build_features(df_hourly)")
     log_step("  df_featured.to_parquet('processed/featured_data.parquet', index=False)")
     log_step("Or provide the parquet directly (see ML_INFO.md Section 2).")
+
+
+def _run_retarget():
+    from src.data_processing.retarget import retarget
+    from config import FEATURED_PARQUET
+    retarget(FEATURED_PARQUET)
 
 
 def _run_train():
@@ -51,7 +57,7 @@ def main():
     parser.add_argument(
         "--stage", type=str, default="train",
         choices=STAGES,
-        help="Pipeline stage to run (default: train)",
+        help="Pipeline stage to run (default: train). 'all' runs retarget then train.",
     )
     args = parser.parse_args()
 
@@ -60,7 +66,12 @@ def main():
 
     if args.stage == "features":
         _run_features()
+    elif args.stage == "retarget":
+        _run_retarget()
     elif args.stage == "train":
+        _run_train()
+    elif args.stage == "all":
+        _run_retarget()
         _run_train()
 
     elapsed = time.perf_counter() - t0

@@ -4,7 +4,14 @@
       "Bash(python -c \"import pandas as pd; df = pd.read_parquet\\('processed/featured.parquet'\\); print\\('Shape:', df.shape\\); print\\('\\\\nColumns:'\\); print\\(list\\(df.columns\\)\\); print\\('\\\\nDtypes:\\\\n', df.dtypes\\)\")",
       "Bash(python -m py_compile config.py utils.py run_pipeline.py src/data_processing/loader.py src/data_processing/features.py src/ml/trainer.py src/api/main.py src/dashboard/app.py)",
       "Bash(python -m py_compile inference.py main.py shap_explainer.py)",
-      "Bash(python -m py_compile inference.py main.py)"
+      "Bash(python -m py_compile inference.py main.py)",
+      "Bash(python test/test_cases.py)",
+      "Bash(python -c ' *)",
+      "Bash(python run_pipeline.py)",
+      "Bash(python run_pipeline.py --stage retarget)",
+      "Bash(copy \"featured_data.parquet.bak\" \"featured_data.parquet\" /Y)",
+      "Bash(python run_pipeline.py --stage train)",
+      "Bash(python run_pipeline.py --stage all)"
     ]
   }
 }

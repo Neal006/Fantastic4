@@ -46,9 +46,12 @@ CLASS_NAMES = ["no_risk", "degradation_risk", "shutdown_risk"]
 # ── Feature columns excluded from model input ──────────────────────
 EXCLUDE_COLS = [
     "datetime", "plant_id", "logger_mac", "inverter_idx", "inverter_id",
+    "inv_id",            # identifier leakage — memorises which inverter, not physics
+    "inv_kwh_total",     # cumulative lifetime energy — proxy for inverter age/identity
     "target_binary", "target_multiclass",
     "inv_alarm_code", "inv_op_state", "alarm_active",
     "shutdown_event", "degradation_event",
+    "sustained_shutdown", "critical_alarm",  # intermediate label variables
 ]
 
 # ── Lightweight 30-feature set (inference without rolling history) ──
@@ -59,10 +62,11 @@ KEY_FEATURES = [
     "meter_pf", "meter_freq",
     "meter_v_r", "meter_v_y", "meter_v_b",
     "meter_meter_active_power",
-    "ambient_temp",
+    "ambient_temp", "irradiation", "module_temp",
     "smu_string_mean", "smu_string_std", "smu_num_zero", "smu_total_strings",
     "alarm_count_24h", "alarm_count_7d", "hours_since_last_alarm",
     "hour", "month", "is_daytime",
     "voltage_imbalance", "pf_deviation", "freq_deviation",
     "power_ratio_vs_24h", "smu_zero_fraction",
+    "performance_ratio",
 ]

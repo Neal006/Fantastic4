@@ -1,0 +1,58 @@
+{
+  "cv_binary": [
+    {
+      "fold": 1,
+      "f1": 0.7024,
+      "precision": 0.636,
+      "recall": 0.7843,
+      "roc_auc": 0.8787
+    },
+    {
+      "fold": 2,
+      "f1": 0.7693,
+      "precision": 0.8691,
+      "recall": 0.69,
+      "roc_auc": 0.8702
+    },
+    {
+      "fold": 3,
+      "f1": 0.8017,
+      "precision": 0.9454,
+      "recall": 0.6959,
+      "roc_auc": 0.8734
+    },
+    {
+      "fold": 4,
+      "f1": 0.7819,
+      "precision": 0.8645,
+      "recall": 0.7137,
+      "roc_auc": 0.902
+    },
+    {
+      "fold": 5,
+      "f1": 0.7855,
+      "precision": 0.7445,
+      "recall": 0.8314,
+      "roc_auc": 0.9464
+    }
+  ],
+  "test_binary": {
+    "f1": 0.741,
+    "precision": 0.6801,
+    "recall": 0.8139,
+    "roc_auc": 0.9236
+  },
+  "test_multiclass_f1": 0.8756,
+  "top_shap_features": [
+    "alarm_count_7d",
+    "month",
+    "inv_temp_7d_mean",
+    "inv_power_7d_std",
+    "smu_string_mean_7d_std",
+    "inv_temp_24h_std",
+    "alarm_count_24h",
+    "hours_since_last_alarm",
+    "inv_temp_24h_mean",
+    "meter_meter_kwh_import"
+  ]
+}
