@@ -5,8 +5,8 @@ On first run the inverter manual is parsed, chunked, embedded, and cached
 to disk so subsequent starts are instant.
 """
 
+import json
 import os
-import pickle
 import numpy as np
 from pathlib import Path
 
@@ -40,13 +40,12 @@ class RAGPipeline:
         self.model = SentenceTransformer(EMBEDDING_MODEL)
 
         store = Path(VECTOR_STORE_DIR)
-        chunks_path = store / "chunks.pkl"
+        chunks_path = store / "chunks.json"
         emb_path = store / "embeddings.npy"
 
         if chunks_path.exists() and emb_path.exists():
             print("[RAG] Loading cached vector store …")
-            with open(chunks_path, "rb") as f:
-                self.chunks = pickle.load(f)
+            self.chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
             self.embeddings = np.load(str(emb_path))
             print(f"[RAG] Loaded {len(self.chunks)} chunks from cache.")
         else:
@@ -93,11 +92,12 @@ class RAGPipeline:
             self.chunks, show_progress_bar=True, batch_size=64
         )
 
-        # Persist to disk
+        # Persist to disk (JSON instead of pickle — safe deserialisation)
         store = Path(VECTOR_STORE_DIR)
         store.mkdir(parents=True, exist_ok=True)
-        with open(store / "chunks.pkl", "wb") as f:
-            pickle.dump(self.chunks, f)
+        (store / "chunks.json").write_text(
+            json.dumps(self.chunks, ensure_ascii=False), encoding="utf-8"
+        )
         np.save(str(store / "embeddings.npy"), self.embeddings)
         print("[RAG] Vector store cached to disk.")
 

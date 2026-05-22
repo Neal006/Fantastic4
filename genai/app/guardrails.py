@@ -1,13 +1,50 @@
 """
-Hallucination guardrails for LUMIN.AI.
+Hallucination guardrails and security guardrails for LUMIN.AI.
 
-Ensures the LLM never fabricates telemetry values and only references
-features that were actually present in the SHAP analysis.
+- Input guardrail: detects prompt injection, enforces message length cap.
+- Hallucination guardrail: ensures LLM only references provided SHAP features.
 """
 
 import re
 import json
 from typing import Dict, Set, Tuple
+
+# ---------------------------------------------------------------------------
+# Prompt-injection detection
+# ---------------------------------------------------------------------------
+
+_INJECTION_PATTERNS = [
+    r"ignore\s+(all\s+)?(previous|prior|above)\s+(instructions?|rules?|prompts?|constraints?)",
+    r"(reveal|show|tell|print|output|share|repeat|display|give\s+me)\s+(your\s+)?(system\s+)?(prompt|instructions?|rules?|configuration|setup)",
+    r"what\s+(are|is|were)\s+(your\s+)?(instructions?|system\s+prompt|rules?|prompt|configuration)",
+    r"forget\s+(everything|all|previous|prior|your\s+instructions)",
+    r"you\s+are\s+now\s+(a|an)\s+\w+",
+    r"pretend\s+(you\s+)?(are|were|to\s+be)",
+    r"act\s+as\s+(if\s+you\s+are|a|an)\s+",
+    r"disregard\s+(all\s+)?(previous|prior|your)",
+    r"(jailbreak|jailbroken|dan\s+mode|developer\s+mode|god\s+mode|unrestricted\s+mode)",
+    r"override\s+(your\s+)?(instructions?|rules?|safety|restrictions?)",
+    r"new\s+instructions?[\s:]+",
+    r"system\s+prompt[\s:]+",
+]
+
+_COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in _INJECTION_PATTERNS]
+
+_MAX_CHAT_LENGTH = 2000
+
+
+def detect_prompt_injection(text: str) -> bool:
+    """Return True if text matches known prompt-injection patterns."""
+    return any(p.search(text) for p in _COMPILED_PATTERNS)
+
+
+def sanitize_chat_input(text: str) -> tuple[str, bool]:
+    """
+    Truncate to max length and check for injection.
+    Returns (truncated_text, is_safe).  is_safe=False blocks the request.
+    """
+    truncated = text[:_MAX_CHAT_LENGTH]
+    return truncated, not detect_prompt_injection(truncated)
 
 # ---------------------------------------------------------------------------
 # Valid feature names (derived from the dataset schema)

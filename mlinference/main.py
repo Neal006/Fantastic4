@@ -294,7 +294,7 @@ def predict_batch(req: BatchPredictRequest):
                     vec = engine._build_feature_vector_from_raw(features)
                 else:
                     vec = engine._build_feature_vector_from_full(features)
-                predicted_idx = CLASS_NAMES.index(results[i]["predicted_class"])
+                predicted_idx = results[i]["_class_idx"]
                 shap_data = shap_explainer.explain(
                     feature_vector=vec,
                     feature_cols=engine.feature_cols,

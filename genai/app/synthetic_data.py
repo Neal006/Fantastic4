@@ -508,6 +508,8 @@ def update_prediction(inverter_id: str, ml_result: dict) -> Optional[InverterPre
         "no_risk": RiskClass.NO_RISK,
         "degradation_risk": RiskClass.DEGRADATION_RISK,
         "shutdown_risk": RiskClass.SHUTDOWN_RISK,
+        "degradation": RiskClass.DEGRADATION_RISK,
+        "shutdown": RiskClass.SHUTDOWN_RISK,
     }
     risk_class = risk_class_map.get(predicted_class, RiskClass.NO_RISK)
 
