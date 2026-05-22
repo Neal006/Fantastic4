@@ -227,9 +227,9 @@ class InferenceEngine:
     def _get_fault_description(
         category: str, raw_input: dict, probabilities: np.ndarray
     ) -> Optional[str]:
-        if category in ("A", "B"):
+        if category == "no_risk":
             return None
-        if category == "E":
+        if category == "shutdown":
             if raw_input.get("module_temp", 0) > 70:
                 return "Overheating — Thermal Shutdown Risk"
             if raw_input.get("irradiation", 999) < 300:
@@ -237,20 +237,16 @@ class InferenceEngine:
             if raw_input.get("dc_voltage", 999) == 0 and raw_input.get("dc_current", 999) == 0:
                 return "Inverter Shutdown — Critical"
             return "Ground Fault — Insulation Failure"
-        if category == "D":
-            if raw_input.get("dc_current", 10) < 5:
-                return "String Degradation"
-            if raw_input.get("alarm_code", 0):
-                return f"Alarm Code {int(raw_input['alarm_code'])} — Operational Fault"
+        # degradation
+        if raw_input.get("dc_current", 10) < 5:
             return "String Degradation"
-        # Category C
+        if raw_input.get("alarm_code", 0):
+            return f"Alarm Code {int(raw_input['alarm_code'])} — Operational Fault"
         if raw_input.get("ac_power", 10) < 5:
             return "Low Power Output — String Issue"
         if raw_input.get("dc_voltage", 40) < 32:
             return "Partial Shading — Performance Loss"
-        if raw_input.get("alarm_code", 0):
-            return f"Communication Issue — Alarm Code {int(raw_input['alarm_code'])}"
-        return "Low Power Output — String Issue"
+        return "String Degradation"
 
     # ── Single prediction ───────────────────────────────────────────
     def predict(self, raw_input: dict, mode: str = "manual") -> dict:

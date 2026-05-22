@@ -140,12 +140,21 @@ async function callGenAISimulate(readings) {
     return resp.json();
 }
 
+// Map new ML text labels (no_risk/degradation/shutdown) to A-E grades for DB ENUM
+function mapCategoryToGrade(raw, confidence) {
+    if (['A', 'B', 'C', 'D', 'E', 'offline'].includes(raw)) return raw;
+    if (raw === 'no_risk') return confidence >= 0.90 ? 'A' : 'B';
+    if (raw === 'degradation' || raw === 'degradation_risk') return confidence >= 0.70 ? 'D' : 'C';
+    if (raw === 'shutdown' || raw === 'shutdown_risk') return 'E';
+    return 'A';
+}
+
 /**
  * Store an ML prediction result into the database and update inverter state.
  */
 async function storePrediction(inverterId, dbInverterId, oldCategory, reading, prediction) {
-    const category = prediction.category || 'A';
     const confidence = prediction.confidence || 0.5;
+    const category = mapCategoryToGrade(prediction.category || 'A', confidence);
     const probabilities = prediction.probabilities || {};
     const fault = prediction.fault || null;
     const isFaulty = ['C', 'D', 'E'].includes(category);

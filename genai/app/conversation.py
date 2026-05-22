@@ -1,9 +1,15 @@
 """In-memory multi-turn conversation manager with session support."""
 
+import re
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 from collections import defaultdict
+
+_UUID_RE = re.compile(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    re.IGNORECASE,
+)
 
 
 class ConversationManager:
@@ -12,9 +18,14 @@ class ConversationManager:
         self._max_turns = max_turns
 
     def get_or_create_session(self, session_id: Optional[str] = None) -> str:
-        if session_id and session_id in self._sessions:
+        # Only accept well-formed UUIDs — prevents session-manipulation attacks.
+        if session_id and _UUID_RE.match(session_id):
+            if session_id in self._sessions:
+                return session_id
+            self._sessions[session_id] = []
             return session_id
-        new_id = session_id or str(uuid.uuid4())
+        # Invalid / absent session_id → always issue a fresh UUID
+        new_id = str(uuid.uuid4())
         self._sessions[new_id] = []
         return new_id
 

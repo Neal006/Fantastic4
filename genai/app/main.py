@@ -5,10 +5,13 @@ Run:  uvicorn app.main:app --reload --port 8000
 Docs: http://localhost:8000/docs
 """
 
+import logging
 from datetime import datetime
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Query
+
+logger = logging.getLogger("genai.main")
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,7 +31,7 @@ from app.explainer import Explainer
 from app.agent import SolarAgent
 from app.conversation import ConversationManager
 from app.prompts import SYSTEM_PROMPT_CHAT, USER_PROMPT_CHAT
-from app.guardrails import guardrail_disclaimer
+from app.guardrails import guardrail_disclaimer, sanitize_chat_input
 from app.synthetic_data import (
     get_prediction,
     get_all_inverter_ids,
@@ -115,7 +118,8 @@ async def get_explanation(inverter_id: str):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("get_explanation failed for %s", inverter_id)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # =====================================================================
@@ -125,6 +129,15 @@ async def get_explanation(inverter_id: str):
 async def chat(req: ChatRequest):
     """Ask natural-language questions grounded in prediction data and the manual."""
     session_id = conv_mgr.get_or_create_session(req.session_id)
+
+    # ── Security: reject prompt-injection attempts ──────────────────
+    safe_message, is_safe = sanitize_chat_input(req.message)
+    if not is_safe:
+        return ChatResponse(
+            session_id=session_id,
+            response="I can only help with solar plant operations and inverter health.",
+            sources_used=[],
+        )
 
     # --- build data context for this query ---
     # Include all predictions so the LLM can answer cross-plant questions
@@ -190,7 +203,8 @@ async def create_ticket(inverter_id: str):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("create_ticket failed for %s", inverter_id)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/agent/maintenance-ticket/{inverter_id}/pdf", tags=["Agent"])
@@ -206,7 +220,8 @@ async def download_ticket_pdf(inverter_id: str):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("download_ticket_pdf failed for %s", inverter_id)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # =====================================================================
@@ -225,7 +240,8 @@ async def risk_report(plant_id: str):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
+        logger.exception("risk_report failed for %s", plant_id)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # =====================================================================
