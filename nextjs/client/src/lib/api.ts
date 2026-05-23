@@ -156,7 +156,7 @@ export const chatbotApi = {
         api.get<{ status: string; llm_connected: boolean; vector_store_loaded: boolean; inverters_monitored: number }>('/chatbot/health'),
 
     /** PDF download URL helper — open directly in a new browser tab */
-    getPdfUrl: (inverterName: string) => `/api/chatbot/ticket/${encodeURIComponent(inverterName)}/pdf`,
+    getPdfUrl: (inverterName: string) => `${API_BASE}/chatbot/ticket/${encodeURIComponent(inverterName)}/pdf`,
 
     /** Manual single-datapoint ML prediction test */
     predictTest: (data: {
@@ -166,7 +166,7 @@ export const chatbotApi = {
     }) => api.post<{ count: number; predictions: any[]; timestamp: string }>('/chatbot/predict-test', data),
 
     /** Reference analysis report PDF URL */
-    getReferencePdfUrl: () => '/api/chatbot/reference-pdf',
+    getReferencePdfUrl: () => `${API_BASE}/chatbot/reference-pdf`,
 };
 
 // ─── Direct ML Inference (bypasses NextJS backend for speed) ─────
