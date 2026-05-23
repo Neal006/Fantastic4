@@ -34,10 +34,12 @@ class RAGPipeline:
     # ------------------------------------------------------------------
     def initialize(self):
         """Load cached index or build from PDF."""
-        from sentence_transformers import SentenceTransformer
+        from fastembed import TextEmbedding
 
-        print(f"[RAG] Loading embedding model '{EMBEDDING_MODEL}' …")
-        self.model = SentenceTransformer(EMBEDDING_MODEL)
+        # fastembed requires full HuggingFace repo name
+        model_name = EMBEDDING_MODEL if "/" in EMBEDDING_MODEL else f"sentence-transformers/{EMBEDDING_MODEL}"
+        print(f"[RAG] Loading embedding model '{model_name}' …")
+        self.model = TextEmbedding(model_name=model_name)
 
         store = Path(VECTOR_STORE_DIR)
         chunks_path = store / "chunks.json"
@@ -88,9 +90,7 @@ class RAGPipeline:
 
         self.chunks = self._chunk_text(text)
         print(f"[RAG] Encoding {len(self.chunks)} chunks …")
-        self.embeddings = self.model.encode(
-            self.chunks, show_progress_bar=True, batch_size=64
-        )
+        self.embeddings = np.array(list(self.model.embed(self.chunks)))
 
         # Persist to disk (JSON instead of pickle — safe deserialisation)
         store = Path(VECTOR_STORE_DIR)
@@ -110,7 +110,7 @@ class RAGPipeline:
             return []
 
         k = min(top_k or TOP_K, len(self.chunks))
-        q_emb = self.model.encode([query])
+        q_emb = np.array(list(self.model.embed([query])))
 
         # Cosine similarity via numpy
         dot = np.dot(self.embeddings, q_emb.T).flatten()
