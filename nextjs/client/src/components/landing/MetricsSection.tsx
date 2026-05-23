@@ -293,7 +293,8 @@ export const MetricsSection = () => {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        fetch('/api/metrics/kpi')
+        const base = (import.meta.env.VITE_API_URL as string) || '';
+        fetch(`${base}/api/metrics/kpi`)
             .then(r => r.json())
             .then(d => setData(d))
             .catch(() => setError(true));
