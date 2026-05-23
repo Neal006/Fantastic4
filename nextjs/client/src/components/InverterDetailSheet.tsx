@@ -268,9 +268,7 @@ export default function InverterDetailSheet({ inverter, onClose, plantName, bloc
                       setDownloading(true);
                       setDownloadError(null);
                       try {
-                        // Step 1: Generate ticket on GenAI server
-                        await chatbotApi.generateTicket(inverterName!);
-                        // Step 2: Download the PDF
+                        // GET /chatbot/ticket/:name/pdf generates + streams ticket in one call
                         const token = sessionStorage.getItem('sw_token');
                         const res = await fetch(chatbotApi.getPdfUrl(inverterName!), {
                           headers: { Authorization: `Bearer ${token}` },
