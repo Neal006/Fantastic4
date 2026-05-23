@@ -32,15 +32,18 @@ class RAGPipeline:
     # ------------------------------------------------------------------
     # Startup
     # ------------------------------------------------------------------
-    def initialize(self):
-        """Load cached index or build from PDF."""
+    def _load_embedding_model(self):
+        """Lazy-load embedding model on first use (avoids startup timeout)."""
+        if self.model is not None:
+            return
         from fastembed import TextEmbedding
-
-        # fastembed requires full HuggingFace repo name
         model_name = EMBEDDING_MODEL if "/" in EMBEDDING_MODEL else f"sentence-transformers/{EMBEDDING_MODEL}"
         print(f"[RAG] Loading embedding model '{model_name}' …")
         self.model = TextEmbedding(model_name=model_name)
+        print("[RAG] Embedding model ready.")
 
+    def initialize(self):
+        """Load cached vector store at startup. Model loads lazily on first query."""
         store = Path(VECTOR_STORE_DIR)
         chunks_path = store / "chunks.json"
         emb_path = store / "embeddings.npy"
@@ -90,6 +93,7 @@ class RAGPipeline:
 
         self.chunks = self._chunk_text(text)
         print(f"[RAG] Encoding {len(self.chunks)} chunks …")
+        self._load_embedding_model()
         self.embeddings = np.array(list(self.model.embed(self.chunks)))
 
         # Persist to disk (JSON instead of pickle — safe deserialisation)
@@ -110,6 +114,7 @@ class RAGPipeline:
             return []
 
         k = min(top_k or TOP_K, len(self.chunks))
+        self._load_embedding_model()
         q_emb = np.array(list(self.model.embed([query])))
 
         # Cosine similarity via numpy
