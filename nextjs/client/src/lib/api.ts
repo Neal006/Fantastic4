@@ -169,7 +169,8 @@ export const chatbotApi = {
 };
 
 // ─── Direct ML Inference (bypasses NextJS backend for speed) ─────
-const ML_BASE = '/ml'; // Proxied via Vite to http://localhost:8001 (avoids CORS)
+// In dev: Vite proxies /ml → localhost:8001. In prod: set VITE_ML_URL to Render ML service URL.
+const ML_BASE = (import.meta.env.VITE_ML_URL as string) || '/ml';
 
 export const mlApi = {
     /** Single-inverter prediction — calls ML inference directly */

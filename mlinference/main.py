@@ -45,19 +45,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS (allow Express.js backend + frontend dev servers) ───────
+# ── CORS ─────────────────────────────────────────────────────────
+import os as _os
+_allowed_origins = _os.environ.get("ALLOWED_ORIGINS", "").split(",")
+_default_origins = [
+    "http://localhost:3000", "http://localhost:3001",
+    "http://localhost:5173", "http://localhost:8080",
+    "http://127.0.0.1:3001", "http://127.0.0.1:8080",
+]
+_cors_origins = [o.strip() for o in _allowed_origins if o.strip()] or _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:8000",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

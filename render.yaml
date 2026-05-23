@@ -1,0 +1,66 @@
+services:
+  # ── Express Backend ──────────────────────────────────────────────
+  - type: web
+    name: hackamine-server
+    runtime: node
+    rootDir: nextjs/server
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: SIMULATOR_INTERVAL_MS
+        value: "10000"
+      # Set these in Render dashboard:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GENAI_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  # ── ML Inference ─────────────────────────────────────────────────
+  # rootDir must be repo root so ../ml/models path resolves correctly
+  - type: web
+    name: hackamine-ml
+    runtime: python
+    rootDir: .
+    buildCommand: pip install -r mlinference/env_init/requirements.txt
+    startCommand: cd mlinference && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+  # ── GenAI Service ────────────────────────────────────────────────
+  - type: web
+    name: hackamine-genai
+    runtime: python
+    rootDir: genai
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ML_INFERENCE_URL
+        sync: false
+      # Set these in Render dashboard:
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: llama-3.3-70b-versatile
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LANGCHAIN_TRACING_V2
+        value: "false"
