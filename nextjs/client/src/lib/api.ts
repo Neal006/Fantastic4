@@ -1,4 +1,5 @@
-const API_BASE = '/api'; // Proxied via Vite to http://localhost:3001
+// In dev: Vite proxies /api → localhost:3001. In prod: set VITE_API_URL to Render Express URL.
+const API_BASE = (import.meta.env.VITE_API_URL as string) ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 
 function getToken(): string | null {
     return sessionStorage.getItem('sw_token');
