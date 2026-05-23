@@ -153,7 +153,7 @@ router.get('/plants', async (req, res) => {
             `SELECT p.*,
               COUNT(DISTINCT b.id) AS block_count,
               COUNT(DISTINCT i.id) AS inverter_count,
-              a.name AS created_by_name
+              ANY_VALUE(a.name) AS created_by_name
        FROM plants p
        LEFT JOIN blocks b ON b.plant_id = p.id
        LEFT JOIN inverters i ON i.block_id = b.id
